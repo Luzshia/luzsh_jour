@@ -33,35 +33,42 @@ h1 {
     margin-bottom: 30px;
 }
 
-/* El Menú de Cuaderno */
+/* El Menú de Cuaderno ajustado a rectángulos */
 .main-menu {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    display: flex; /* Cambiamos grid por flex para apilarlos */
+    flex-direction: column; 
+    gap: 15px;
     width: 100%;
     max-width: 400px;
 }
 
 .menu-btn {
-    aspect-ratio: 1 / 1;
+    width: 100%; /* Ahora ocupan todo el ancho disponible */
+    padding: 20px; /* Espacio interno para que sean altos */
     background: white;
     border: 2px solid var(--text);
-    border-radius: 15px;
+    border-radius: 12px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Emoji y texto uno al lado del otro */
     align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
+    justify-content: flex-start; /* Alineado a la izquierda como una lista */
+    gap: 20px; /* Separación entre emoji y palabra */
+    font-size: 1.3rem;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 5px 5px 0px var(--text);
+    box-shadow: 4px 4px 0px var(--text);
     transition: all 0.2s;
 }
 
-.menu-btn:active {
-    transform: translate(3px, 3px);
-    box-shadow: 2px 2px 0px var(--text);
+.menu-btn span {
+    font-size: 1.8rem; /* El emoji un poquito más grande */
 }
+
+.menu-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--text);
+}
+
 
 .menu-btn i { font-size: 2rem; margin-bottom: 10px; }
 
