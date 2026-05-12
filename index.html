@@ -10,12 +10,17 @@
 </head>
 <body>
 
-    <!-- Pantalla de Bloqueo -->
-    <div id="lock-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <h2 style="font-family: 'Playfair Display', serif;">Contenido Privado</h2>
-        <p style="opacity: 0.6; margin-bottom: 20px;">Introduce tu PIN para entrar</p>
-        <input type="password" id="pinInput" inputmode="numeric" placeholder="****" style="text-align: center; font-size: 2em; width: 150px; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none;">
-        <button onclick="checkPin()" class="back-btn" style="margin-top: 20px; background: var(--accent); color: white;">Desbloquear</button>
+    <!-- Pantalla de Bloqueo Mejorada -->
+    <div id="lock-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <div style="background: white; padding: 30px; border-radius: 20px; width: 80%;">
+            <h2 style="font-family: 'Playfair Display', serif; color: #333;">Contenido Privado</h2>
+            <p style="opacity: 0.6; margin-bottom: 20px; font-size: 0.9em;">Introduce tu PIN para entrar</p>
+            
+            <input type="password" id="pinInput" inputmode="numeric" placeholder="****" 
+                style="text-align: center; font-size: 2.5em; width: 100%; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none; margin-bottom: 20px;">
+            
+            <button onclick="checkPin()" class="menu-btn" style="width: 100%; background: var(--accent); color: white; border: none;">Desbloquear</button>
+        </div>
     </div>
 
     <div class="notebook-page">
@@ -669,9 +674,16 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
 
         function checkPin() {
             const input = document.getElementById('pinInput').value;
+            const muro = document.getElementById('lock-screen');
+            
             if (input === MI_PIN_SECRETO) {
-                document.getElementById('lock-screen').style.display = 'none';
-                // Opcional: guardar que ya se desbloqueó en esta sesión
+                // Usamos una transición suave para que desaparezca
+                muro.style.transition = "opacity 0.5s ease";
+                muro.style.opacity = "0";
+                setTimeout(() => {
+                    muro.style.display = 'none';
+                }, 500);
+                
                 sessionStorage.setItem('unlocked', 'true');
             } else {
                 alert("PIN Incorrecto");
