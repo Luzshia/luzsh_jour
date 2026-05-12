@@ -10,6 +10,14 @@
 </head>
 <body>
 
+    <!-- Pantalla de Bloqueo -->
+    <div id="lock-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <h2 style="font-family: 'Playfair Display', serif;">Contenido Privado</h2>
+        <p style="opacity: 0.6; margin-bottom: 20px;">Introduce tu PIN para entrar</p>
+        <input type="password" id="pinInput" inputmode="numeric" placeholder="****" style="text-align: center; font-size: 2em; width: 150px; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none;">
+        <button onclick="checkPin()" class="back-btn" style="margin-top: 20px; background: var(--accent); color: white;">Desbloquear</button>
+    </div>
+
     <div class="notebook-page">
         
         <!-- VISTA 1: EL MENÚ PRINCIPAL -->
@@ -20,6 +28,7 @@
                 <button class="menu-btn" onclick="showSection('habitos')"><span>🌿</span> Hábitos</button>
                 <button class="menu-btn" onclick="showSection('todo')"><span>✅</span> To-Do</button>
                 <button class="menu-btn" onclick="showSection('agenda')"><span>📅</span> Agenda</button>
+                <button class="menu-btn" onclick="showSection('config')">⚙️ Configuración</button>
             </div>
         </div>
 
@@ -120,6 +129,39 @@
             <div id="calendarView" class="note-area"></div>
             <div id="listView" class="note-area" style="display: none;"></div>
         </div>
+        <div id="view-config" class="section">
+        <button class="back-btn" onclick="showSection('main')">← Volver</button>
+        <h1>⚙️ Ajustes</h1>
+
+        <div class="note-area">
+            <h3>📦 Datos y Seguridad</h3>
+            <p style="font-size: 0.8em; opacity: 0.6;">Administra tus datos locales y copias de seguridad.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <button onclick="exportarDatos()" class="back-btn" style="width: 100%; text-align: left;">📥 Guardar Copia (Backup)</button>
+                <button onclick="importarDatos()" class="back-btn" style="width: 100%; text-align: left;">📤 Cargar Copia</button>
+                <input type="file" id="importFile" style="display: none;" onchange="procesarArchivo(this)">
+            </div>
+
+            <hr style="margin: 20px 0; opacity: 0.1;">
+
+            <h3>🎨 Personalización Cool</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Modo Oscuro</span>
+                    <button onclick="toggleDarkMode()" class="back-btn" style="padding: 5px 10px;">🌓</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Color de Acento</span>
+                    <input type="color" onchange="changeAccent(this.value)" value="#e07a5f" style="border:none; background:none; cursor:pointer;">
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; opacity: 0.1;">
+
+            <button onclick="borrarTodo()" class="back-btn" style="color: #ee6c4d; border-color: #ee6c4d; width: 100%;">⚠️ Borrar todos los datos</button>
+        </div>
+    </div>
 
     </div>
 
@@ -622,6 +664,47 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
             renderAgenda();
         }
         /* HASTA AQUÍ */
+        // Configura tu PIN aquí (cámbialo por el que quieras)
+        const MI_PIN_SECRETO = "1707"; 
+
+        function checkPin() {
+            const input = document.getElementById('pinInput').value;
+            if (input === MI_PIN_SECRETO) {
+                document.getElementById('lock-screen').style.display = 'none';
+                // Opcional: guardar que ya se desbloqueó en esta sesión
+                sessionStorage.setItem('unlocked', 'true');
+            } else {
+                alert("PIN Incorrecto");
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        // Comprobar si ya se desbloqueó antes (para no pedirlo en cada click)
+        window.onload = function() {
+            if (sessionStorage.getItem('unlocked') === 'true') {
+                document.getElementById('lock-screen').style.display = 'none';
+            }
+        }
+
+        // Cambiar el color principal de la app dinámicamente
+        function changeAccent(color) {
+            document.documentElement.style.setProperty('--accent', color);
+            localStorage.setItem('userAccent', color);
+        }
+
+        // Borrado de emergencia
+        function borrarTodo() {
+            if(confirm("¿Estás SEGURO? Se borrarán todas tus tareas, hábitos y eventos de forma permanente.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // Cargar preferencia de color al iniciar
+        window.addEventListener('load', () => {
+            const savedAccent = localStorage.getItem('userAccent');
+            if(savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
+        });
     </script>
 </body>
 </html>
