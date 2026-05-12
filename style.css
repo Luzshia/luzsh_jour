@@ -102,11 +102,7 @@ textarea {
     font-size: 1.5rem; /* La cursiva suele verse más pequeña, así que la agrandamos */
     color: #463f3a;
     resize: none;
-    outline: none;
-    /* Efecto de líneas de cuaderno */
-    background-image: linear-gradient(#d1d1d1 1px, transparent 1px);
-    background-size: 100% 30px;
-    
+    outline: none;   
 }
 
 .notebook-list {
@@ -123,9 +119,6 @@ textarea {
     cursor: pointer;
     border-bottom: 1px transparent; /* Para mantener el espacio */
     transition: all 0.3s;
-    /* Efecto de línea de cuaderno para la lista también */
-    background-image: linear-gradient(#d1d1d1 1px, transparent 1px);
-    background-size: 100% 35px;
 }
 
 .notebook-list li.completed {

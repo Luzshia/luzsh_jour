@@ -31,24 +31,33 @@
             <h1>🎯 Metas <span id="currentYearDisplay"></span></h1>
     
             <!-- Modo Edición -->
-            <div id="editMode" class="note-area">
+            <div id="editMode" class="note-area" style="display: none;">
                 <textarea id="metasInput" placeholder="Escribe tus metas (una por línea)..." oninput="saveMetas()"></textarea>
             </div>
 
             <!-- Modo Visualización -->
-            <div id="viewMode" class="note-area" style="display: none;">
+            <div id="viewMode" class="note-area">
                 <ul id="metasListDisplay" class="notebook-list"></ul>
             </div>
         </div>
 
         <div id="view-habitos" class="section">
-            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-            <h1>🌿 Habit Tracker</h1>
-            <div class="habit-input">
-                <input type="text" id="habitInput" placeholder="Nombre del hábito (ej: Tomar Agua)">
-                <button onclick="addHabit()">+</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+                <button id="btnHabitMode" class="back-btn" onclick="toggleHabitInput()" style="border-color: var(--accent);">➕ Nuevo</button>
             </div>
-            <div id="habitContainer"></div> <!-- Aquí se dibujarán los calendarios -->
+            
+            <h1>🌿 Hábitos: <span id="monthDisplay"></span></h1>
+
+            <!-- Caja de entrada oculta por defecto -->
+            <div id="habitInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
+                <div class="habit-input">
+                    <input type="text" id="habitInput" placeholder="Ej: Meditar, Leer...">
+                    <button onclick="addHabit()">Añadir</button>
+                </div>
+            </div>
+
+            <div id="habitContainer"></div>
         </div>
 
         <!-- VISTA 4: SECCIÓN TO-DO -->
@@ -68,7 +77,7 @@
     </div>
 
     <script>
-        // --- 1. REGISTRO DEL SERVICE WORKER (Corregido) ---
+        // --- 1. REGISTRO DEL SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -77,29 +86,48 @@
             });
         }
 
-        // --- 2. VARIABLES GLOBALES ---
-        const year = new Date().getFullYear();
-        const metasInput = document.getElementById('metasInput');
-        const yearDisplay = document.getElementById('currentYearDisplay');
+        // --- 2. VARIABLES GLOBALES DE TIEMPO ---
+        const ahora = new Date();
+        const year = ahora.getFullYear();
+        const mesActual = ahora.getMonth(); // 0 = Enero, 11 = Diciembre
+        const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        
+        // Llaves de almacenamiento
+        const storageKeyMetas = 'misMetas_' + year;
+        const storageKeyTachadas = 'metasTachadas_' + year;
+        const storageKeyHabitos = `myHabits_${year}_${mesActual}`;
 
-        if(yearDisplay) yearDisplay.innerText = year;
+        // --- 3. CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if(document.getElementById('currentYearDisplay')) 
+                document.getElementById('currentYearDisplay').innerText = year;
+            
+            if(document.getElementById('monthDisplay')) 
+                document.getElementById('monthDisplay').innerText = nombresMeses[mesActual];
 
-        // Cargar datos guardados
-        let metasTachadas = JSON.parse(localStorage.getItem('metasTachadas_' + year)) || [];
-        if(metasInput) {
-            metasInput.value = localStorage.getItem('misMetas_' + year) || '';
-        }
+            // Cargar Metas
+            const metasInput = document.getElementById('metasInput');
+            if(metasInput) {
+                metasInput.value = localStorage.getItem(storageKeyMetas) || '';
+                renderMetasVisual();
+            }
+            
+            // Cargar Hábitos
+            renderHabits();
+        });
 
-        // --- 3. NAVEGACIÓN ---
+        // --- 4. NAVEGACIÓN ---
         function showSection(sectionName) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             const target = document.getElementById('view-' + sectionName);
             if(target) target.classList.add('active');
         }
 
-        // --- 4. LÓGICA DE METAS (Híbrida) ---
+        // --- 5. LÓGICA DE METAS ---
+        let metasTachadas = JSON.parse(localStorage.getItem(storageKeyTachadas)) || [];
+
         function saveMetas() {
-            localStorage.setItem('misMetas_' + year, metasInput.value);
+            localStorage.setItem(storageKeyMetas, document.getElementById('metasInput').value);
         }
 
         function toggleMetaMode() {
@@ -120,13 +148,13 @@
         }
 
         function renderMetasVisual() {
-            const texto = metasInput.value;
+            const texto = document.getElementById('metasInput').value;
             const listaUI = document.getElementById('metasListDisplay');
+            if(!listaUI) return;
             
-            // Separar por líneas y quitar espacios vacíos
             const lineas = texto.split('\n').filter(l => l.trim() !== '');
-            
             listaUI.innerHTML = '';
+            
             lineas.forEach((linea) => {
                 const li = document.createElement('li');
                 li.innerText = linea;
@@ -139,13 +167,26 @@
                     } else {
                         metasTachadas = metasTachadas.filter(m => m !== linea);
                     }
-                    localStorage.setItem('metasTachadas_' + year, JSON.stringify(metasTachadas));
+                    localStorage.setItem(storageKeyTachadas, JSON.stringify(metasTachadas));
                 };
                 listaUI.appendChild(li);
             });
         }
 
-        let habits = JSON.parse(localStorage.getItem('myHabits_2026')) || [];
+        // --- 6. LÓGICA DE HÁBITOS (Mensual) ---
+        let habits = JSON.parse(localStorage.getItem(storageKeyHabitos)) || [];
+
+        function toggleHabitInput() {
+            const area = document.getElementById('habitInputArea');
+            const btn = document.getElementById('btnHabitMode');
+            if (area.style.display === 'none') {
+                area.style.display = 'block';
+                btn.innerText = '❌ Cerrar';
+            } else {
+                area.style.display = 'none';
+                btn.innerText = '➕ Nuevo';
+            }
+        }
 
         function addHabit() {
             const input = document.getElementById('habitInput');
@@ -154,16 +195,17 @@
             const newHabit = {
                 id: Date.now(),
                 name: input.value,
-                history: [] // Guardaremos aquí los días completados (ej: [1, 5, 12])
+                history: []
             };
 
             habits.push(newHabit);
             saveAndRenderHabits();
             input.value = '';
+            toggleHabitInput();
         }
 
         function saveAndRenderHabits() {
-            localStorage.setItem('myHabits_2026', JSON.stringify(habits));
+            localStorage.setItem(storageKeyHabitos, JSON.stringify(habits));
             renderHabits();
         }
 
@@ -171,18 +213,14 @@
             const container = document.getElementById('habitContainer');
             if(!container) return;
 
-            const ahora = new Date();
-            const diasEnMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
+            const diasEnMes = new Date(year, mesActual + 1, 0).getDate();
 
             container.innerHTML = habits.map(habit => `
                 <div class="habit-card">
-                    <!-- CAJA 1: El título y el botón de borrar -->
                     <div class="habit-header">
                         <span>${habit.name}</span>
                         <button onclick="deleteHabit(${habit.id})" class="delete-btn">🗑️</button>
                     </div>
-
-                    <!-- CAJA 2: El calendario -->
                     <div class="dots-grid">
                         <div class="dot-label">L</div><div class="dot-label">M</div>
                         <div class="dot-label">X</div><div class="dot-label">J</div>
@@ -196,22 +234,14 @@
 
         function generarPuntos(habit, totalDias) {
             let html = '';
-            const ahora = new Date();
-            // Obtenemos el primer día del mes actual (Año, Mes, Día 1)
-            const primerDiaDelMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-            
-            // getDay() devuelve: 0 para Domingo, 1 para Lunes... 6 para Sábado
-            // Ajustamos para que empiece en Lunes (opcional):
+            const primerDiaDelMes = new Date(year, mesActual, 1);
             let diaSemanaInicio = primerDiaDelMes.getDay(); 
-            if (diaSemanaInicio === 0) diaSemanaInicio = 7; // Convertir Domingo en el último si quieres que empiece en Lunes
+            if (diaSemanaInicio === 0) diaSemanaInicio = 7; 
             
-            // 1. Crear huecos vacíos para los días antes del día 1
-            // (Si el mes empieza un jueves, ponemos 3 huecos)
             for (let h = 1; h < diaSemanaInicio; h++) {
                 html += `<div class="dot-empty"></div>`;
             }
 
-            // 2. Crear los círculos reales de los días
             for (let i = 1; i <= totalDias; i++) {
                 const isChecked = habit.history.includes(i) ? 'checked' : '';
                 html += `
@@ -240,9 +270,6 @@
                 saveAndRenderHabits();
             }
         }
-
-        // Llamar al render al cargar la sección
-        renderHabits();
     </script>
 </body>
 </html>
