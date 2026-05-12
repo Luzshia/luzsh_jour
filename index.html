@@ -513,10 +513,10 @@
             currentAgendaView === 'calendar' ? renderCalendarView(cal) : renderListView(list);
         }
 
+        /* REEMPLAZA DESDE AQUÍ */
         function renderCalendarView(container) {
-            const hoy = new Date();
-            const y = (typeof year !== 'undefined') ? year : hoy.getFullYear();
-            const m = (typeof mesActual !== 'undefined') ? mesActual : hoy.getMonth();
+            const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
+            const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
             const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
             let html = `<div class="calendar-grid">`;
@@ -524,74 +524,91 @@
 
             const firstDay = new Date(y, m, 1);
             const lastDay = new Date(y, m + 1, 0).getDate();
+            // Ajuste para que empiece en Lunes
             let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
+            // Espacios mes anterior
             for (let i = 0; i < startOffset; i++) {
                 html += `<div class="calendar-day other-month"></div>`;
             }
 
+            // Días del mes
             for (let d = 1; d <= lastDay; d++) {
                 const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const eventosDia = events.filter(e => e.date === fechaStr);
+                const listaEventos = (typeof events !== 'undefined') ? events.filter(e => e.date === fechaStr) : [];
                 
-                // CORRECCIÓN AQUÍ: Usamos directamente eventosDia
-                const etiquetas = eventosDia.slice(0, 2).map(e => 
-                    `<div class="event-tag" title="${e.title}">${e.title}</div>`
-                ).join('');
-                
-                const mas = eventosDia.length > 2 ? `<div style="font-size:0.5em; color:gray;">+${eventosDia.length - 2}</div>` : '';
+                // Máximo 2 etiquetas visibles para mantener el orden
+                const etiquetasHtml = listaEventos.slice(0, 2).map(e => `
+                    <div class="event-tag" title="${e.title}">${e.title}</div>
+                `).join('');
+
+                const mas = listaEventos.length > 2 ? `<div style="font-size:8px; color:#999; margin-top:2px;">+${listaEventos.length - 2}</div>` : '';
 
                 html += `
                     <div class="calendar-day">
-                        <span style="font-size:0.7em; margin-bottom:2px; font-weight:bold;">${d}</span>
-                        <div style="width: 100%; display: flex; flex-direction: column; gap: 1px; overflow:hidden;">
-                            ${etiquetas}
+                        <span style="font-size:10px; font-weight:bold; margin-bottom:2px;">${d}</span>
+                        <div style="width:100%; display:flex; flex-direction:column; gap:1px;">
+                            ${etiquetasHtml}
                         </div>
                         ${mas}
                     </div>
                 `;
             }
+            
             html += `</div>`;
             container.innerHTML = html;
         }
+        /* HASTA AQUÍ */
 
+        /* REEMPLAZA DESDE AQUÍ */
         function renderListView(container) {
             const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
             const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
             const lastDay = new Date(y, m + 1, 0).getDate();
             const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             
-            let html = '<div class="notebook-area">';
+            let html = '<div style="display: flex; flex-direction: column; gap: 0;">';
+
             for (let d = 1; d <= lastDay; d++) {
                 const fechaObj = new Date(y, m, d);
                 const diaNombre = nombresDias[fechaObj.getDay()];
                 const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const eventosDia = events.filter(e => e.date === fechaStr);
+                
+                // Filtramos eventos de este día
+                const eventosDia = (typeof events !== 'undefined') ? events.filter(e => e.date === fechaStr) : [];
 
                 html += `
-                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; gap: 15px;">
-                        <div style="width: 40px; text-align: center;">
-                            <div style="font-size: 1.2em; font-weight: bold;">${d}</div>
+                    <div style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 12px 5px; display: flex; align-items: flex-start; gap: 15px;">
+                        <!-- Columna del número y día -->
+                        <div style="min-width: 45px; text-align: center; border-right: 1px solid var(--accent); padding-right: 10px;">
+                            <div style="font-size: 1.1em; font-weight: bold; color: var(--text);">${d}</div>
                             <div style="font-size: 0.6em; text-transform: uppercase; opacity: 0.5;">${diaNombre}</div>
                         </div>
-                        <div style="flex: 1;">
+                        
+                        <!-- Columna de eventos -->
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
                             ${eventosDia.length > 0 ? eventosDia.map(e => `
-                                <div onclick="manageEvent(${e.id}, 'check')" style="margin-bottom: 5px; cursor: pointer;">
-                                    <span style="${e.completed ? 'text-decoration: line-through; opacity: 0.5' : ''}">
-                                        ${e.time !== 'Todo el día' ? `<b>${e.time}</b> ` : ''}${e.title}
-                                    </span>
-                                    <div style="display: flex; gap: 10px; margin-top: 4px;">
-                                        <small onclick="event.stopPropagation(); manageEvent(${e.id}, 'reschedule')" style="color: blue;">⏳ Reprogramar</small>
-                                        <small onclick="event.stopPropagation(); manageEvent(${e.id}, 'delete')" style="color: red;">🗑️ Borrar</small>
+                                <div style="background: rgba(255,255,255,0.4); padding: 8px; border-radius: 8px; border-left: 3px solid ${e.completed ? '#81b29a' : '#e07a5f'};">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span onclick="manageEvent(${e.id}, 'check')" style="cursor: pointer; font-size: 0.9em; ${e.completed ? 'text-decoration: line-through; opacity: 0.5' : ''}">
+                                            ${e.time !== 'Todo el día' && e.time ? `<b>${e.time}</b> ` : ''}${e.title}
+                                        </span>
+                                        <div style="display: flex; gap: 10px;">
+                                            <span onclick="manageEvent(${e.id}, 'reschedule')" style="cursor: pointer; font-size: 0.8em; color: #3d5a80;">⏳</span>
+                                            <span onclick="manageEvent(${e.id}, 'delete')" style="cursor: pointer; font-size: 0.8em; color: #ee6c4d;">🗑️</span>
+                                        </div>
                                     </div>
                                 </div>
-                            `).join('') : '<div style="opacity: 0.2; font-style: italic; font-size: 0.8em;">Sin actividades</div>'}
+                            `).join('') : '<div style="opacity: 0.15; font-size: 0.8em; padding-top: 5px;">Puntos suspensivos o espacio libre...</div>'}
                         </div>
-                    </div>`;
+                    </div>
+                `;
             }
+
             html += '</div>';
             container.innerHTML = html;
         }
+        /* HASTA AQUÍ */
 
         function manageEvent(id, action) {
             const index = events.findIndex(e => e.id === id);
