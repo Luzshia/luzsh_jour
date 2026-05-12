@@ -553,29 +553,45 @@
         }
 
         function renderListView(container) {
-            if (events.length === 0) {
-                container.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay actividades programadas.</p>";
-                return;
-            }
+            const lastDay = new Date(year, mesActual + 1, 0).getDate();
+            const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            
+            let html = '<div class="notebook-area">';
 
-            // Ordenar eventos por fecha
-            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+            for (let d = 1; d <= lastDay; d++) {
+                const fechaObj = new Date(year, mesActual, d);
+                const diaNombre = nombresDias[fechaObj.getDay()];
+                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                
+                // Buscamos si hay eventos para este día
+                const eventosDia = events.filter(e => e.date === fechaStr);
 
-            container.innerHTML = sortedEvents.map(e => `
-                <div class="habit-card" style="margin-bottom: 10px; border-left: 5px solid ${e.completed ? '#81b29a' : '#e07a5f'}">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div>
-                            <strong style="${e.completed ? 'text-decoration:line-through; opacity:0.6' : ''}">${e.title}</strong>
-                            <div style="font-size:0.8em; opacity:0.7;">📅 ${e.date} | 🕒 ${e.time}</div>
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; gap: 15px;">
+                        <div style="width: 40px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold;">${d}</div>
+                            <div style="font-size: 0.6em; text-transform: uppercase; opacity: 0.5;">${diaNombre}</div>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            ${eventosDia.length > 0 ? eventosDia.map(e => `
+                                <div onclick="manageEvent(${e.id}, 'check')" style="margin-bottom: 5px; cursor: pointer;">
+                                    <span style="${e.completed ? 'text-decoration: line-through; opacity: 0.5' : ''}">
+                                        ${e.time !== 'Todo el día' ? `<b>${e.time}</b> ` : ''}${e.title}
+                                    </span>
+                                    <div style="display: flex; gap: 10px; margin-top: 4px;">
+                                        <small onclick="event.stopPropagation(); manageEvent(${e.id}, 'reschedule')" style="color: blue;">⏳ Reprogramar</small>
+                                        <small onclick="event.stopPropagation(); manageEvent(${e.id}, 'delete')" style="color: red;">🗑️ Borrar</small>
+                                    </div>
+                                </div>
+                            `).join('') : '<div style="opacity: 0.2; font-style: italic; font-size: 0.8em;">Sin actividades</div>'}
                         </div>
                     </div>
-                    <div style="margin-top:10px; display:flex; gap:5px;">
-                        <button onclick="manageEvent(${e.id}, 'check')" class="back-btn" style="font-size:0.7em; padding:4px 8px;">✔️</button>
-                        <button onclick="manageEvent(${e.id}, 'reschedule')" class="back-btn" style="font-size:0.7em; padding:4px 8px;">⏳</button>
-                        <button onclick="manageEvent(${e.id}, 'delete')" class="back-btn" style="font-size:0.7em; padding:4px 8px; border-color:#e07a5f; color:#e07a5f;">❌</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         function manageEvent(id, action) {
