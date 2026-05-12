@@ -135,7 +135,8 @@
             <div id="listView" class="note-area" style="display: none;"></div>
         </div>
         <div id="view-config" class="section">
-        <button class="back-btn" onclick="showSection('main')">← Volver</button>
+        <!-- En la sección de Ajustes, el botón debe ser así: -->
+        <button class="back-btn" onclick="showSection('menu')">← Volver</button>
         <h1>⚙️ Ajustes</h1>
 
         <div class="note-area">
@@ -698,6 +699,53 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
             }
         }
 
+        function exportarDatos() {
+            try {
+                const todosLosDatos = {
+                    tareas: localStorage.getItem('myTodos'),
+                    habitos: localStorage.getItem('myHabits'),
+                    agenda: localStorage.getItem('myEvents'),
+                    color: localStorage.getItem('userAccent'),
+                    oscuro: localStorage.getItem('darkMode')
+                };
+                
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todosLosDatos));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "mi_journal_backup.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                
+                // Mensaje de éxito
+                alert("✅ ¡Copia de seguridad creada con éxito! Revisa tu carpeta de descargas.");
+            } catch (error) {
+                alert("❌ Error al exportar los datos: " + error);
+            }
+        }
+
+        function procesarArchivo(input) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                try {
+                    const datos = JSON.parse(reader.result);
+                    
+                    // Restauramos cada pedazo de información
+                    if(datos.tareas) localStorage.setItem('myTodos', datos.tareas);
+                    if(datos.habitos) localStorage.setItem('myHabits', datos.habitos);
+                    if(datos.agenda) localStorage.setItem('myEvents', datos.agenda);
+                    if(datos.color) localStorage.setItem('userAccent', datos.color);
+                    if(datos.oscuro) localStorage.setItem('darkMode', datos.oscuro);
+                    
+                    alert("✅ ¡Datos restaurados con éxito! Tu Journal se actualizará ahora.");
+                    location.reload(); // Recarga para aplicar los cambios
+                } catch (e) {
+                    alert("❌ El archivo no es válido o está dañado.");
+                }
+            };
+            reader.readAsText(input.files[0]);
+        }
+        
         // Cambiar el color principal de la app dinámicamente
         function changeAccent(color) {
             document.documentElement.style.setProperty('--accent', color);
@@ -712,11 +760,27 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
             }
         }
 
-        // Cargar preferencia de color al iniciar
         window.addEventListener('load', () => {
-            const savedAccent = localStorage.getItem('userAccent');
-            if(savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
-        });
+        // Aplicar color guardado
+        const savedAccent = localStorage.getItem('userAccent');
+        if(savedAccent) {
+            document.documentElement.style.setProperty('--accent', savedAccent);
+            // También actualizamos el input de color para que coincida
+            const colorInput = document.querySelector('input[type="color"]');
+            if(colorInput) colorInput.value = savedAccent;
+        }
+        
+        // Aplicar modo oscuro si estaba activo
+        if(localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    });
+
+    function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+}
     </script>
 </body>
 </html>

@@ -322,3 +322,28 @@ textarea {
     background: #fdfdfd;
     opacity: 0.4;
 }
+
+/* Colores Modo Oscuro */
+body.dark-mode {
+    background-color: #1a1a1a;
+    background-image: radial-gradient(#333 1px, transparent 1px); /* Puntos oscuros */
+    color: #e0e0e0;
+}
+
+body.dark-mode .note-area, 
+body.dark-mode .calendar-day,
+body.dark-mode .habit-card {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+    color: #ffffff;
+}
+
+body.dark-mode .menu-btn {
+    background: #2d2d2d;
+    color: white;
+    border: 1px solid #444;
+}
