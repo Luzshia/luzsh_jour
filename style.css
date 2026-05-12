@@ -323,27 +323,31 @@ textarea {
     opacity: 0.4;
 }
 
-/* Colores Modo Oscuro */
+/* Estilos para el Modo Oscuro */
 body.dark-mode {
-    background-color: #1a1a1a;
-    background-image: radial-gradient(#333 1px, transparent 1px); /* Puntos oscuros */
-    color: #e0e0e0;
+    background-color: #1a1a1a !important;
+    background-image: radial-gradient(#333 1px, transparent 1px) !important; /* Puntos oscuros */
+    color: #f0f0f0 !important;
 }
 
+/* Tarjetas y áreas de texto en modo oscuro */
 body.dark-mode .note-area, 
-body.dark-mode .calendar-day,
-body.dark-mode .habit-card {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #444;
+body.dark-mode .calendar-day, 
+body.dark-mode .habit-card,
+body.dark-mode .section {
+    background-color: #2d2d2d !important;
+    color: #f0f0f0 !important;
+    border-color: #444 !important;
 }
 
+/* Ajuste de títulos en modo oscuro */
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
+/* Botones del menú en modo oscuro */
 body.dark-mode .menu-btn {
-    background: #2d2d2d;
-    color: white;
-    border: 1px solid #444;
+    background: #333 !important;
+    color: white !important;
+    border-color: #555 !important;
 }

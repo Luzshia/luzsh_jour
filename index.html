@@ -724,6 +724,37 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
             }
         }
 
+        // --- CORRECCIÓN: Esta función faltaba para abrir el selector de archivos ---
+        function importarDatos() {
+            document.getElementById('importFile').click();
+        }
+
+        // --- CORRECCIÓN: Borrado con mensaje de éxito ---
+        function borrarTodo() {
+            if(confirm("¿Estás SEGURO? Se borrarán todas tus tareas, hábitos y eventos de forma permanente.")) {
+                localStorage.clear();
+                alert("✅ Todos los datos han sido borrados con éxito."); // Mensaje solicitado
+                location.reload();
+            }
+        }
+
+        // --- MEJORA: Asegurar que el modo oscuro se aplique correctamente al cargar ---
+        window.addEventListener('load', () => {
+            // Aplicar color guardado
+            const savedAccent = localStorage.getItem('userAccent');
+            if(savedAccent) {
+                document.documentElement.style.setProperty('--accent', savedAccent);
+                const colorInput = document.querySelector('input[type="color"]');
+                if(colorInput) colorInput.value = savedAccent;
+            }
+            
+            // CORRECCIÓN MODO OSCURO: Verificar el valor guardado
+            const darkModeSaved = localStorage.getItem('darkMode');
+            if(darkModeSaved === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+
         function procesarArchivo(input) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -746,35 +777,12 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
             reader.readAsText(input.files[0]);
         }
         
+
         // Cambiar el color principal de la app dinámicamente
         function changeAccent(color) {
             document.documentElement.style.setProperty('--accent', color);
             localStorage.setItem('userAccent', color);
         }
-
-        // Borrado de emergencia
-        function borrarTodo() {
-            if(confirm("¿Estás SEGURO? Se borrarán todas tus tareas, hábitos y eventos de forma permanente.")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        window.addEventListener('load', () => {
-        // Aplicar color guardado
-        const savedAccent = localStorage.getItem('userAccent');
-        if(savedAccent) {
-            document.documentElement.style.setProperty('--accent', savedAccent);
-            // También actualizamos el input de color para que coincida
-            const colorInput = document.querySelector('input[type="color"]');
-            if(colorInput) colorInput.value = savedAccent;
-        }
-        
-        // Aplicar modo oscuro si estaba activo
-        if(localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-    });
 
     function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
