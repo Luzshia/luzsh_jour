@@ -49,6 +49,7 @@
             </div>
 
             <h1>🌿 Hábitos de <span id="monthDisplay"></span></h1>
+            <p id="habitStats" style="text-align: center; font-family: sans-serif; opacity: 0.7; font-size: 0.9em; margin-bottom: 15px;"></p>
 
             <!-- Caja de entrada oculta por defecto -->
             <div id="habitInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
@@ -246,9 +247,12 @@
         function toggleHabitInput() {
             const area = document.getElementById('habitInputArea');
             const btn = document.getElementById('btnHabitMode');
+            const input = document.getElementById('habitInput');
+
             if (area.style.display === 'none') {
                 area.style.display = 'block';
                 btn.innerText = '❌ Cerrar';
+                setTimeout(() => input.focus(), 100);
             } else {
                 area.style.display = 'none';
                 btn.innerText = '➕ Nuevo';
@@ -278,9 +282,22 @@
 
         function renderHabits() {
             const container = document.getElementById('habitContainer');
+            const statsUI = document.getElementById('habitStats'); // El nuevo texto
             if(!container) return;
+            
             const diasEnMes = new Date(year, mesActual + 1, 0).getDate();
+            
+            // CALCULAR ESTADÍSTICAS
+            let totalChecks = 0;
+            habits.forEach(h => totalChecks += h.history.length);
+            const totalPosibles = habits.length * diasEnMes;
+            const porcentaje = totalPosibles > 0 ? Math.round((totalChecks / totalPosibles) * 100) : 0;
+            
+            if(statsUI) {
+                statsUI.innerText = habits.length > 0 ? `Progreso mensual: ${porcentaje}% (${totalChecks} marcas)` : "Añade un hábito para empezar";
+            }
 
+            // ... aquí sigue tu código actual de container.innerHTML = habits.map(...)
             container.innerHTML = habits.map(habit => `
                 <div class="habit-card">
                     <div class="habit-header">
@@ -343,10 +360,12 @@
         function toggleTodoInput() {
             const area = document.getElementById('todoInputArea');
             const btn = document.getElementById('btnTodoMode');
+            const input = document.getElementById('todoInput'); // El input
+
             if (area.style.display === 'none') {
                 area.style.display = 'block';
                 btn.innerText = '❌ Cerrar';
-                document.getElementById('todoInput').focus(); // Pone el cursor listo para escribir
+                setTimeout(() => input.focus(), 100); // El pequeño retraso ayuda a que el móvil lo detecte
             } else {
                 area.style.display = 'none';
                 btn.innerText = '➕ Nuevo';

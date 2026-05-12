@@ -144,7 +144,19 @@ textarea {
     padding: 5px 0;
     cursor: pointer;
     border-bottom: 1px transparent; /* Para mantener el espacio */
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+/* Animación para ítems completados */
+.completed {
+    opacity: 0.5;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
+.notebook-list li:active {
+    background: rgba(0,0,0,0.05); /* Efecto al tocar con el dedo */
 }
 
 .notebook-list li.completed {
