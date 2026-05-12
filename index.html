@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Journal 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
@@ -22,11 +23,22 @@
             </div>
         </div>
 
-        <!-- VISTA 2: SECCIÓN METAS -->
         <div id="view-metas" class="section">
-            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-            <h1>Metas del Año</h1>
-            <p>Escribe aquí tus propósitos para el 2026...</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+                <button id="btnMode" class="back-btn" onclick="toggleMetaMode()" style="border-color: var(--accent);">👁️ Ver</button>
+            </div>
+            <h1>🎯 Metas <span id="currentYearDisplay"></span></h1>
+    
+            <!-- Modo Edición -->
+            <div id="editMode" class="note-area">
+                <textarea id="metasInput" placeholder="Escribe tus metas (una por línea)..." oninput="saveMetas()"></textarea>
+            </div>
+
+            <!-- Modo Visualización -->
+            <div id="viewMode" class="note-area" style="display: none;">
+                <ul id="metasListDisplay" class="notebook-list"></ul>
+            </div>
         </div>
 
         <!-- VISTA 3: SECCIÓN HÁBITOS (Habit Tracker) -->
@@ -115,6 +127,62 @@
                     <span>${h.completed ? '✅' : '⭕'}</span>
                 </li>
             `).join('');
+        }
+        const year = new Date().getFullYear();
+        document.getElementById('currentYearDisplay').innerText = year;
+
+        // Cargar metas iniciales
+        let metasRaw = localStorage.getItem('misMetas_' + year) || '';
+        let metasTachadas = JSON.parse(localStorage.getItem('metasTachadas_' + year)) || [];
+        document.getElementById('metasInput').value = metasRaw;
+
+        function saveMetas() {
+            const texto = document.getElementById('metasInput').value;
+            localStorage.setItem('misMetas_' + year, texto);
+        }
+
+        function toggleMetaMode() {
+            const editDiv = document.getElementById('editMode');
+            const viewDiv = document.getElementById('viewMode');
+            const btn = document.getElementById('btnMode');
+
+            if (editDiv.style.display !== 'none') {
+                // PASAR A MODO VER
+                renderMetasVisual();
+                editDiv.style.display = 'none';
+                viewDiv.style.display = 'block';
+                btn.innerText = '✍️ Editar';
+            } else {
+                // PASAR A MODO EDITAR
+                editDiv.style.display = 'block';
+                viewDiv.style.display = 'none';
+                btn.innerText = '👁️ Ver';
+            }
+        }
+
+        function renderMetasVisual() {
+            const texto = document.getElementById('metasInput').value;
+            const listaUI = document.getElementById('metasListDisplay');
+    
+            // Convertimos el texto en un array de líneas
+            const lineas = texto.split('\n').filter(linea => linea.trim() !== '');
+    
+            listaUI.innerHTML = lineas.map((linea, index) => {
+                const isxDone = metasTachadas.includes(linea);
+                return `<li class="${isDone ? 'completed' : ''}" onclick="toggleStrike(this, '${linea.replace(/'/g, "\\'")}')">${linea}</li>`;
+            }).join('');
+        }
+
+        function toggleStrike(elemento, textoLinea) {
+            elemento.classList.toggle('completed');
+    
+            if (elemento.classList.contains('completed')) {
+                metasTachadas.push(textoLinea);
+            } else {
+                metasTachadas = metasTachadas.filter(m => m !== textoLinea);
+            }
+    
+            localStorage.setItem('metasTachadas_' + year, JSON.stringify(metasTachadas));
         }
     </script>
 </body>
