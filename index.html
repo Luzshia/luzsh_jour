@@ -69,76 +69,38 @@
     </div>
 
     <script>
-        // --- 1. REGISTRO DEL SERVICE WORKER (Para que sea instalable) ---
+        // --- 1. REGISTRO DEL SERVICE WORKER (Corregido) ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.worker.register('./sw.js').catch(err => console.log(err));
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado'))
+                    .catch(err => console.log('Error en SW', err));
             });
         }
 
-        // --- 2. NAVEGACIÓN ENTRE SECCIONES ---
-        function showSection(sectionName) {
-            // Ocultamos todas las secciones
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            
-            // Mostramos solo la que queremos
-            if(sectionName === 'menu') {
-                document.getElementById('view-menu').classList.add('active');
-            } else {
-                document.getElementById('view-' + sectionName).classList.add('active');
-            }
-        }
-
-        // --- 3. LÓGICA DEL HABIT TRACKER ---
-        let habits = JSON.parse(localStorage.getItem('myHabits')) || [];
-        renderHabits();
-
-        function addHabit() {
-            const input = document.getElementById('habitInput');
-            if (input.value.trim() === '') return;
-
-            const newHabit = {
-                id: Date.now(),
-                text: input.value,
-                completed: false
-            };
-
-            habits.push(newHabit);
-            saveAndRender();
-            input.value = '';
-        }
-
-        function toggleHabit(id) {
-            habits = habits.map(h => h.id === id ? {...h, completed: !h.completed} : h);
-            saveAndRender();
-        }
-
-        function saveAndRender() {
-            localStorage.setItem('myHabits', JSON.stringify(habits));
-            renderHabits();
-        }
-
-        function renderHabits() {
-            const list = document.getElementById('habitList');
-            if(!list) return; // Seguridad por si no estamos en la vista de hábitos
-            list.innerHTML = habits.map(h => `
-                <li class="habit-item ${h.completed ? 'done' : ''}" onclick="toggleHabit(${h.id})">
-                    ${h.text}
-                    <span>${h.completed ? '✅' : '⭕'}</span>
-                </li>
-            `).join('');
-        }
+        // --- 2. VARIABLES GLOBALES ---
         const year = new Date().getFullYear();
-        document.getElementById('currentYearDisplay').innerText = year;
+        const metasInput = document.getElementById('metasInput');
+        const yearDisplay = document.getElementById('currentYearDisplay');
 
-        // Cargar metas iniciales
-        let metasRaw = localStorage.getItem('misMetas_' + year) || '';
+        if(yearDisplay) yearDisplay.innerText = year;
+
+        // Cargar datos guardados
         let metasTachadas = JSON.parse(localStorage.getItem('metasTachadas_' + year)) || [];
-        document.getElementById('metasInput').value = metasRaw;
+        if(metasInput) {
+            metasInput.value = localStorage.getItem('misMetas_' + year) || '';
+        }
 
+        // --- 3. NAVEGACIÓN ---
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('view-' + sectionName);
+            if(target) target.classList.add('active');
+        }
+
+        // --- 4. LÓGICA DE METAS (Híbrida) ---
         function saveMetas() {
-            const texto = document.getElementById('metasInput').value;
-            localStorage.setItem('misMetas_' + year, texto);
+            localStorage.setItem('misMetas_' + year, metasInput.value);
         }
 
         function toggleMetaMode() {
@@ -147,13 +109,11 @@
             const btn = document.getElementById('btnMode');
 
             if (editDiv.style.display !== 'none') {
-                // PASAR A MODO VER
                 renderMetasVisual();
                 editDiv.style.display = 'none';
                 viewDiv.style.display = 'block';
                 btn.innerText = '✍️ Editar';
             } else {
-                // PASAR A MODO EDITAR
                 editDiv.style.display = 'block';
                 viewDiv.style.display = 'none';
                 btn.innerText = '👁️ Ver';
@@ -161,28 +121,29 @@
         }
 
         function renderMetasVisual() {
-            const texto = document.getElementById('metasInput').value;
+            const texto = metasInput.value;
             const listaUI = document.getElementById('metasListDisplay');
-    
-            // Convertimos el texto en un array de líneas
-            const lineas = texto.split('\n').filter(linea => linea.trim() !== '');
-    
-            listaUI.innerHTML = lineas.map((linea, index) => {
-                const isxDone = metasTachadas.includes(linea);
-                return `<li class="${isDone ? 'completed' : ''}" onclick="toggleStrike(this, '${linea.replace(/'/g, "\\'")}')">${linea}</li>`;
-            }).join('');
-        }
-
-        function toggleStrike(elemento, textoLinea) {
-            elemento.classList.toggle('completed');
-    
-            if (elemento.classList.contains('completed')) {
-                metasTachadas.push(textoLinea);
-            } else {
-                metasTachadas = metasTachadas.filter(m => m !== textoLinea);
-            }
-    
-            localStorage.setItem('metasTachadas_' + year, JSON.stringify(metasTachadas));
+            
+            // Separar por líneas y quitar espacios vacíos
+            const lineas = texto.split('\n').filter(l => l.trim() !== '');
+            
+            listaUI.innerHTML = '';
+            lineas.forEach((linea) => {
+                const li = document.createElement('li');
+                li.innerText = linea;
+                if (metasTachadas.includes(linea)) li.classList.add('completed');
+                
+                li.onclick = function() {
+                    this.classList.toggle('completed');
+                    if (this.classList.contains('completed')) {
+                        metasTachadas.push(linea);
+                    } else {
+                        metasTachadas = metasTachadas.filter(m => m !== linea);
+                    }
+                    localStorage.setItem('metasTachadas_' + year, JSON.stringify(metasTachadas));
+                };
+                listaUI.appendChild(li);
+            });
         }
     </script>
 </body>
