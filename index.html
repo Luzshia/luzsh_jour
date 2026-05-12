@@ -61,12 +61,19 @@
         </div>
 
         <div id="view-tareas" class="section">
-            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+                <!-- Nuevo botón para mostrar/ocultar el input -->
+                <button id="btnTodoMode" class="back-btn" onclick="toggleTodoInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+            </div>
             <h1>📝 Lista de Tareas</h1>
             
-            <div class="habit-input">
-                <input type="text" id="todoInput" placeholder="¿Qué tienes pendiente?">
-                <button onclick="addTodo()">+</button>
+            <!-- Caja de entrada oculta por defecto -->
+            <div id="todoInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
+                <div class="habit-input">
+                    <input type="text" id="todoInput" placeholder="¿Qué tienes pendiente?">
+                    <button onclick="addTodo()">Añadir</button>
+                </div>
             </div>
 
             <div id="todoContainer" class="note-area">
@@ -75,6 +82,7 @@
 
             <button onclick="clearCompleted()" class="back-btn" style="margin-top: 20px; width: 100%; border-color: #e07a5f; color: #e07a5f;">🧹 Limpiar Completadas</button>
         </div>
+
         <!-- VISTA 5: SECCIÓN AGENDA -->
         <div id="view-agenda" class="section">
             <button class="back-btn" onclick="showSection('menu')">← Volver</button>
@@ -289,6 +297,20 @@
         // --- 7. LÓGICA DE TO-DO LIST ---
         let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
 
+        // Función para mostrar/ocultar el input (Igual a la de hábitos)
+        function toggleTodoInput() {
+            const area = document.getElementById('todoInputArea');
+            const btn = document.getElementById('btnTodoMode');
+            if (area.style.display === 'none') {
+                area.style.display = 'block';
+                btn.innerText = '❌ Cerrar';
+                document.getElementById('todoInput').focus(); // Pone el cursor listo para escribir
+            } else {
+                area.style.display = 'none';
+                btn.innerText = '➕ Nuevo';
+            }
+        }
+
         function addTodo() {
             const input = document.getElementById('todoInput');
             if (input.value.trim() === '') return;
@@ -302,6 +324,7 @@
             todos.push(newTodo);
             saveAndRenderTodos();
             input.value = '';
+            toggleTodoInput(); // Cierra el input automáticamente al añadir
         }
 
         function saveAndRenderTodos() {
@@ -313,13 +336,20 @@
             const listUI = document.getElementById('todoList');
             if(!listUI) return;
 
+            if (todos.length === 0) {
+                listUI.innerHTML = '<p style="text-align:center; opacity:0.5; font-family: sans-serif;">No hay pendientes por ahora.</p>';
+                return;
+            }
+
             listUI.innerHTML = todos.map(todo => `
-                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})" style="display:flex; align-items:center; gap:10px; cursor:pointer; list-style:none;">
+                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})" style="display:flex; align-items:center; gap:10px; cursor:pointer; list-style:none; padding: 10px 0; border-bottom: 1px dotted #ccc;">
                     <div class="todo-check"></div>
                     <span style="${todo.completed ? 'text-decoration:line-through; opacity:0.6' : ''}">${todo.text}</span>
                 </li>
             `).join('');
         }
+
+        // ... (el resto de funciones toggleTodo y clearCompleted se quedan igual)
 
         function toggleTodo(id) {
             const todo = todos.find(t => t.id === id);
