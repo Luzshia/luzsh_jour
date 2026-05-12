@@ -43,16 +43,16 @@ h1 {
 }
 
 .menu-btn {
-    width: 100%; /* Ahora ocupan todo el ancho disponible */
-    padding: 20px; /* Espacio interno para que sean altos */
+    width: 100%; 
+    padding: 20px; 
     background: white;
     border: 2px solid var(--text);
     border-radius: 12px;
     display: flex;
-    flex-direction: row; /* Emoji y texto uno al lado del otro */
+    flex-direction: row; 
     align-items: center;
-    justify-content: flex-start; /* Alineado a la izquierda como una lista */
-    gap: 20px; /* Separación entre emoji y palabra */
+    justify-content: center; /* CAMBIADO: De flex-start a center */
+    gap: 20px; 
     font-size: 1.3rem;
     font-weight: bold;
     cursor: pointer;
@@ -72,10 +72,29 @@ h1 {
 
 .menu-btn i { font-size: 2rem; margin-bottom: 10px; }
 
-/* Ocultar secciones por defecto */
-.section { display: none; width: 100%; max-width: 500px; }
-.section.active { display: block; }
+/* Ocultar secciones por defecto y centrar contenido */
+.section { 
+    display: none; 
+    width: 100%; 
+    max-width: 500px; 
+    flex-direction: column; /* Apila los elementos uno bajo otro */
+    align-items: center;    /* Centra todo horizontalmente */
+}
 
+/* Cuando la sección está activa, usamos flex en lugar de block */
+.section.active { 
+    display: flex; 
+}
+
+/* Asegura que el título H1 se vea centrado */
+h1 {
+    font-family: 'Georgia', serif;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    text-align: center; /* Centra el texto del título */
+    width: fit-content; /* Para que la línea de abajo no ocupe todo el ancho */
+}
 .back-btn {
     align-self: flex-start;
     background: none;
@@ -86,9 +105,14 @@ h1 {
     cursor: pointer;
 }
 
-.note-area {
+.note-area, .notebook-list {
     width: 100%;
-    margin-top: 10px;
+    text-align: left; /* Mantiene el texto de tus notas a la izquierda */
+}
+
+/* El contenedor de hábitos ya se ve bien, pero aseguramos su ancho */
+#habitContainer {
+    width: 100%;
 }
 
 textarea {

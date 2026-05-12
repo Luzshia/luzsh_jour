@@ -61,10 +61,11 @@
             <div id="habitContainer"></div>
         </div>
 
+        <!-- VISTA 4: SECCIÓN TO-DO -->
         <div id="view-tareas" class="section">
             <!-- Cabecera con triple control -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+                <button class="back-btn" onclick="window.history.back()">← Volver</button>
                 
                 <div style="display: flex; gap: 8px;">
                     <button onclick="clearCompleted()" class="back-btn" style="border-color: #e07a5f; color: #e07a5f; padding: 5px 10px;" title="Limpiar completadas">🧹</button>
@@ -85,15 +86,13 @@
             <div id="todoContainer" class="note-area">
                 <ul id="todoList" class="notebook-list"></ul>
             </div>
-            
-            <!-- El botón de abajo ha sido eliminado para dejar la página limpia -->
-        </div>
+        </div> <!-- AQUÍ TERMINA LA SECCIÓN CORRECTAMENTE -->
 
-            <div id="todoContainer" class="note-area">
-                <ul id="todoList" class="notebook-list"></ul>
-            </div>
-
-            <button onclick="clearCompleted()" class="back-btn" style="margin-top: 20px; width: 100%; border-color: #e07a5f; color: #e07a5f;">🧹 Limpiar Completadas</button>
+        <!-- VISTA 5: SECCIÓN AGENDA -->
+        <div id="view-agenda" class="section">
+            <button class="back-btn" onclick="window.history.back()">← Volver</button>
+            <h1>Agenda</h1>
+            <p>Calendario y recordatorios...</p>
         </div>
 
         <!-- VISTA 5: SECCIÓN AGENDA -->
