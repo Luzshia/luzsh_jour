@@ -171,23 +171,25 @@
             const container = document.getElementById('habitContainer');
             if(!container) return;
 
-            // Obtener cuántos días tiene el mes actual
             const ahora = new Date();
             const diasEnMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
 
             container.innerHTML = habits.map(habit => `
                 <div class="habit-card">
+                    <!-- CAJA 1: El título y el botón de borrar -->
                     <div class="habit-header">
                         <span>${habit.name}</span>
-                        <button onclick="deleteHabit(${habit.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                
-                        <div class="dots-grid">
-                            <div class="dot-label">L</div><div class="dot-label">M</div>
-                            <div class="dot-label">X</div><div class="dot-label">J</div>
-                            <div class="dot-label">V</div><div class="dot-label">S</div>
-                            <div class="dot-label">D</div>
-                            ${generarPuntos(habit, diasEnMes)}
-                        </div>
+                        <button onclick="deleteHabit(${habit.id})" class="delete-btn">🗑️</button>
+                    </div>
+
+                    <!-- CAJA 2: El calendario -->
+                    <div class="dots-grid">
+                        <div class="dot-label">L</div><div class="dot-label">M</div>
+                        <div class="dot-label">X</div><div class="dot-label">J</div>
+                        <div class="dot-label">V</div><div class="dot-label">S</div>
+                        <div class="dot-label">D</div>
+                        ${generarPuntos(habit, diasEnMes)}
+                    </div>
                 </div>
             `).join('');
         }

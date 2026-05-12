@@ -135,14 +135,14 @@ textarea {
 }
 
 .habit-card {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.8);
     border: 1px solid var(--text);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
+    /* Esto obliga a que el header vaya ARRIBA y el grid ABAJO */
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: column; 
 }
 
 .habit-header {
@@ -150,8 +150,9 @@ textarea {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    border-bottom: 1px dashed var(--dot-color); /* Una línea decorativa */
-    padding-bottom: 5px;
+    margin-bottom: 15px; /* Espacio para que no toque los círculos */
+    border-bottom: 1px solid var(--dot-color);
+    padding-bottom: 8px;
 }
 
 .habit-header span {
@@ -162,10 +163,18 @@ textarea {
 
 .dots-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 columnas iguales */
-    gap: 10px;
-    width: 100%; /* Obligamos a que use todo el ancho de la tarjeta */
-    margin-top: 10px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    width: 100%;
+    /* Quitamos cualquier float o alineación extra */
+    justify-items: center;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
 }
 
 .dot {
