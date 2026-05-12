@@ -452,8 +452,9 @@
             }
         }
 
+        /* REEMPLAZA DESDE AQUÍ */
         let events = JSON.parse(localStorage.getItem('myEvents')) || [];
-        let currentAgendaView = 'calendar'; // Puede ser 'calendar' o 'list'
+        let currentAgendaView = 'calendar'; 
 
         function toggleAgendaInput() {
             const area = document.getElementById('agendaInputArea');
@@ -470,7 +471,7 @@
                 currentAgendaView = 'list';
                 cal.style.display = 'none';
                 list.style.display = 'block';
-                btn.innerText = '📖 Agenda'; // Icono de lista
+                btn.innerText = '📖 Agenda';
             } else {
                 currentAgendaView = 'calendar';
                 cal.style.display = 'block';
@@ -500,90 +501,71 @@
 
             events.push(newEvent);
             localStorage.setItem('myEvents', JSON.stringify(events));
-            
-            // Limpiar y cerrar
             document.getElementById('eventTitle').value = '';
             toggleAgendaInput();
             renderAgenda();
         }
+
         function renderAgenda() {
             const cal = document.getElementById('calendarView');
             const list = document.getElementById('listView');
             if (!cal || !list) return;
-
-            if (currentAgendaView === 'calendar') {
-                renderCalendarView(cal);
-            } else {
-                renderListView(list);
-            }
+            currentAgendaView === 'calendar' ? renderCalendarView(cal) : renderListView(list);
         }
 
         function renderCalendarView(container) {
-            // Aseguramos que existan el año y mes
             const hoy = new Date();
             const y = (typeof year !== 'undefined') ? year : hoy.getFullYear();
             const m = (typeof mesActual !== 'undefined') ? mesActual : hoy.getMonth();
-
             const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
             let html = `<div class="calendar-grid">`;
-            
-            // Cabeceras
             diasSemana.forEach(d => html += `<div class="day-header">${d}</div>`);
 
-            // Lógica de fechas
             const firstDay = new Date(y, m, 1);
             const lastDay = new Date(y, m + 1, 0).getDate();
-            // Ajuste para que empiece en Lunes (0 es domingo en JS)
             let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-            // Espacios mes anterior
             for (let i = 0; i < startOffset; i++) {
                 html += `<div class="calendar-day other-month"></div>`;
             }
 
-            // Días del mes
             for (let d = 1; d <= lastDay; d++) {
                 const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const eventosDia = events.filter(e => e.date === fechaStr);
                 
-                // Limitar etiquetas para no deformar
+                // CORRECCIÓN AQUÍ: Usamos directamente eventosDia
                 const etiquetas = eventosDia.slice(0, 2).map(e => 
-                    `<div class="event-tag">${e.title}</div>`
+                    `<div class="event-tag" title="${e.title}">${e.title}</div>`
                 ).join('');
+                
                 const mas = eventosDia.length > 2 ? `<div style="font-size:0.5em; color:gray;">+${eventosDia.length - 2}</div>` : '';
 
-                // ... (dentro del for de los días)
                 html += `
                     <div class="calendar-day">
-                        <span style="font-size:0.7em; margin-bottom:2px; text-align:center;">${d}</span>
-                        <div style="width: 100%; display: flex; flex-direction: column; gap: 1px;">
-                            ${eventosAMostrar.map(e => `
-                                <div class="event-tag" title="${e.title}">${e.title}</div>
-                            `).join('')}
-                            ${mas}
+                        <span style="font-size:0.7em; margin-bottom:2px; font-weight:bold;">${d}</span>
+                        <div style="width: 100%; display: flex; flex-direction: column; gap: 1px; overflow:hidden;">
+                            ${etiquetas}
                         </div>
+                        ${mas}
                     </div>
                 `;
             }
-            
             html += `</div>`;
             container.innerHTML = html;
         }
 
-    
-
         function renderListView(container) {
-            const lastDay = new Date(year, mesActual + 1, 0).getDate();
+            const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
+            const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
+            const lastDay = new Date(y, m + 1, 0).getDate();
             const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             
             let html = '<div class="notebook-area">';
-
             for (let d = 1; d <= lastDay; d++) {
-                const fechaObj = new Date(year, mesActual, d);
+                const fechaObj = new Date(y, m, d);
                 const diaNombre = nombresDias[fechaObj.getDay()];
-                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                
-                // Buscamos si hay eventos para este día
+                const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const eventosDia = events.filter(e => e.date === fechaStr);
 
                 html += `
@@ -592,7 +574,6 @@
                             <div style="font-size: 1.2em; font-weight: bold;">${d}</div>
                             <div style="font-size: 0.6em; text-transform: uppercase; opacity: 0.5;">${diaNombre}</div>
                         </div>
-                        
                         <div style="flex: 1;">
                             ${eventosDia.length > 0 ? eventosDia.map(e => `
                                 <div onclick="manageEvent(${e.id}, 'check')" style="margin-bottom: 5px; cursor: pointer;">
@@ -606,10 +587,8 @@
                                 </div>
                             `).join('') : '<div style="opacity: 0.2; font-style: italic; font-size: 0.8em;">Sin actividades</div>'}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
-
             html += '</div>';
             container.innerHTML = html;
         }
@@ -617,7 +596,6 @@
         function manageEvent(id, action) {
             const index = events.findIndex(e => e.id === id);
             if (index === -1) return;
-
             if (action === 'check') {
                 events[index].completed = !events[index].completed;
             } else if (action === 'delete') {
@@ -626,10 +604,10 @@
                 const nuevaFecha = prompt("Introduce la nueva fecha (AAAA-MM-DD):", events[index].date);
                 if (nuevaFecha) events[index].date = nuevaFecha;
             }
-
             localStorage.setItem('myEvents', JSON.stringify(events));
             renderAgenda();
         }
+        /* HASTA AQUÍ */
     </script>
 </body>
 </html>
