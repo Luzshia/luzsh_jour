@@ -195,3 +195,28 @@ textarea {
     height: 20px;
     visibility: hidden; /* Ocupa el espacio pero no se ve */
 }
+
+/* Asegura que el contenedor de tareas no tenga puntos encimados */
+#todoList li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.1);
+}
+
+/* Estilo del cuadrito de check (opcional, pero ayuda a la usabilidad) */
+.todo-check {
+    min-width: 20px;
+    height: 20px;
+    border: 1px solid var(--text);
+    border-radius: 4px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.completed .todo-check {
+    background-color: var(--accent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+    background-size: contain;
+}

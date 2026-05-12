@@ -60,13 +60,21 @@
             <div id="habitContainer"></div>
         </div>
 
-        <!-- VISTA 4: SECCIÓN TO-DO -->
-        <div id="view-todo" class="section">
+        <div id="view-tareas" class="section">
             <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-            <h1>To-Do List</h1>
-            <p>Lista de tareas pendientes...</p>
-        </div>
+            <h1>📝 Lista de Tareas</h1>
+            
+            <div class="habit-input">
+                <input type="text" id="todoInput" placeholder="¿Qué tienes pendiente?">
+                <button onclick="addTodo()">+</button>
+            </div>
 
+            <div id="todoContainer" class="note-area">
+                <ul id="todoList" class="notebook-list"></ul>
+            </div>
+
+            <button onclick="clearCompleted()" class="back-btn" style="margin-top: 20px; width: 100%; border-color: #e07a5f; color: #e07a5f;">🧹 Limpiar Completadas</button>
+        </div>
         <!-- VISTA 5: SECCIÓN AGENDA -->
         <div id="view-agenda" class="section">
             <button class="back-btn" onclick="showSection('menu')">← Volver</button>
@@ -270,6 +278,57 @@
                 saveAndRenderHabits();
             }
         }
+
+        // --- 7. LÓGICA DE TO-DO LIST ---
+        let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            if (input.value.trim() === '') return;
+
+            const newTodo = {
+                id: Date.now(),
+                text: input.value,
+                completed: false
+            };
+
+            todos.push(newTodo);
+            saveAndRenderTodos();
+            input.value = '';
+        }
+
+        function saveAndRenderTodos() {
+            localStorage.setItem('myTodos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        function renderTodos() {
+            const listUI = document.getElementById('todoList');
+            if(!listUI) return;
+
+            listUI.innerHTML = todos.map(todo => `
+                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})">
+                    <div class="todo-check"></div>
+                    <span>${todo.text}</span>
+                </li>
+            `).join('');
+        }
+
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if(todo) {
+                todo.completed = !todo.completed;
+                saveAndRenderTodos();
+            }
+        }
+
+        function clearCompleted() {
+            todos = todos.filter(t => !t.completed);
+            saveAndRenderTodos();
+        }
+
+        // Llama a esta función dentro de tu DOMContentLoaded para que cargue al inicio
+        // (Añade renderTodos(); en la parte de carga inicial que ya tenemos)
     </script>
 </body>
 </html>
