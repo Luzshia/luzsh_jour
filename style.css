@@ -118,7 +118,7 @@ textarea {
 .notebook-list li {
     font-family: 'Dancing Script', cursive;
     font-size: 1.6rem;
-    line-height: 35px;
+    line-height: 30px;
     padding: 5px 0;
     cursor: pointer;
     border-bottom: 1px transparent; /* Para mantener el espacio */
@@ -132,4 +132,46 @@ textarea {
     text-decoration: line-through;
     color: #a5a5a2;
     opacity: 0.6;
+}
+
+.habit-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--text);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.habit-header {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dots-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 columnas para los días de la semana */
+    gap: 8px;
+    justify-items: center;
+}
+
+.dot {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--text);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.dot.checked {
+    background-color: var(--accent); /* Se rellena cuando lo cumples */
+}
+
+.dot-label {
+    font-size: 0.6rem;
+    margin-top: 2px;
+    text-align: center;
 }

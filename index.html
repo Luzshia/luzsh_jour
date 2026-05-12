@@ -41,15 +41,14 @@
             </div>
         </div>
 
-        <!-- VISTA 3: SECCIÓN HÁBITOS (Habit Tracker) -->
         <div id="view-habitos" class="section">
             <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-            <h1>Habit Tracker</h1>
+            <h1>🌿 Habit Tracker</h1>
             <div class="habit-input">
-                <input type="text" id="habitInput" placeholder="Nuevo hábito...">
+                <input type="text" id="habitInput" placeholder="Nombre del hábito (ej: Tomar Agua)">
                 <button onclick="addHabit()">+</button>
             </div>
-            <ul id="habitList"></ul>
+            <div id="habitContainer"></div> <!-- Aquí se dibujarán los calendarios -->
         </div>
 
         <!-- VISTA 4: SECCIÓN TO-DO -->
@@ -145,6 +144,83 @@
                 listaUI.appendChild(li);
             });
         }
+
+        let habits = JSON.parse(localStorage.getItem('myHabits_2026')) || [];
+
+        function addHabit() {
+            const input = document.getElementById('habitInput');
+            if (input.value.trim() === '') return;
+
+            const newHabit = {
+                id: Date.now(),
+                name: input.value,
+                history: [] // Guardaremos aquí los días completados (ej: [1, 5, 12])
+            };
+
+            habits.push(newHabit);
+            saveAndRenderHabits();
+            input.value = '';
+        }
+
+        function saveAndRenderHabits() {
+            localStorage.setItem('myHabits_2026', JSON.stringify(habits));
+            renderHabits();
+        }
+
+        function renderHabits() {
+            const container = document.getElementById('habitContainer');
+            if(!container) return;
+
+            // Obtener cuántos días tiene el mes actual
+            const ahora = new Date();
+            const diasEnMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
+
+            container.innerHTML = habits.map(habit => `
+                <div class="habit-card">
+                    <div class="habit-header">
+                        <span>${habit.name}</span>
+                        <button onclick="deleteHabit(${habit.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    </div>
+                    <div class="dots-grid">
+                        ${generarPuntos(habit, diasEnMes)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generarPuntos(habit, totalDias) {
+            let html = '';
+            for (let i = 1; i <= totalDias; i++) {
+                const isChecked = habit.history.includes(i) ? 'checked' : '';
+                html += `
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div class="dot ${isChecked}" onclick="toggleDot(${habit.id}, ${i})"></div>
+                        <span class="dot-label">${i}</span>
+                    </div>
+                `;
+            }
+            return html;
+        }
+
+        function toggleDot(habitId, dia) {
+            const habit = habits.find(h => h.id === habitId);
+            if (habit.history.includes(dia)) {
+                habit.history = habit.history.filter(d => d !== dia);
+            } else {
+                habit.history.push(dia);
+            }
+            saveAndRenderHabits();
+        }
+
+        function deleteHabit(id) {
+            if(confirm('¿Borrar este hábito?')) {
+                habits = habits.filter(h => h.id !== id);
+                saveAndRenderHabits();
+            }
+        }
+
+        // Llamar al render al cargar la sección
+        renderHabits();
     </script>
 </body>
 </html>
