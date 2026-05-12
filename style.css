@@ -266,34 +266,43 @@ textarea {
 
 .calendar-grid {
     display: grid !important;
-    grid-template-columns: repeat(7, 1fr);
-    background: #ccc;
+    grid-template-columns: repeat(7, 1fr); /* 7 columnas idénticas */
+    grid-auto-rows: 1fr;
+    width: 100%;
+    table-layout: fixed; /* Fuerza a ignorar el ancho del contenido */
+    background: #e0e0e0;
     gap: 1px;
-    border: 1px solid #ccc;
+    border: 1px solid #e0e0e0;
+    margin-top: 10px;
+    overflow: hidden;
 }
 
 .calendar-day {
     background: white;
-    min-height: 80px;
-    max-height: 80px;
+    min-height: 90px;
+    max-height: 90px;
+    min-width: 0; /* SECRETO: permite que el contenido se encoja */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    align-items: center;
     padding: 2px;
-    box-sizing: border-box;
 }
 
 .event-tag {
-    background: #555;
+    background: #7d7d7d;
     color: white;
-    font-size: 10px;
-    padding: 1px 3px;
-    margin-top: 1px;
-    border-radius: 2px;
-    width: 95%;
+    font-size: 9px;
+    padding: 2px 4px;
+    margin-top: 2px;
+    border-radius: 3px;
+    
+    /* BLOQUEO DE TEXTO */
+    width: 100%;
+    box-sizing: border-box;
     white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: hidden;
+    text-overflow: ellipsis; /* Pone los "..." */
+    display: block;
 }
 
 .day-header {
