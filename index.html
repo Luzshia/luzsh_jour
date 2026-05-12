@@ -519,15 +519,21 @@
         }
 
         function renderCalendarView(container) {
+            // Aseguramos que existan el año y mes
+            const hoy = new Date();
+            const y = (typeof year !== 'undefined') ? year : hoy.getFullYear();
+            const m = (typeof mesActual !== 'undefined') ? mesActual : hoy.getMonth();
+
             const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
             let html = `<div class="calendar-grid">`;
             
-            // Cabeceras de días
+            // Cabeceras
             diasSemana.forEach(d => html += `<div class="day-header">${d}</div>`);
 
-            // Lógica para obtener días del mes actual
-            const firstDay = new Date(year, mesActual, 1);
-            const lastDay = new Date(year, mesActual + 1, 0).getDate();
+            // Lógica de fechas
+            const firstDay = new Date(y, m, 1);
+            const lastDay = new Date(y, m + 1, 0).getDate();
+            // Ajuste para que empiece en Lunes (0 es domingo en JS)
             let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
             // Espacios mes anterior
@@ -537,23 +543,28 @@
 
             // Días del mes
             for (let d = 1; d <= lastDay; d++) {
-                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                // ... dentro del bucle de días ...
+                const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const eventosDia = events.filter(e => e.date === fechaStr);
-
-                // Solo mostramos los primeros 3 eventos para no deformar
-                const eventosAMostrar = eventosDia.slice(0, 3);
-                const masEventos = eventosDia.length > 3 ? `<div style="font-size:0.5em; opacity:0.5;">+ ${eventosDia.length - 3} más</div>` : '';
+                
+                // Limitar etiquetas para no deformar
+                const etiquetas = eventosDia.slice(0, 2).map(e => 
+                    `<div class="event-tag">${e.title}</div>`
+                ).join('');
+                const mas = eventosDia.length > 2 ? `<div style="font-size:0.5em; color:gray;">+${eventosDia.length - 2}</div>` : '';
 
                 html += `
                     <div class="calendar-day">
-                        <span style="font-size: 0.8em; margin-bottom: 2px;">${d}</span>
-                        ${eventosAMostrar.map(e => `<div class="event-tag">${e.title}</div>`).join('')}
-                        ${masEventos}
+                        <span style="font-size:0.7em; font-weight:bold;">${d}</span>
+                        <div style="width:100%; overflow:hidden;">${etiquetas}</div>
+                        ${mas}
                     </div>
                 `;
             }
+            
+            html += `</div>`;
+            container.innerHTML = html;
         }
+
     
 
         function renderListView(container) {

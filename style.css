@@ -259,41 +259,41 @@ textarea {
     background-size: contain;
 }
 
+#calendarView {
+    display: block; /* Asegura que sea visible cuando debe */
+    width: 100%;
+}
+
 .calendar-grid {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr);
-    width: 100%;
-    background: #e0e0e0;
+    background: #ccc;
     gap: 1px;
-    border: 1px solid #e0e0e0;
-    margin-top: 10px;
-    /* Evita que el contenido interno ensanche la rejilla */
-    overflow: hidden; 
+    border: 1px solid #ccc;
 }
 
 .calendar-day {
     background: white;
-    min-height: 85px; /* Altura fija para que no salte */
-    max-height: 85px; 
-    padding: 2px;
+    min-height: 80px;
+    max-height: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden; /* Corta lo que sobresalga */
+    padding: 2px;
+    box-sizing: border-box;
 }
 
 .event-tag {
-    background: #7d7d7d; /* Color gris suave como en tu captura */
+    background: #555;
     color: white;
-    font-size: 0.6em; /* Texto más pequeño para que quepa más */
-    padding: 2px 4px;
-    border-radius: 3px;
-    margin-top: 2px;
-    width: 90%; /* Ocupa casi todo el ancho del cuadrito */
-    white-space: nowrap; /* No permite saltos de línea */
-    overflow: hidden; /* Esconde el texto largo */
-    text-overflow: ellipsis; /* Añade "..." al final si es largo */
-    text-align: center;
+    font-size: 10px;
+    padding: 1px 3px;
+    margin-top: 1px;
+    border-radius: 2px;
+    width: 95%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .day-header {
