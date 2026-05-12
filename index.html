@@ -560,7 +560,6 @@
         }
         /* HASTA AQUÍ */
 
-        /* REEMPLAZA DESDE AQUÍ */
         function renderListView(container) {
             const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
             const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
@@ -574,32 +573,30 @@
                 const diaNombre = nombresDias[fechaObj.getDay()];
                 const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 
-                // Filtramos eventos de este día
                 const eventosDia = (typeof events !== 'undefined') ? events.filter(e => e.date === fechaStr) : [];
 
                 html += `
                     <div style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 12px 5px; display: flex; align-items: flex-start; gap: 15px;">
-                        <!-- Columna del número y día -->
                         <div style="min-width: 45px; text-align: center; border-right: 1px solid var(--accent); padding-right: 10px;">
                             <div style="font-size: 1.1em; font-weight: bold; color: var(--text);">${d}</div>
                             <div style="font-size: 0.6em; text-transform: uppercase; opacity: 0.5;">${diaNombre}</div>
                         </div>
                         
-                        <!-- Columna de eventos -->
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                            ${eventosDia.length > 0 ? eventosDia.map(e => `
-                                <div style="background: rgba(255,255,255,0.4); padding: 8px; border-radius: 8px; border-left: 3px solid ${e.completed ? '#81b29a' : '#e07a5f'};">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span onclick="manageEvent(${e.id}, 'check')" style="cursor: pointer; font-size: 0.9em; ${e.completed ? 'text-decoration: line-through; opacity: 0.5' : ''}">
-                                            ${e.time !== 'Todo el día' && e.time ? `<b>${e.time}</b> ` : ''}${e.title}
-                                        </span>
-                                        <div style="display: flex; gap: 10px;">
-                                            <span onclick="manageEvent(${e.id}, 'reschedule')" style="cursor: pointer; font-size: 0.8em; color: #3d5a80;">⏳</span>
-                                            <span onclick="manageEvent(${e.id}, 'delete')" style="cursor: pointer; font-size: 0.8em; color: #ee6c4d;">🗑️</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('') : '<div style="opacity: 0.15; font-size: 0.8em; padding-top: 5px;">Puntos suspensivos o espacio libre...</div>'}
+                            /* REEMPLAZA SOLO EL MAP DE LOS EVENTOS DENTRO DE RENDERLISTVIEW */
+${eventosDia.length > 0 ? eventosDia.map(e => `
+    <div style="background: rgba(0,0,0,0.03); padding: 8px; border-radius: 8px; border-left: 3px solid ${e.completed ? '#81b29a' : '#7d7d7d'}; margin-bottom: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span onclick="manageEvent(${e.id}, 'check')" style="cursor: pointer; font-size: 0.9em; color: #333; ${e.completed ? 'text-decoration: line-through; opacity: 0.4' : ''}">
+                ${e.time !== 'Todo el día' && e.time ? `<b style="color:var(--accent)">${e.time}</b> ` : ''}${e.title}
+            </span>
+            <div style="display: flex; gap: 12px; margin-left: 10px;">
+                <span onclick="event.stopPropagation(); manageEvent(${e.id}, 'reschedule')" style="cursor: pointer; font-size: 1em;">⏳</span>
+                <span onclick="event.stopPropagation(); manageEvent(${e.id}, 'delete')" style="cursor: pointer; font-size: 1em;">🗑️</span>
+            </div>
+        </div>
+    </div>
+`).join('') : '<div style="opacity: 0.1; font-size: 0.75em; padding-top: 5px; letter-spacing: 1px;">............................................................</div>'}
                         </div>
                     </div>
                 `;
