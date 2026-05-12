@@ -25,7 +25,8 @@
 
         <div id="view-metas" class="section">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+                <!-- Cambia tus botones de volver por esto: -->
+                <button class="back-btn" onclick="window.history.back()">← Volver</button>
                 <button id="btnMode" class="back-btn" onclick="toggleMetaMode()" style="border-color: var(--accent);">👁️ Ver</button>
             </div>
             <h1>🎯 Metas <span id="currentYearDisplay"></span></h1>
@@ -61,20 +62,32 @@
         </div>
 
         <div id="view-tareas" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- Cabecera con triple control -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-                <!-- Nuevo botón para mostrar/ocultar el input -->
-                <button id="btnTodoMode" class="back-btn" onclick="toggleTodoInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="clearCompleted()" class="back-btn" style="border-color: #e07a5f; color: #e07a5f; padding: 5px 10px;" title="Limpiar completadas">🧹</button>
+                    <button id="btnTodoMode" class="back-btn" onclick="toggleTodoInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+                </div>
             </div>
+
             <h1>📝 Lista de Tareas</h1>
             
-            <!-- Caja de entrada oculta por defecto -->
+            <!-- Entrada oculta -->
             <div id="todoInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
                 <div class="habit-input">
                     <input type="text" id="todoInput" placeholder="¿Qué tienes pendiente?">
                     <button onclick="addTodo()">Añadir</button>
                 </div>
             </div>
+
+            <div id="todoContainer" class="note-area">
+                <ul id="todoList" class="notebook-list"></ul>
+            </div>
+            
+            <!-- El botón de abajo ha sido eliminado para dejar la página limpia -->
+        </div>
 
             <div id="todoContainer" class="note-area">
                 <ul id="todoList" class="notebook-list"></ul>
@@ -131,22 +144,50 @@
             renderTodos();
         });
 
-        // --- 4. NAVEGACIÓN (Corregida) ---
-        function showSection(sectionName) {
-            // Corrección: Si el menú pide 'todo', mostramos la sección 'tareas'
+        // --- 4. NAVEGACIÓN PRO (Soporta gestos del móvil) ---
+
+        function showSection(sectionName, pushState = true) {
             let targetId = sectionName;
             if (sectionName === 'todo') targetId = 'tareas';
 
+            // 1. Quitar 'active' de todas las secciones
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById('view-' + targetId);
             
+            // 2. Activar la sección destino
+            const target = document.getElementById('view-' + targetId);
             if(target) {
                 target.classList.add('active');
-                // Refrescar contenido al entrar
+                
+                // 3. Registrar el movimiento en el historial del teléfono
+                // Solo lo hacemos si pushState es true (para evitar bucles infinitos)
+                if (pushState) {
+                    history.pushState({ section: sectionName }, "", "#" + sectionName);
+                }
+
+                // 4. Refrescar contenido
                 if (targetId === 'tareas') renderTodos();
                 if (targetId === 'habitos') renderHabits();
             }
         }
+
+        // --- ESCUCHAR EL GESTO DE REGRESAR DEL TELÉFONO ---
+        window.onpopstate = function(event) {
+            if (event.state && event.state.section) {
+                // Si el historial tiene una sección guardada, vamos a ella
+                showSection(event.state.section, false);
+            } else {
+                // Si no hay nada en el historial (llegamos al inicio), volvemos al menú
+                showSection('menu', false);
+            }
+        };
+
+        // Modificamos la carga inicial para que el menú sea el "punto cero"
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... tus otras cargas de metas y hábitos ...
+            
+            // Guardamos el estado inicial del menú en el historial
+            history.replaceState({ section: 'menu' }, "", "#menu");
+        });
 
         // --- 5. LÓGICA DE METAS ---
         let metasTachadas = JSON.parse(localStorage.getItem(storageKeyTachadas)) || [];
@@ -360,7 +401,15 @@
         }
 
         function clearCompleted() {
-            if(confirm('¿Limpiar tareas terminadas?')) {
+            // Solo actuamos si hay tareas completadas para no molestar con alertas vacías
+            const completadas = todos.filter(t => t.completed).length;
+            
+            if (completadas === 0) {
+                alert("No hay tareas completadas para limpiar.");
+                return;
+            }
+
+            if (confirm(`¿Quieres borrar las ${completadas} tareas terminadas?`)) {
                 todos = todos.filter(t => !t.completed);
                 saveAndRenderTodos();
             }
