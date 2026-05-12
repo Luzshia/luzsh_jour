@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi App Profesional</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Vinculamos el manifest -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Mi Propia App</h1>
+        </header>
+        <main>
+            <p>Aquí irá la solución que no conseguiste en la Play Store.</p>
+            <button id="btnAccion">¡Funciona!</button>
+        </main>
+    </div>
+
+    <script>
+        // Un pequeño mensaje para probar
+        document.getElementById('btnAccion').onclick = () => {
+            alert('¡Programado desde una Canaimita!');
+        }
+    </script>
+</body>
+</html>
