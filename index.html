@@ -97,10 +97,9 @@
         // --- 2. VARIABLES GLOBALES DE TIEMPO ---
         const ahora = new Date();
         const year = ahora.getFullYear();
-        const mesActual = ahora.getMonth(); // 0 = Enero, 11 = Diciembre
+        const mesActual = ahora.getMonth();
         const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         
-        // Llaves de almacenamiento
         const storageKeyMetas = 'misMetas_' + year;
         const storageKeyTachadas = 'metasTachadas_' + year;
         const storageKeyHabitos = `myHabits_${year}_${mesActual}`;
@@ -113,22 +112,32 @@
             if(document.getElementById('monthDisplay')) 
                 document.getElementById('monthDisplay').innerText = nombresMeses[mesActual];
 
-            // Cargar Metas
             const metasInput = document.getElementById('metasInput');
             if(metasInput) {
                 metasInput.value = localStorage.getItem(storageKeyMetas) || '';
                 renderMetasVisual();
             }
             
-            // Cargar Hábitos
+            // Cargar datos iniciales
             renderHabits();
+            renderTodos();
         });
 
-        // --- 4. NAVEGACIÓN ---
+        // --- 4. NAVEGACIÓN (Corregida) ---
         function showSection(sectionName) {
+            // Corrección: Si el menú pide 'todo', mostramos la sección 'tareas'
+            let targetId = sectionName;
+            if (sectionName === 'todo') targetId = 'tareas';
+
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById('view-' + sectionName);
-            if(target) target.classList.add('active');
+            const target = document.getElementById('view-' + targetId);
+            
+            if(target) {
+                target.classList.add('active');
+                // Refrescar contenido al entrar
+                if (targetId === 'tareas') renderTodos();
+                if (targetId === 'habitos') renderHabits();
+            }
         }
 
         // --- 5. LÓGICA DE METAS ---
@@ -181,7 +190,7 @@
             });
         }
 
-        // --- 6. LÓGICA DE HÁBITOS (Mensual) ---
+        // --- 6. LÓGICA DE HÁBITOS ---
         let habits = JSON.parse(localStorage.getItem(storageKeyHabitos)) || [];
 
         function toggleHabitInput() {
@@ -220,7 +229,6 @@
         function renderHabits() {
             const container = document.getElementById('habitContainer');
             if(!container) return;
-
             const diasEnMes = new Date(year, mesActual + 1, 0).getDate();
 
             container.innerHTML = habits.map(habit => `
@@ -249,7 +257,6 @@
             for (let h = 1; h < diaSemanaInicio; h++) {
                 html += `<div class="dot-empty"></div>`;
             }
-
             for (let i = 1; i <= totalDias; i++) {
                 const isChecked = habit.history.includes(i) ? 'checked' : '';
                 html += `
@@ -307,9 +314,9 @@
             if(!listUI) return;
 
             listUI.innerHTML = todos.map(todo => `
-                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})">
+                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})" style="display:flex; align-items:center; gap:10px; cursor:pointer; list-style:none;">
                     <div class="todo-check"></div>
-                    <span>${todo.text}</span>
+                    <span style="${todo.completed ? 'text-decoration:line-through; opacity:0.6' : ''}">${todo.text}</span>
                 </li>
             `).join('');
         }
@@ -323,12 +330,11 @@
         }
 
         function clearCompleted() {
-            todos = todos.filter(t => !t.completed);
-            saveAndRenderTodos();
+            if(confirm('¿Limpiar tareas terminadas?')) {
+                todos = todos.filter(t => !t.completed);
+                saveAndRenderTodos();
+            }
         }
-
-        // Llama a esta función dentro de tu DOMContentLoaded para que cargue al inicio
-        // (Añade renderTodos(); en la parte de carga inicial que ya tenemos)
     </script>
 </body>
 </html>
