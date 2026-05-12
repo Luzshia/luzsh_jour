@@ -180,16 +180,36 @@
                     <div class="habit-header">
                         <span>${habit.name}</span>
                         <button onclick="deleteHabit(${habit.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                    </div>
-                    <div class="dots-grid">
-                        ${generarPuntos(habit, diasEnMes)}
-                    </div>
+                    // Busca esta parte dentro de renderHabits y cámbiala:
+                        <div class="dots-grid">
+                            <div class="dot-label">L</div><div class="dot-label">M</div>
+                            <div class="dot-label">X</div><div class="dot-label">J</div>
+                            <div class="dot-label">V</div><div class="dot-label">S</div>
+                            <div class="dot-label">D</div>
+                            ${generarPuntos(habit, diasEnMes)}
+                        </div>
                 </div>
             `).join('');
         }
 
         function generarPuntos(habit, totalDias) {
             let html = '';
+            const ahora = new Date();
+            // Obtenemos el primer día del mes actual (Año, Mes, Día 1)
+            const primerDiaDelMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+            
+            // getDay() devuelve: 0 para Domingo, 1 para Lunes... 6 para Sábado
+            // Ajustamos para que empiece en Lunes (opcional):
+            let diaSemanaInicio = primerDiaDelMes.getDay(); 
+            if (diaSemanaInicio === 0) diaSemanaInicio = 7; // Convertir Domingo en el último si quieres que empiece en Lunes
+            
+            // 1. Crear huecos vacíos para los días antes del día 1
+            // (Si el mes empieza un jueves, ponemos 3 huecos)
+            for (let h = 1; h < diaSemanaInicio; h++) {
+                html += `<div class="dot-empty"></div>`;
+            }
+
+            // 2. Crear los círculos reales de los días
             for (let i = 1; i <= totalDias; i++) {
                 const isChecked = habit.history.includes(i) ? 'checked' : '';
                 html += `

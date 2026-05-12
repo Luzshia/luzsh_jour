@@ -175,3 +175,10 @@ textarea {
     margin-top: 2px;
     text-align: center;
 }
+
+/* Añade esto a tu style.css */
+.dot-empty {
+    width: 20px;
+    height: 20px;
+    visibility: hidden; /* Ocupa el espacio pero no se ve */
+}
