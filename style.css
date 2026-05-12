@@ -79,6 +79,8 @@ h1 {
     max-width: 500px; 
     flex-direction: column; /* Apila los elementos uno bajo otro */
     align-items: center;    /* Centra todo horizontalmente */
+    padding: 20px; /* Esto da el margen necesario para que no peguen al borde del cristal del móvil */
+    box-sizing: border-box;
 }
 
 /* Cuando la sección está activa, usamos flex en lugar de block */

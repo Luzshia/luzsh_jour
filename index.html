@@ -24,13 +24,13 @@
         </div>
 
         <div id="view-metas" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <!-- Cambia tus botones de volver por esto: -->
+            <!-- Cabecera a los extremos -->
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
                 <button class="back-btn" onclick="window.history.back()">← Volver</button>
-                <button id="btnMode" class="back-btn" onclick="toggleMetaMode()" style="border-color: var(--accent);">👁️ Ver</button>
+                <button id="btnMode" class="back-btn" onclick="toggleMetaMode()" style="border-color: var(--accent);">✍️ Editar</button>
             </div>
-            <h1>🎯 Metas <span id="currentYearDisplay"></span></h1>
-    
+
+            <h1>🎯 Mis Metas <span id="currentYearDisplay"></span></h1>
             <!-- Modo Edición -->
             <div id="editMode" class="note-area" style="display: none;">
                 <textarea id="metasInput" placeholder="Escribe tus metas (una por línea)..." oninput="saveMetas()"></textarea>
@@ -43,12 +43,12 @@
         </div>
 
         <div id="view-habitos" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-                <button id="btnHabitMode" class="back-btn" onclick="toggleHabitInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+        <button class="back-btn" onclick="window.history.back()">← Volver</button>
+        <button id="btnHabitMode" class="back-btn" onclick="toggleHabitInput()" style="border-color: var(--accent);">➕ Nuevo</button>
             </div>
-            
-            <h1>🌿 Hábitos: <span id="monthDisplay"></span></h1>
+
+            <h1>🌿 Hábitos de <span id="monthDisplay"></span></h1>
 
             <!-- Caja de entrada oculta por defecto -->
             <div id="habitInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
@@ -64,11 +64,13 @@
         <!-- VISTA 4: SECCIÓN TO-DO -->
         <div id="view-tareas" class="section">
             <!-- Cabecera con triple control -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+                <!-- Extremo Izquierdo -->
                 <button class="back-btn" onclick="window.history.back()">← Volver</button>
                 
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="clearCompleted()" class="back-btn" style="border-color: #e07a5f; color: #e07a5f; padding: 5px 10px;" title="Limpiar completadas">🧹</button>
+                <!-- Extremo Derecho (Agrupados) -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="clearCompleted()" class="back-btn" style="border-color: #e07a5f; color: #e07a5f; padding: 5px 12px;">🧹</button>
                     <button id="btnTodoMode" class="back-btn" onclick="toggleTodoInput()" style="border-color: var(--accent);">➕ Nuevo</button>
                 </div>
             </div>
