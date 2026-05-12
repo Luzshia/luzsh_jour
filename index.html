@@ -3,33 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi App Profesional</title>
+    <title>Mi Journal 2026</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Vinculamos el manifest -->
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <h1>Mi Propia App</h1>
-        </header>
-        <main>
-            <p>Aquí irá la solución que no conseguiste en la Play Store.</p>
-            <button id="btnAccion">¡Funciona!</button>
-        </main>
+
+    <div class="notebook-page">
+        
+        <!-- VISTA 1: EL MENÚ PRINCIPAL -->
+        <div id="view-menu" class="section active">
+            <h1>Mi Journal 2026</h1>
+            <div class="main-menu">
+                <button class="menu-btn" onclick="showSection('metas')"><span>🎯</span> Metas</button>
+                <button class="menu-btn" onclick="showSection('habitos')"><span>🌿</span> Hábitos</button>
+                <button class="menu-btn" onclick="showSection('todo')"><span>✅</span> To-Do</button>
+                <button class="menu-btn" onclick="showSection('agenda')"><span>📅</span> Agenda</button>
+            </div>
+        </div>
+
+        <!-- VISTA 2: SECCIÓN METAS -->
+        <div id="view-metas" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <h1>Metas del Año</h1>
+            <p>Escribe aquí tus propósitos para el 2026...</p>
+        </div>
+
+        <!-- VISTA 3: SECCIÓN HÁBITOS (Habit Tracker) -->
+        <div id="view-habitos" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <h1>Habit Tracker</h1>
+            <div class="habit-input">
+                <input type="text" id="habitInput" placeholder="Nuevo hábito...">
+                <button onclick="addHabit()">+</button>
+            </div>
+            <ul id="habitList"></ul>
+        </div>
+
+        <!-- VISTA 4: SECCIÓN TO-DO -->
+        <div id="view-todo" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <h1>To-Do List</h1>
+            <p>Lista de tareas pendientes...</p>
+        </div>
+
+        <!-- VISTA 5: SECCIÓN AGENDA -->
+        <div id="view-agenda" class="section">
+            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <h1>Agenda</h1>
+            <p>Calendario y recordatorios...</p>
+        </div>
+
     </div>
 
     <script>
-        // Un pequeño mensaje para probar
-        document.getElementById('btnAccion').onclick = () => {
-            alert('¡Programado desde una Canaimita!');
-        }
-    </script>
-    <script>
+        // --- 1. REGISTRO DEL SERVICE WORKER (Para que sea instalable) ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
+                navigator.worker.register('./sw.js').catch(err => console.log(err));
             });
+        }
+
+        // --- 2. NAVEGACIÓN ENTRE SECCIONES ---
+        function showSection(sectionName) {
+            // Ocultamos todas las secciones
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            // Mostramos solo la que queremos
+            if(sectionName === 'menu') {
+                document.getElementById('view-menu').classList.add('active');
+            } else {
+                document.getElementById('view-' + sectionName).classList.add('active');
+            }
+        }
+
+        // --- 3. LÓGICA DEL HABIT TRACKER ---
+        let habits = JSON.parse(localStorage.getItem('myHabits')) || [];
+        renderHabits();
+
+        function addHabit() {
+            const input = document.getElementById('habitInput');
+            if (input.value.trim() === '') return;
+
+            const newHabit = {
+                id: Date.now(),
+                text: input.value,
+                completed: false
+            };
+
+            habits.push(newHabit);
+            saveAndRender();
+            input.value = '';
+        }
+
+        function toggleHabit(id) {
+            habits = habits.map(h => h.id === id ? {...h, completed: !h.completed} : h);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('myHabits', JSON.stringify(habits));
+            renderHabits();
+        }
+
+        function renderHabits() {
+            const list = document.getElementById('habitList');
+            if(!list) return; // Seguridad por si no estamos en la vista de hábitos
+            list.innerHTML = habits.map(h => `
+                <li class="habit-item ${h.completed ? 'done' : ''}" onclick="toggleHabit(${h.id})">
+                    ${h.text}
+                    <span>${h.completed ? '✅' : '⭕'}</span>
+                </li>
+            `).join('');
         }
     </script>
 </body>

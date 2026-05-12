@@ -1,42 +1,80 @@
+:root {
+    --bg-paper: #fdfdfd;
+    --dot-color: #d1d1d1;
+    --accent: #6b705c; /* Un verde oliva tipo vintage */
+    --text: #463f3a;
+}
+
 body {
     margin: 0;
-    font-family: sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
+    background-color: #e9ecef;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
 }
 
-.app-container {
+.notebook-page {
     width: 100%;
-    max-width: 500px;
-    height: 100vh;
-    background: white;
+    min-height: 100vh;
+    background-color: var(--bg-paper);
+    /* Patrón de puntos */
+    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+    background-size: 25px 25px; 
+    padding: 20px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
-header {
-    background: #6200ee;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+h1 {
+    font-family: 'Georgia', serif;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 30px;
 }
 
-main {
-    padding: 20px;
-    flex-grow: 1;
+/* El Menú de Cuaderno */
+.main-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.menu-btn {
+    aspect-ratio: 1 / 1;
+    background: white;
+    border: 2px solid var(--text);
+    border-radius: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 5px 5px 0px var(--text);
+    transition: all 0.2s;
 }
 
-button {
-    padding: 15px 30px;
-    background: #03dac6;
-    border: none;
-    border-radius: 25px;
-    font-weight: bold;
+.menu-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0px var(--text);
+}
+
+.menu-btn i { font-size: 2rem; margin-bottom: 10px; }
+
+/* Ocultar secciones por defecto */
+.section { display: none; width: 100%; max-width: 500px; }
+.section.active { display: block; }
+
+.back-btn {
+    align-self: flex-start;
+    background: none;
+    border: 1px solid var(--text);
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-bottom: 20px;
     cursor: pointer;
 }
