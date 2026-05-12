@@ -538,19 +538,23 @@
             // Días del mes
             for (let d = 1; d <= lastDay; d++) {
                 const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                // ... dentro del bucle de días ...
                 const eventosDia = events.filter(e => e.date === fechaStr);
-                
+
+                // Solo mostramos los primeros 3 eventos para no deformar
+                const eventosAMostrar = eventosDia.slice(0, 3);
+                const masEventos = eventosDia.length > 3 ? `<div style="font-size:0.5em; opacity:0.5;">+ ${eventosDia.length - 3} más</div>` : '';
+
                 html += `
                     <div class="calendar-day">
-                        <span>${d}</span>
-                        ${eventosDia.map(e => `<div class="event-tag">${e.title}</div>`).join('')}
+                        <span style="font-size: 0.8em; margin-bottom: 2px;">${d}</span>
+                        ${eventosAMostrar.map(e => `<div class="event-tag">${e.title}</div>`).join('')}
+                        ${masEventos}
                     </div>
                 `;
             }
-            
-            html += `</div>`;
-            container.innerHTML = html;
         }
+    
 
         function renderListView(container) {
             const lastDay = new Date(year, mesActual + 1, 0).getDate();
