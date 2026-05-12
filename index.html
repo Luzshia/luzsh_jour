@@ -509,12 +509,90 @@
         function renderAgenda() {
             const cal = document.getElementById('calendarView');
             const list = document.getElementById('listView');
-            
+            if (!cal || !list) return;
+
             if (currentAgendaView === 'calendar') {
-                cal.innerHTML = "<p style='text-align:center; opacity:0.6; padding:20px;'>Aquí dibujaremos tu calendario estilo minimalista... ✍️</p>";
+                renderCalendarView(cal);
             } else {
-                list.innerHTML = "<p style='text-align:center; opacity:0.6; padding:20px;'>Aquí aparecerán tus actividades como en una libreta física... 📖</p>";
+                renderListView(list);
             }
+        }
+
+        function renderCalendarView(container) {
+            const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            let html = `<div class="calendar-grid">`;
+            
+            // Cabeceras de días
+            diasSemana.forEach(d => html += `<div class="day-header">${d}</div>`);
+
+            // Lógica para obtener días del mes actual
+            const firstDay = new Date(year, mesActual, 1);
+            const lastDay = new Date(year, mesActual + 1, 0).getDate();
+            let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+            // Espacios mes anterior
+            for (let i = 0; i < startOffset; i++) {
+                html += `<div class="calendar-day other-month"></div>`;
+            }
+
+            // Días del mes
+            for (let d = 1; d <= lastDay; d++) {
+                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const eventosDia = events.filter(e => e.date === fechaStr);
+                
+                html += `
+                    <div class="calendar-day">
+                        <span>${d}</span>
+                        ${eventosDia.map(e => `<div class="event-tag">${e.title}</div>`).join('')}
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function renderListView(container) {
+            if (events.length === 0) {
+                container.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay actividades programadas.</p>";
+                return;
+            }
+
+            // Ordenar eventos por fecha
+            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            container.innerHTML = sortedEvents.map(e => `
+                <div class="habit-card" style="margin-bottom: 10px; border-left: 5px solid ${e.completed ? '#81b29a' : '#e07a5f'}">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <strong style="${e.completed ? 'text-decoration:line-through; opacity:0.6' : ''}">${e.title}</strong>
+                            <div style="font-size:0.8em; opacity:0.7;">📅 ${e.date} | 🕒 ${e.time}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; display:flex; gap:5px;">
+                        <button onclick="manageEvent(${e.id}, 'check')" class="back-btn" style="font-size:0.7em; padding:4px 8px;">✔️</button>
+                        <button onclick="manageEvent(${e.id}, 'reschedule')" class="back-btn" style="font-size:0.7em; padding:4px 8px;">⏳</button>
+                        <button onclick="manageEvent(${e.id}, 'delete')" class="back-btn" style="font-size:0.7em; padding:4px 8px; border-color:#e07a5f; color:#e07a5f;">❌</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function manageEvent(id, action) {
+            const index = events.findIndex(e => e.id === id);
+            if (index === -1) return;
+
+            if (action === 'check') {
+                events[index].completed = !events[index].completed;
+            } else if (action === 'delete') {
+                if (confirm("¿Cancelar esta actividad?")) events.splice(index, 1);
+            } else if (action === 'reschedule') {
+                const nuevaFecha = prompt("Introduce la nueva fecha (AAAA-MM-DD):", events[index].date);
+                if (nuevaFecha) events[index].date = nuevaFecha;
+            }
+
+            localStorage.setItem('myEvents', JSON.stringify(events));
+            renderAgenda();
         }
     </script>
 </body>
