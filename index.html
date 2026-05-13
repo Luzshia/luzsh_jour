@@ -3,214 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mi Journal 2026</title>
-    <style>
-        /* --- CSS MAESTRO --- */
-        :root { --accent: #2ecc71; --bg: #f5f5f5; --card: #ffffff; --text: #333; }
-        body.dark-mode { --bg: #121212; --card: #1e1e1e; --text: #f0f0f0; }
-
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 0; transition: 0.3s; }
-        
-        /* Navegación */
-        .main-header { background: var(--card); padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
-        .nav-menu { display: flex; justify-content: space-around; margin-top: 10px; flex-wrap: wrap; gap: 5px; }
-        .nav-menu button { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: var(--card); color: var(--text); cursor: pointer; font-size: 14px; }
-
-        /* Secciones */
-        .section { display: none; width: 100%; box-sizing: border-box; padding: 10px 0; }
-        .section.active { display: block; animation: fadeIn 0.3s; }
-
-        /* Tarjetas de Hábitos (ANCHO CORREGIDO) */
-        .habit-card { 
-            background: var(--card); 
-            width: 92vw; 
-            max-width: 500px; 
-            margin: 15px auto; 
-            border-radius: 20px; 
-            padding: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            box-sizing: border-box; 
-        }
-        .dots-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px 5px; margin-top: 20px; }
-        .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .dot { width: 26px; height: 26px; border: 1.5px solid var(--accent); border-radius: 50%; }
-        .dot.checked { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-        .dot-number { font-size: 10px; opacity: 0.6; }
-
-        /* Ciclo y Ajustes */
-        .form-card { background: var(--card); width: 92vw; margin: 10px auto; padding: 20px; border-radius: 15px; box-sizing: border-box; }
-        input, select, textarea { width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: 1px solid #ddd; background: var(--bg); color: var(--text); box-sizing: border-box; }
-        .btn-save { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 10px; }
-
-        /* Bloqueo */
-        #lock-screen { position: fixed; inset: 0; background: var(--card); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+    <title>Journal Personal</title>
+    <!-- Enlace al CSS (Estética) -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="dotted-bg">
 
-    <div id="lock-screen">
-        <h2>🔒 Privacidad</h2>
-        <input type="password" id="pinInput" placeholder="PIN de 4 dígitos" style="width: 200px; text-align: center;">
-        <button onclick="checkPin()" class="btn-save" style="width: 200px;">Entrar</button>
+    <!-- PANTALLA DE BLOQUEO -->
+    <div id="lock-screen" class="overlay">
+        <div class="lock-container">
+            <h2>🔒 Privacidad</h2>
+            
+            <!-- Indicadores de PIN (puntos que se llenan) -->
+            <div class="pin-display">
+                <div class="pin-slot" id="slot-1"></div>
+                <div class="pin-slot" id="slot-2"></div>
+                <div class="pin-slot" id="slot-3"></div>
+                <div class="pin-slot" id="slot-4"></div>
+            </div>
+            
+            <!-- Teclado Numérico Propio -->
+            <div class="numpad">
+                <button type="button" class="num-btn" data-val="1">1</button>
+                <button type="button" class="num-btn" data-val="2">2</button>
+                <button type="button" class="num-btn" data-val="3">3</button>
+                <button type="button" class="num-btn" data-val="4">4</button>
+                <button type="button" class="num-btn" data-val="5">5</button>
+                <button type="button" class="num-btn" data-val="6">6</button>
+                <button type="button" class="num-btn" data-val="7">7</button>
+                <button type="button" class="num-btn" data-val="8">8</button>
+                <button type="button" class="num-btn" data-val="9">9</button>
+                <button type="button" class="num-btn" id="btn-clear">C</button>
+                <button type="button" class="num-btn" data-val="0">0</button>
+                <button type="button" class="num-btn" id="btn-enter">✔</button>
+            </div>
+        </div>
     </div>
 
-    <header class="main-header">
-        <h2 style="margin:0">Mi Journal 2026</h2>
-        <nav class="nav-menu">
-            <button onclick="showSection('menu')">🏠 Inicio</button>
-            <button onclick="showSection('habitos')">🌿 Hábitos</button>
-            <button onclick="showSection('ciclo')">🌸 Ciclo</button>
-            <button onclick="showSection('ajustes')">⚙️</button>
-        </nav>
-    </header>
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <div class="app-wrapper">
+        
+        <header class="app-header">
+            <h1 id="dynamic-title">Mi Journal <span id="year-label"></span></h1>
+            <div class="header-line"></div>
+        </header>
 
-    <main class="container">
-        <!-- MENÚ -->
-        <section id="view-menu" class="section active">
-            <div class="form-card" onclick="showSection('metas')" style="cursor:pointer">🎯 Mis Metas</div>
-            <div class="form-card" onclick="showSection('todo')" style="cursor:pointer">✅ Lista de Tareas</div>
-            <div class="form-card" onclick="showSection('agenda')" style="cursor:pointer">📅 Mi Agenda</div>
-        </section>
+        <main id="main-content">
+            <!-- VISTA: MENÚ PRINCIPAL -->
+            <section id="view-menu" class="view active">
+                <nav class="menu-nav">
+                    <button class="nav-item" id="go-metas">🎯 Mis Metas</button>
+                    <button class="nav-item" id="go-habitos">🌿 Mis Hábitos</button>
+                    <button class="nav-item" id="go-todo">✅ To-Do List</button>
+                    <button class="nav-item" id="go-agenda">📅 Mi Agenda</button>
+                    <button class="nav-item" id="go-ciclo">🌸 Ciclo Menstrual</button>
+                    <button class="nav-item" id="go-config">⚙️ Configuración</button>
+                </nav>
+            </section>
 
-        <!-- HÁBITOS -->
-        <section id="view-habitos" class="section">
-            <div style="text-align: center;">
-                <button onclick="addHabitPrompt()" class="btn-save" style="width: 80%;">+ Nuevo Hábito</button>
-            </div>
-            <div id="habitContainer"></div>
-        </section>
+            <!-- CONTENEDORES VACÍOS PARA LAS OTRAS VISTAS -->
+            <section id="view-metas" class="view"></section>
+            <section id="view-habitos" class="view"></section>
+            <section id="view-todo" class="view"></section>
+            <section id="view-agenda" class="view"></section>
+            <section id="view-ciclo" class="view"></section>
+            <section id="view-config" class="view"></section>
+        </main>
 
-        <!-- CICLO -->
-        <section id="view-ciclo" class="section">
-            <div class="form-card">
-                <h3>Registro 🌸</h3>
-                <input type="date" id="cicloDate">
-                <label><input type="checkbox" id="cSangrado"> 🩸 Sangrado</label><br>
-                <label><input type="checkbox" id="cRelaciones"> 👩‍❤️‍👨 Relaciones</label>
-                <select id="cEmocion">
-                    <option value="😊">😊 Feliz/Normal</option>
-                    <option value="😢">😢 Sensible</option>
-                    <option value="😡">😡 Irritable</option>
-                    <option value="🤯">🤯 Estresada</option>
-                </select>
-                <input type="number" id="cSueño" placeholder="Horas de sueño">
-                <input type="number" id="cEnergia" placeholder="Energía (1-5)">
-                <textarea id="cObs" placeholder="Observaciones..."></textarea>
-                <button onclick="saveCiclo()" class="btn-save">Guardar Registro</button>
-            </div>
-            <div id="cicloHistory"></div>
-        </section>
+    </div>
 
-        <!-- AJUSTES -->
-        <section id="view-ajustes" class="section">
-            <div class="form-card">
-                <h3>Seguridad</h3>
-                <input type="password" id="newPin" placeholder="Nuevo PIN (4 dígitos)">
-                <button onclick="changePin()" class="btn-save">Cambiar Clave</button>
-            </div>
-            <div class="form-card">
-                <h3>Apariencia</h3>
-                <button onclick="toggleDarkMode()" style="width:100%; padding:10px;">Cambiar Modo 🌓</button>
-            </div>
-            <button onclick="borrarTodo()" style="color:red; background:none; border:none; width:100%; margin-top:20px;">Borrar todos los datos</button>
-        </section>
-
-        <!-- SECCIONES EXTRA (METAS, TODO) -->
-        <section id="view-metas" class="section"><div class="form-card"><h3>🎯 Metas</h3><textarea id="metasInput" rows="10" oninput="localStorage.setItem('metas', this.value)"></textarea></div></section>
-        <section id="view-todo" class="section"><div class="form-card"><h3>✅ Tareas</h3><input type="text" id="todoIn" placeholder="Nueva tarea..." onchange="addTodo(this.value); this.value=''"><div id="todoList"></div></div></section>
-    </main>
-
-    <script>
-        /* --- JAVASCRIPT --- */
-        let pin = localStorage.getItem('userPin') || "1707";
-        let habits = JSON.parse(localStorage.getItem('myHabits')) || [];
-        let cicloData = JSON.parse(localStorage.getItem('cicloData')) || [];
-        let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
-
-        function checkPin() {
-            if(document.getElementById('pinInput').value === pin) document.getElementById('lock-screen').style.display='none';
-            else alert("PIN incorrecto");
-        }
-
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
-            if(id === 'habitos') renderHabits();
-            if(id === 'ciclo') renderCiclo();
-            if(id === 'todo') renderTodos();
-            if(id === 'metas') document.getElementById('metasInput').value = localStorage.getItem('metas') || '';
-        }
-
-        // HÁBITOS
-        function addHabitPrompt() {
-            let n = prompt("Nombre del hábito:");
-            if(n) { habits.push({id: Date.now(), name: n, history: []}); saveH(); }
-        }
-        function saveH() { localStorage.setItem('myHabits', JSON.stringify(habits)); renderHabits(); }
-        function renderHabits() {
-            const cont = document.getElementById('habitContainer');
-            cont.innerHTML = habits.map(h => `
-                <div class="habit-card">
-                    <div style="display:flex; justify-content:space-between"><strong>${h.name}</strong> <span onclick="delHabit(${h.id})">🗑️</span></div>
-                    <div class="dots-grid">${Array.from({length:31}, (_,i)=> {
-                        let d = i+1;
-                        let ch = h.history.includes(d) ? 'checked' : '';
-                        return `<div class="dot-wrapper" onclick="toggleDot(${h.id}, ${d})"><div class="dot ${ch}"></div><span class="dot-number">${d}</span></div>`;
-                    }).join('')}</div>
-                </div>
-            `).join('');
-        }
-        function toggleDot(id, day) {
-            let h = habits.find(x => x.id === id);
-            h.history.includes(day) ? h.history = h.history.filter(d=>d!==day) : h.history.push(day);
-            saveH();
-        }
-        function delHabit(id) { if(confirm('¿Borrar?')) { habits = habits.filter(x=>x.id!==id); saveH(); } }
-
-        // CICLO
-        function saveCiclo() {
-            let e = { date: document.getElementById('cicloDate').value, sangrado: document.getElementById('cSangrado').checked, relaciones: document.getElementById('cRelaciones').checked, emocion: document.getElementById('cEmocion').value, sueño: document.getElementById('cSueño').value, energia: document.getElementById('cEnergia').value, obs: document.getElementById('cObs').value };
-            if(!e.date) return alert("Pon una fecha");
-            cicloData.push(e);
-            localStorage.setItem('cicloData', JSON.stringify(cicloData));
-            renderCiclo();
-        }
-        function renderCiclo() {
-            document.getElementById('cicloHistory').innerHTML = cicloData.map((e, i) => `
-                <div class="form-card" style="font-size:0.9em">
-                    <strong>${e.date}</strong> <span onclick="delCiclo(${i})">🗑️</span><br>
-                    ${e.sangrado ? '🩸 Sangrado ' : ''} ${e.relaciones ? '👩‍❤️‍👨 Relaciones ' : ''}<br>
-                    Humor: ${e.emocion} | 💤 ${e.sueño}h | ⚡ ${e.energia}/5<br>
-                    <small>${e.obs}</small>
-                </div>
-            `).reverse().join('');
-        }
-        function delCiclo(i) { cicloData.splice(i,1); localStorage.setItem('cicloData', JSON.stringify(cicloData)); renderCiclo(); }
-
-        // AJUSTES
-        function changePin() {
-            let p = document.getElementById('newPin').value;
-            if(p.length === 4) { pin = p; localStorage.setItem('userPin', p); alert("Cambiado"); }
-        }
-        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode', document.body.classList.contains('dark-mode')); }
-        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
-
-        function borrarTodo() { if(confirm("¿Borrar todo?")) { localStorage.clear(); location.reload(); } }
-
-        // TAREAS
-        function addTodo(v) { if(v) { todos.push({id:Date.now(), t:v, c:false}); saveT(); } }
-        function saveT() { localStorage.setItem('myTodos', JSON.stringify(todos)); renderTodos(); }
-        function renderTodos() {
-            document.getElementById('todoList').innerHTML = todos.map(t => `
-                <div style="display:flex; gap:10px; margin:10px 0;">
-                    <input type="checkbox" ${t.c?'checked':''} onclick="toggleT(${t.id})" style="width:20px">
-                    <span style="${t.c?'text-decoration:line-through':''}">${t.t}</span>
-                </div>
-            `).join('');
-        }
-        function toggleT(id) { let t = todos.find(x=>x.id===id); t.c = !t.c; saveT(); }
-    </script>
+    <!-- Enlace al Script (Lógica) -->
+    <script src="script.js"></script>
 </body>
 </html>

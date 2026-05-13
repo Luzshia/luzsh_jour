@@ -1,0 +1,150 @@
+/* --- VARIABLES Y TEMAS --- */
+:root {
+    --bg-color: #fdfdfd;
+    --dot-color: #d1d1d1;
+    --text-color: #333;
+    --accent-color: #2ecc71;
+    --card-bg: #ffffff;
+    --line-color: #eeeeee;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --dot-color: #333333;
+    --text-color: #f0f0f0;
+    --card-bg: #2d2d2d;
+    --line-color: #444444;
+}
+
+/* --- ESTÉTICA DE CUADERNO DE PUNTOS --- */
+.dotted-bg {
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+    background-size: 20px 20px; /* Tamaño de la cuadrícula de puntos */
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* --- PANTALLA DE BLOQUEO --- */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lock-container {
+    text-align: center;
+    width: 280px;
+}
+
+.pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.pin-slot {
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--accent-color);
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.pin-slot.filled {
+    background: var(--accent-color);
+}
+
+/* Teclado Numérico */
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.num-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 1px solid var(--dot-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+.num-btn:active {
+    transform: scale(0.9);
+    background: var(--accent-color);
+    color: white;
+}
+
+/* --- ESTRUCTURA APP --- */
+.app-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-line {
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+    margin-top: 10px;
+}
+
+/* --- MENÚ EN COLUMNA --- */
+.menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.nav-item {
+    padding: 18px;
+    border-radius: 15px;
+    border: 1px solid var(--line-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1.1rem;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    border-color: var(--accent-color);
+    transform: translateX(5px);
+}
+
+/* --- VISTAS --- */
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
