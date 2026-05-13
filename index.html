@@ -63,12 +63,26 @@
             <!-- VISTA: METAS -->
             <section id="view-metas" class="view">
                 <header class="app-header">
-                    <h1>Mis Metas</h1>
+                    <h1>Mis Metas <span id="meta-year-label"></span></h1>
                     <div class="header-line"></div>
                 </header>
-                <div class="content-body"></div>
-            </section>
+                
+                <div class="content-body">
+                    <div class="input-group">
+                        <input type="text" id="input-nueva-meta" placeholder="Escribe una meta anual...">
+                        <button id="btn-add-meta">+</button>
+                    </div>
 
+                    <ul id="lista-metas" class="metas-list">
+                        <!-- Las metas aparecerán aquí -->
+                    </ul>
+
+                    <div class="history-section">
+                        <button class="config-item-btn" id="btn-ver-historial">📜 Ver Metas de Años Pasados</button>
+                        <div id="historial-metas" class="hidden"></div>
+                    </div>
+                </div>
+            </section>
             <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
                 <header class="app-header">
