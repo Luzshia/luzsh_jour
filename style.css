@@ -193,7 +193,7 @@ body.dark-mode {
 }
 
 .btn-save { border-left: 5px solid #3498db; }
-.btn-load { border-left: 5px solid #f1c40f; display: block; text-align: center; }
+.btn-load { border-left: 5px solid #f1c40f; }
 
 #color-picker {
     border: none;
