@@ -165,40 +165,38 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
 
 /* --- 6. HÁBITOS --- */
 .habit-card {
-    background-color: var(--bg-cuadro);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column; 
-    width: 100%;
+    background: rgba(255, 255, 255, 0.05); /* Fondo sutil para modo oscuro */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px 15px; /* Más espacio arriba/abajo, menos a los lados */
+    margin-bottom: 25px;
+    width: 95%; /* Que ocupe casi todo el ancho disponible */
+    max-width: 500px; /* Pero que no se deforme en tablets */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .habit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--dot-color);
-    padding-bottom: 8px;
-    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
 }
 
 .habit-header span {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    font-weight: bold;
-    color: var(--texto);
+    font-family: 'Georgia', serif; /* O la fuente cursiva que prefieras */
+    font-size: 1.4rem;
 }
 
 /* Contenedor principal de la cuadrícula */
 .dots-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 columnas iguales */
-    gap: 12px 8px; /* Espacio vertical y horizontal */
-    margin-top: 15px;
-    justify-items: center; /* Centra todo horizontalmente */
-    align-items: center;   /* Centra todo verticalmente */
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px 5px; /* Aumentamos la separación vertical entre semanas */
+    margin-top: 20px;
+    justify-items: center;
 }
 
 /* Las letras de los días (L, M, X...) */
@@ -221,11 +219,11 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
 
 /* El círculo (dot) */
 .dot {
-    width: 24px;
-    height: 24px;
-    border: 1.5px solid var(--accent); /* Usa tu color de acento */
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--accent);
     border-radius: 50%;
-    transition: all 0.2s ease;
+    background: transparent;
 }
 
 .dot.checked {

@@ -354,14 +354,21 @@
             
             if(statsUI) statsUI.innerText = habits.length > 0 ? `Progreso: ${porcentaje}% (${totalChecks} marcas)` : "Añade un hábito";
 
+            // Dentro de renderHabits()...
             container.innerHTML = habits.map(habit => `
                 <div class="habit-card">
                     <div class="habit-header">
                         <span>${habit.name}</span>
-                        <button onclick="deleteHabit(${habit.id})" class="delete-btn">🗑️</button>
+                        <button onclick="deleteHabit(${habit.id})" class="delete-btn" style="background:none; border:none; cursor:pointer;">🗑️</button>
                     </div>
                     <div class="dots-grid">
-                        ${['L','M','X','J','V','S','D'].map(d => `<div class="dot-label">${d}</div>`).join('')}
+                        <div class="dot-label-header">L</div>
+                        <div class="dot-label-header">M</div>
+                        <div class="dot-label-header">X</div>
+                        <div class="dot-label-header">J</div>
+                        <div class="dot-label-header">V</div>
+                        <div class="dot-label-header">S</div>
+                        <div class="dot-label-header">D</div>
                         ${generarPuntos(habit, diasEnMes)}
                     </div>
                 </div>
