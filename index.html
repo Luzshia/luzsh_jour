@@ -701,14 +701,16 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
 
         function exportarDatos() {
             try {
+                // Obtenemos los datos directamente del almacenamiento del teléfono
                 const todosLosDatos = {
                     tareas: localStorage.getItem('myTodos'),
-                    habitos: localStorage.getItem('myHabits'),
+                    habitos: localStorage.getItem(storageKeyHabitos), // Verifica que sea 'myHabits'
                     agenda: localStorage.getItem('myEvents'),
                     color: localStorage.getItem('userAccent'),
                     oscuro: localStorage.getItem('darkMode')
                 };
                 
+                // Convertimos a texto y creamos el archivo
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todosLosDatos));
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
@@ -717,10 +719,9 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
                 
-                // Mensaje de éxito
-                alert("✅ ¡Copia de seguridad creada con éxito! Revisa tu carpeta de descargas.");
+                alert("✅ Copia creada. ¡Los hábitos van incluidos!");
             } catch (error) {
-                alert("❌ Error al exportar los datos: " + error);
+                alert("❌ Error al exportar: " + error);
             }
         }
 
@@ -761,17 +762,19 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
                 try {
                     const datos = JSON.parse(reader.result);
                     
-                    // Restauramos cada pedazo de información
+                    // Guardamos todo en el teléfono
                     if(datos.tareas) localStorage.setItem('myTodos', datos.tareas);
-                    if(datos.habitos) localStorage.setItem('myHabits', datos.habitos);
+                    if(datos.habitos) localStorage.setItem(storageKeyHabitos, datos.habitos);
                     if(datos.agenda) localStorage.setItem('myEvents', datos.agenda);
                     if(datos.color) localStorage.setItem('userAccent', datos.color);
                     if(datos.oscuro) localStorage.setItem('darkMode', datos.oscuro);
                     
-                    alert("✅ ¡Datos restaurados con éxito! Tu Journal se actualizará ahora.");
-                    location.reload(); // Recarga para aplicar los cambios
+                    alert("✅ ¡Restauración completa! Los hábitos se han actualizado.");
+                    
+                    // Forzamos la recarga total para que el sistema lea los nuevos datos
+                    location.reload(); 
                 } catch (e) {
-                    alert("❌ El archivo no es válido o está dañado.");
+                    alert("❌ El archivo no es válido.");
                 }
             };
             reader.readAsText(input.files[0]);
