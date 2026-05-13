@@ -83,13 +83,29 @@
                     </div>
                 </div>
             </section>
+
             <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
                 <header class="app-header">
-                    <h1>Mis Hábitos</h1>
+                    <h1>Mis Hábitos <span id="habit-month-label"></span></h1>
                     <div class="header-line"></div>
                 </header>
-                <div id="habitos-container" class="content-body"></div>
+                
+                <div class="content-body">
+                    <div class="input-group">
+                        <input type="text" id="input-nuevo-habito" placeholder="Ej: Beber agua, Leer...">
+                        <button id="btn-add-habito">+</button>
+                    </div>
+
+                    <div id="contenedor-habitos" class="habitos-grid">
+                        <!-- Aquí se generarán las tarjetas de hábitos -->
+                    </div>
+
+                    <div class="history-section">
+                        <button class="config-item-btn" id="btn-ver-historial-habitos">📜 Historial de Meses Pasados</button>
+                        <div id="historial-habitos" class="hidden"></div>
+                    </div>
+                </div>
             </section>
 
             <!-- VISTA: TODO -->

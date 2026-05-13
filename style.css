@@ -255,3 +255,71 @@ body.dark-mode {
 
 .history-section { margin-top: 40px; }
 .hidden { display: none; }
+
+/* --- ESTILOS DE HÁBITOS --- */
+.habitos-grid {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.habit-card {
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.habit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.habit-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.dots-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 días por fila */
+    gap: 10px;
+}
+
+.habit-dot-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.habit-dot {
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.habit-dot.checked {
+    background: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+.dot-day {
+    font-size: 10px;
+    opacity: 0.5;
+}
+
+.btn-delete-habit {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.9rem;
+}

@@ -65,6 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Cargar metas al iniciar
     cargarMetas();
+
+    // Escuchadores para Hábitos
+    document.getElementById('btn-add-habito').addEventListener('click', agregarHabito);
+    document.getElementById('btn-ver-historial-habitos').addEventListener('click', toggleHistorialHabitos);
+    
+    // Cargar hábitos al iniciar
+    cargarHabitos();
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -266,6 +273,127 @@ function mostrarHistorialMetas() {
                 });
                 contenedor.appendChild(divAnio);
             }
+        }
+    }
+}
+
+/* --- FUNCIONES DE HÁBITOS --- */
+
+function obtenerClaveMes() {
+    const fecha = new Date();
+    // Crea una clave como "2026-05" (Año-Mes)
+    return `journal_habits_${fecha.getFullYear()}_${fecha.getMonth() + 1}`;
+}
+
+function cargarHabitos() {
+    const clave = obtenerClaveMes();
+    const fecha = new Date();
+    const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
+    document.getElementById('habit-month-label').textContent = nombresMeses[fecha.getMonth()];
+    
+    const habitos = JSON.parse(localStorage.getItem(clave)) || [];
+    const contenedor = document.getElementById('contenedor-habitos');
+    contenedor.innerHTML = "";
+
+    // Calculamos cuántos días tiene el mes actual
+    const diasEnMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
+
+    habitos.forEach((habito) => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'habit-card';
+        
+        let puntosHTML = "";
+        for (let d = 1; d <= diasEnMes; d++) {
+            const isChecked = habito.completados.includes(d) ? 'checked' : '';
+            puntosHTML += `
+                <div class="habit-dot-wrapper" onclick="alternarDiaHabito('${habito.id}', ${d})">
+                    <div class="habit-dot ${isChecked}"></div>
+                    <span class="dot-day">${d}</span>
+                </div>`;
+        }
+
+        tarjeta.innerHTML = `
+            <div class="habit-header">
+                <span class="habit-name">${habito.nombre}</span>
+                <button class="btn-delete-habit" onclick="eliminarHabito('${habito.id}')">Eliminar</button>
+            </div>
+            <div class="dots-container">${puntosHTML}</div>
+        `;
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+function agregarHabito() {
+    const input = document.getElementById('input-nuevo-habito');
+    const nombre = input.value.trim();
+    if (!nombre) return;
+
+    const clave = obtenerClaveMes();
+    const habitos = JSON.parse(localStorage.getItem(clave)) || [];
+    
+    habitos.push({
+        id: 'h-' + Date.now(),
+        nombre: nombre,
+        completados: [] // Guardará los números de los días marcados
+    });
+
+    localStorage.setItem(clave, JSON.stringify(habitos));
+    input.value = "";
+    cargarHabitos();
+}
+
+function alternarDiaHabito(id, dia) {
+    const clave = obtenerClaveMes();
+    let habitos = JSON.parse(localStorage.getItem(clave));
+    const habito = habitos.find(h => h.id === id);
+
+    if (habito.completados.includes(dia)) {
+        habito.completados = habito.completados.filter(d => d !== dia);
+    } else {
+        habito.completados.push(dia);
+    }
+
+    localStorage.setItem(clave, JSON.stringify(habitos));
+    cargarHabitos();
+}
+
+function eliminarHabito(id) {
+    if (confirm("¿Seguro que quieres eliminar este hábito del mes actual?")) {
+        const clave = obtenerClaveMes();
+        let habitos = JSON.parse(localStorage.getItem(clave));
+        habitos = habitos.filter(h => h.id !== id);
+        localStorage.setItem(clave, JSON.stringify(habitos));
+        cargarHabitos();
+    }
+}
+
+function toggleHistorialHabitos() {
+    const contenedor = document.getElementById('historial-habitos');
+    contenedor.classList.toggle('hidden');
+    if (!contenedor.classList.contains('hidden')) mostrarHistorialHabitos();
+}
+
+function mostrarHistorialHabitos() {
+    const contenedor = document.getElementById('historial-habitos');
+    contenedor.innerHTML = "";
+    const claveActual = obtenerClaveMes();
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('journal_habits_') && key !== claveActual) {
+            const [, , anio, mes] = key.split('_');
+            const datos = JSON.parse(localStorage.getItem(key));
+            
+            const div = document.createElement('div');
+            div.className = 'config-group';
+            div.style.marginTop = "10px";
+            div.innerHTML = `<h4>Mes: ${mes}/${anio}</h4>`;
+            datos.forEach(h => {
+                const porcentaje = Math.round((h.completados.length / 30) * 100);
+                div.innerHTML += `<p>${h.nombre}: ${h.completados.length} días (${porcentaje}%)</p>`;
+            });
+            contenedor.appendChild(div);
         }
     }
 }
