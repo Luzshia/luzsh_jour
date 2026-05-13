@@ -1,7 +1,6 @@
 /* --- 1. VARIABLES DE COLOR (CENTRALIZADO) --- */
 :root {
-    /* Colores base (Acento personalizable) */
-    --accent: #e07a5f; /* Este es el color que cambias con el color-picker */
+    --accent: #e07a5f; 
     
     /* Modo Claro */
     --bg-pantalla: #f4f4f4;
@@ -12,6 +11,7 @@
     --dot-color: #ccc;
     --border-color: #333333;
     --bg-input: rgba(255, 255, 255, 0.8);
+    --card-shadow: rgba(0, 0, 0, 0.1);
 }
 
 body.dark-mode {
@@ -20,10 +20,11 @@ body.dark-mode {
     --bg-cuadro: #1e1e1e;
     --texto: #ffffff;
     --puntos: #333333;
-    --bg-paper: #1e1e1e;
+    --bg-paper: #121212;
     --dot-color: #444444;
     --border-color: #ffffff;
     --bg-input: #2d2d2d;
+    --card-shadow: rgba(0, 0, 0, 0.4);
 }
 
 /* --- 2. ESTILOS BASE --- */
@@ -58,10 +59,10 @@ html, body {
 .section { 
     display: none; 
     width: 100%; 
-    max-width: 500px; 
+    max-width: 550px; /* Un poco más ancho para que el calendario respire */
     flex-direction: column; 
     align-items: center;    
-    padding: 20px;
+    padding: 10px;
 }
 
 .section.active { 
@@ -81,6 +82,7 @@ h1 {
 .header-controls {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     margin-bottom: 20px;
 }
@@ -127,10 +129,6 @@ h1 {
 }
 
 /* --- 5. ENTRADAS Y TEXTO --- */
-.note-area {
-    width: 100%;
-}
-
 textarea {
     width: 100%;
     height: 60vh;
@@ -153,7 +151,6 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     outline: none;
 }
 
-/* Estilo para las cajas de añadir (HabitInputArea, etc) */
 .input-box {
     background-color: var(--bg-input);
     padding: 15px;
@@ -163,85 +160,84 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     border: 1px dashed var(--accent);
 }
 
-/* --- 6. HÁBITOS --- */
+/* --- 6. HÁBITOS (CORREGIDO ANCHO Y MODOS) --- */
 .habit-card {
-    background: rgba(255, 255, 255, 0.05); /* Fondo sutil para modo oscuro */
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: var(--bg-cuadro);
+    border: 1px solid var(--dot-color);
     border-radius: 15px;
-    padding: 20px 15px; /* Más espacio arriba/abajo, menos a los lados */
+    padding: 25px 20px;
     margin-bottom: 25px;
-    width: 95%; /* Que ocupe casi todo el ancho disponible */
-    max-width: 500px; /* Pero que no se deforme en tablets */
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%; /* Ocupa el ancho máximo del parent .section */
+    box-shadow: 0 4px 10px var(--card-shadow);
 }
 
 .habit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dot-color);
+    margin-bottom: 15px;
 }
 
 .habit-header span {
-    font-family: 'Georgia', serif; /* O la fuente cursiva que prefieras */
-    font-size: 1.4rem;
+    font-family: 'Dancing Script', cursive; /* Fuente elegante como la original */
+    font-size: 1.6rem;
+    color: var(--texto);
 }
 
-/* Contenedor principal de la cuadrícula */
 .dots-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 15px 5px; /* Aumentamos la separación vertical entre semanas */
-    margin-top: 20px;
+    gap: 18px 5px; /* Más espacio vertical para que no se amontone */
+    margin-top: 10px;
     justify-items: center;
 }
 
-/* Las letras de los días (L, M, X...) */
 .dot-label-header {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: bold;
-    opacity: 0.6;
-    margin-bottom: 5px;
-    text-transform: uppercase;
+    color: var(--texto);
+    opacity: 0.5;
+    margin-bottom: 8px;
 }
 
-/* El grupo de Círculo + Número */
 .dot-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
 }
 
-/* El círculo (dot) */
+/* Círculo: ahora usa el color del texto por defecto */
 .dot {
-    width: 22px;
-    height: 22px;
-    border: 1.5px solid var(--accent);
+    width: 25px;
+    height: 25px;
+    border: 1.5px solid var(--texto); 
+    opacity: 0.4; /* Sutil cuando no está marcado */
     border-radius: 50%;
     background: transparent;
+    transition: all 0.2s ease;
 }
 
+/* Cuando está marcado: usa el color de acento */
 .dot.checked {
     background-color: var(--accent);
+    border-color: var(--accent);
+    opacity: 1;
     box-shadow: 0 0 8px var(--accent);
 }
 
-/* El número debajo del círculo */
 .dot-number {
     font-size: 10px;
-    font-family: var(--font-main); /* Tu fuente principal */
+    color: var(--texto);
     opacity: 0.8;
 }
 
-/* Espacios vacíos al inicio del mes */
 .dot-empty {
-    width: 24px;
-    height: 24px;
+    width: 25px;
+    height: 25px;
 }
 
 /* --- 7. TO-DO LIST --- */
