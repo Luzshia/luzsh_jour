@@ -90,12 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnNext = document.getElementById('btn-semana-next');
     if (btnNext) btnNext.addEventListener('click', () => navegarSemana(7));
 
-    const btnCiclo = document.getElementById('btn-guardar-ciclo');
-    if (btnCiclo) btnCiclo.addEventListener('click', guardarDatosCiclo);
-    
-    // Establecer fecha de hoy por defecto
-    const inputFechaCiclo = document.getElementById('ciclo-fecha-registro');
-    if (inputFechaCiclo) inputFechaCiclo.value = new Date().toISOString().split('T')[0];
 
     // --- Listener Ciclo Menstrual ---
     const btnGuardarCiclo = document.getElementById('btn-guardar-ciclo');
@@ -581,6 +575,7 @@ function obtenerIconoLuna(f) {
     
     return lunas[index] || "🌙";
 }
+
 
 function guardarDatosCiclo() {
     const fecha = document.getElementById('ciclo-fecha').value;

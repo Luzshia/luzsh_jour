@@ -133,11 +133,37 @@
 
             <!-- VISTA: AGENDA -->
             <section id="view-agenda" class="view">
-                <header class="app-header">
-                    <h1>Mi Agenda</h1>
+                <header class="app-header agenda-header">
+                    <div class="agenda-title-group">
+                        <h1>Mi Agenda</h1>
+                        <span id="rango-semana-label"></span>
+                    </div>
+                    <div class="agenda-controls">
+                        <button id="btn-semana-prev">◀</button>
+                        <button id="btn-semana-next">▶</button>
+                    </div>
                     <div class="header-line"></div>
                 </header>
-                <div id="agenda-container" class="content-body"></div>
+                
+                <div class="content-body">
+                    <!-- Formulario de Eventos -->
+                    <div class="config-group agenda-form">
+                        <h3>📅 Nuevo Evento</h3>
+                        <div class="agenda-inputs">
+                            <input type="text" id="agenda-tarea" placeholder="¿Qué harás?">
+                            <div class="input-row">
+                                <input type="date" id="agenda-fecha">
+                                <input type="time" id="agenda-hora">
+                            </div>
+                            <button id="btn-add-evento" class="config-item-btn btn-load">Añadir a la Agenda</button>
+                        </div>
+                    </div>
+
+                    <!-- Vista Semanal Estilo 43586.jpg -->
+                    <div id="semana-container" class="semana-grid">
+                        <!-- Los 7 días se generarán aquí -->
+                    </div>
+                </div>
             </section>
 
             <section id="view-ciclo" class="view">
