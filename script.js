@@ -51,6 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Estado inicial en el historial para que el gesto "atrás" funcione
     // Esto marca el "Menú" como el punto de partida real.
     history.replaceState({ page: 'menu' }, "", "");
+
+    // Escuchadores para Configuración
+    document.getElementById('btn-toggle-dark').addEventListener('click', cambiarTema);
+    document.getElementById('color-picker').addEventListener('input', cambiarColorAcento);
+    document.getElementById('btn-change-pin').addEventListener('click', cambiarPinAction);
+    document.getElementById('btn-export').addEventListener('click', exportarDatos);
+    document.getElementById('import-file').addEventListener('change', importarDatos);
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -122,4 +129,60 @@ function cambiarTema() {
 
 if (localStorage.getItem('journalDarkMode') === 'true') {
     document.body.classList.add('dark-mode');
+}
+
+/* --- FUNCIONES DE CONFIGURACIÓN --- */
+
+// 1. Cambiar color de acento
+function cambiarColorAcento(e) {
+    const color = e.target.value;
+    document.documentElement.style.setProperty('--accent-color', color);
+    localStorage.setItem('journalAccentColor', color);
+}
+
+// Cargar el color guardado al iniciar
+const colorGuardado = localStorage.getItem('journalAccentColor');
+if (colorGuardado) {
+    document.documentElement.style.setProperty('--accent-color', colorGuardado);
+    setTimeout(() => { if(document.getElementById('color-picker')) document.getElementById('color-picker').value = colorGuardado; }, 100);
+}
+
+// 2. Cambiar PIN
+function cambiarPinAction() {
+    const nuevoPin = prompt("Introduce tu nuevo PIN de 4 dígitos:");
+    if (nuevoPin && nuevoPin.length === 4 && !isNaN(nuevoPin)) {
+        localStorage.setItem('journalPin', nuevoPin);
+        alert("PIN actualizado correctamente.");
+    } else {
+        alert("PIN no válido. Debe ser de 4 números.");
+    }
+}
+
+// 3. Backup: Exportar
+function exportarDatos() {
+    const datos = JSON.stringify(localStorage);
+    const blob = new Blob([datos], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_journal_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+}
+
+// 4. Backup: Importar
+function importarDatos(e) {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const datos = JSON.parse(e.target.result);
+            Object.keys(datos).forEach(key => localStorage.setItem(key, datos[key]));
+            alert("Copia de seguridad cargada. La app se reiniciará.");
+            location.reload();
+        } catch (err) {
+            alert("Error al leer el archivo de copia.");
+        }
+    };
+    reader.readAsText(archivo);
 }

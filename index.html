@@ -106,12 +106,40 @@
             </section>
 
             <!-- VISTA: CONFIGURACIÓN -->
+            <!-- VISTA: CONFIGURACIÓN -->
             <section id="view-config" class="view">
                 <header class="app-header">
                     <h1>Configuración</h1>
                     <div class="header-line"></div>
                 </header>
-                <div id="config-container" class="content-body"></div>
+                
+                <div class="config-container">
+                    <!-- Tema y Apariencia -->
+                    <div class="config-group">
+                        <h3>🎨 Apariencia</h3>
+                        <button class="config-item-btn" id="btn-toggle-dark">🌓 Modo Oscuro (On/Off)</button>
+                        <div class="config-item">
+                            <span>Color de acento:</span>
+                            <input type="color" id="color-picker" value="#2ecc71">
+                        </div>
+                    </div>
+
+                    <!-- Seguridad -->
+                    <div class="config-group">
+                        <h3>🔒 Seguridad</h3>
+                        <button class="config-item-btn" id="btn-change-pin">Cambiar PIN de acceso</button>
+                    </div>
+
+                    <!-- Datos -->
+                    <div class="config-group">
+                        <h3>💾 Datos y Backup</h3>
+                        <button class="config-item-btn btn-save" id="btn-export">Guardar Copia de Seguridad</button>
+                        <label for="import-file" class="config-item-btn btn-load">
+                            Cargar Copia de Seguridad
+                            <input type="file" id="import-file" accept=".json" style="display:none">
+                        </label>
+                    </div>
+                </div>
             </section>
         </main>
 
