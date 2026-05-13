@@ -43,14 +43,13 @@
     <!-- CONTENEDOR PRINCIPAL DE LA APP -->
     <div class="app-wrapper">
         
-        <header class="app-header">
-            <h1 id="dynamic-title">Mi Journal <span id="year-label"></span></h1>
-            <div class="header-line"></div>
-        </header>
-
         <main id="main-content">
-            <!-- VISTA: MENÚ PRINCIPAL -->
+            <!-- VISTA: MENÚ PRINCIPAL (Aquí es el único sitio donde sale el año) -->
             <section id="view-menu" class="view active">
+                <header class="app-header">
+                    <h1>Mi Journal <span id="year-label"></span></h1>
+                    <div class="header-line"></div>
+                </header>
                 <nav class="menu-nav">
                     <button class="nav-item" id="go-metas">🎯 Mis Metas</button>
                     <button class="nav-item" id="go-habitos">🌿 Mis Hábitos</button>
@@ -67,9 +66,7 @@
                     <h1>Mis Metas</h1>
                     <div class="header-line"></div>
                 </header>
-                <div class="content-body">
-                    <!-- Aquí irá el contenido de metas más adelante -->
-                </div>
+                <div class="content-body"></div>
             </section>
 
             <!-- VISTA: HÁBITOS -->
