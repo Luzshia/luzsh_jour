@@ -172,6 +172,12 @@
     </div>
 
     <script>
+        
+        // Ejecutar de inmediato para evitar el flash blanco
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    
         // --- 1. REGISTRO DEL SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -788,10 +794,9 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
         }
 
     function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('darkMode', isDark);
-}
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+    }
     </script>
 </body>
 </html>
