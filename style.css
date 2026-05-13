@@ -1,63 +1,71 @@
+/* --- 1. VARIABLES DE COLOR (CENTRALIZADO) --- */
 :root {
-    /* Colores Modo Claro */
+    /* Colores base (Acento personalizable) */
+    --accent: #e07a5f; /* Este es el color que cambias con el color-picker */
+    
+    /* Modo Claro */
     --bg-pantalla: #f4f4f4;
     --bg-cuadro: #ffffff;
     --texto: #333333;
     --puntos: #ccc;
+    --bg-paper: #ffffff;
+    --dot-color: #ccc;
+    --border-color: #333333;
+    --bg-input: rgba(255, 255, 255, 0.8);
 }
 
 body.dark-mode {
-    /* Colores Modo Oscuro */
-    --bg-pantalla: #121212; /* Negro profundo */
-    --bg-cuadro: #1e1e1e;   /* Gris muy oscuro para el contenedor */
+    /* Modo Oscuro */
+    --bg-pantalla: #121212;
+    --bg-cuadro: #1e1e1e;
     --texto: #ffffff;
-    --puntos: #333;
+    --puntos: #333333;
+    --bg-paper: #1e1e1e;
+    --dot-color: #444444;
+    --border-color: #ffffff;
+    --bg-input: #2d2d2d;
 }
 
-body {
-    margin: 0;
-    background-color: #e9ecef;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text);
+/* --- 2. ESTILOS BASE --- */
+* {
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-/* Esto controla TODA la pantalla */
 html, body {
     height: 100%;
     margin: 0;
     background-color: var(--bg-pantalla) !important;
     background-image: radial-gradient(var(--puntos) 1px, transparent 1px) !important;
     background-size: 20px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--texto);
-    transition: background 0.3s, color 0.3s; /* Para que el cambio sea suave */
-}
-
-/* Esto controla el cuadro de tu Journal */
-.container {
-    background-color: var(--bg-cuadro) !important;
-    color: var(--texto);
-    /* Añade aquí tus bordes y sombras normales */
-}
-
-/* Botones del menú y otros */
-.menu-btn, button {
-    background-color: var(--bg-cuadro);
-    color: var(--texto);
-    border: 1px solid var(--puntos);
 }
 
 .notebook-page {
     width: 100%;
     min-height: 100vh;
     background-color: var(--bg-paper);
-    /* Patrón de puntos */
     background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
     background-size: 25px 25px; 
     padding: 20px;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* --- 3. SECCIONES Y NAVEGACIÓN --- */
+.section { 
+    display: none; 
+    width: 100%; 
+    max-width: 500px; 
+    flex-direction: column; 
+    align-items: center;    
+    padding: 20px;
+}
+
+.section.active { 
+    display: flex; 
 }
 
 h1 {
@@ -65,11 +73,31 @@ h1 {
     border-bottom: 2px solid var(--accent);
     padding-bottom: 10px;
     margin-bottom: 30px;
+    text-align: center;
+    width: fit-content;
+    color: var(--texto);
 }
 
-/* El Menú de Cuaderno ajustado a rectángulos */
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--texto);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* --- 4. BOTONES Y MENÚ --- */
 .main-menu {
-    display: flex; /* Cambiamos grid por flex para apilarlos */
+    display: flex;
     flex-direction: column; 
     gap: 15px;
     width: 100%;
@@ -79,216 +107,139 @@ h1 {
 .menu-btn {
     width: 100%; 
     padding: 20px; 
-    background: white;
-    border: 2px solid var(--text);
+    background-color: var(--bg-cuadro);
+    color: var(--texto);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     display: flex;
-    flex-direction: row; 
     align-items: center;
-    justify-content: center; /* CAMBIADO: De flex-start a center */
+    justify-content: center;
     gap: 20px; 
     font-size: 1.3rem;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 4px 4px 0px var(--text);
-    transition: all 0.2s;
-}
-
-.menu-btn span {
-    font-size: 1.8rem; /* El emoji un poquito más grande */
+    box-shadow: 4px 4px 0px var(--border-color);
 }
 
 .menu-btn:active {
     transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px var(--text);
+    box-shadow: 1px 1px 0px var(--border-color);
 }
 
-
-.menu-btn i { font-size: 2rem; margin-bottom: 10px; }
-
-/* Ocultar secciones por defecto y centrar contenido */
-.section { 
-    display: none; 
-    width: 100%; 
-    max-width: 500px; 
-    flex-direction: column; /* Apila los elementos uno bajo otro */
-    align-items: center;    /* Centra todo horizontalmente */
-    padding: 20px; /* Esto da el margen necesario para que no peguen al borde del cristal del móvil */
-    box-sizing: border-box;
-}
-
-/* Cuando la sección está activa, usamos flex en lugar de block */
-.section.active { 
-    display: flex; 
-}
-
-/* Asegura que el título H1 se vea centrado */
-h1 {
-    font-family: 'Georgia', serif;
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 10px;
-    margin-bottom: 30px;
-    text-align: center; /* Centra el texto del título */
-    width: fit-content; /* Para que la línea de abajo no ocupe todo el ancho */
-}
-.back-btn {
-    align-self: flex-start;
-    background: none;
-    border: 1px solid var(--text);
-    padding: 5px 15px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    cursor: pointer;
-}
-
-.note-area, .notebook-list {
-    width: 100%;
-    text-align: left; /* Mantiene el texto de tus notas a la izquierda */
-}
-
-/* El contenedor de hábitos ya se ve bien, pero aseguramos su ancho */
-#habitContainer {
+/* --- 5. ENTRADAS Y TEXTO --- */
+.note-area {
     width: 100%;
 }
 
 textarea {
     width: 100%;
-    height: 60vh; /* Que ocupe bastante espacio de la pantalla */
+    height: 60vh;
     background: transparent;
     border: none;
-    line-height: 30px; /* Espacio entre líneas */
-    font-size: 1.1rem;
-    font-family: 'Dancing Script', cursive; /* Esta es la nueva fuente */
-    font-size: 1.5rem; /* La cursiva suele verse más pequeña, así que la agrandamos */
-    color: #463f3a;
+    line-height: 35px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: var(--texto);
     resize: none;
     outline: none;   
 }
 
-.notebook-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.notebook-list li {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    line-height: 30px;
-    padding: 5px 0;
-    cursor: pointer;
-    border-bottom: 1px transparent; /* Para mantener el espacio */
-    transition: all 0.3s ease;
+input[type="text"], input[type="password"], input[type="date"], input[type="time"] {
+    background-color: var(--bg-input);
+    color: var(--texto);
+    border: 1px solid var(--dot-color);
+    padding: 10px;
     border-radius: 8px;
+    outline: none;
 }
 
-/* Animación para ítems completados */
-.completed {
-    opacity: 0.5;
-    transform: translateX(5px);
-    transition: all 0.3s ease;
+/* Estilo para las cajas de añadir (HabitInputArea, etc) */
+.input-box {
+    background-color: var(--bg-input);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+    border: 1px dashed var(--accent);
 }
 
-.notebook-list li:active {
-    background: rgba(0,0,0,0.05); /* Efecto al tocar con el dedo */
-}
-
-.notebook-list li.completed {
-    text-decoration: line-through;
-    color: #a5a5a2;
-    opacity: 0.6;
-}
-
+/* --- 6. HÁBITOS --- */
 .habit-card {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid var(--text);
+    background-color: var(--bg-cuadro);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
-    /* Esto obliga a que el header vaya ARRIBA y el grid ABAJO */
     display: flex;
     flex-direction: column; 
+    width: 100%;
 }
 
 .habit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    margin-bottom: 15px; /* Espacio para que no toque los círculos */
     border-bottom: 1px solid var(--dot-color);
     padding-bottom: 8px;
+    margin-bottom: 15px;
 }
 
 .habit-header span {
     font-family: 'Dancing Script', cursive;
     font-size: 1.6rem;
     font-weight: bold;
+    color: var(--texto);
 }
 
 .dots-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    width: 100%;
-    /* Quitamos cualquier float o alineación extra */
     justify-items: center;
 }
 
-.delete-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
 .dot {
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--text);
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--border-color);
     border-radius: 50%;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
 .dot.checked {
-    background-color: var(--accent); /* Se rellena cuando lo cumples */
+    background-color: var(--accent);
 }
 
 .dot-label {
     font-size: 0.6rem;
-    margin-top: 2px;
+    color: var(--texto);
     text-align: center;
 }
 
-/* Añade esto a tu style.css */
-.dot-empty {
-    width: 20px;
-    height: 20px;
-    visibility: hidden; /* Ocupa el espacio pero no se ve */
+/* --- 7. TO-DO LIST --- */
+.notebook-list {
+    list-style: none;
+    padding: 0;
 }
 
-/* Asegura que el contenedor de tareas no tenga puntos encimados */
-#todoList li {
+.notebook-list li {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px dashed rgba(0,0,0,0.1);
+    border-bottom: 1px dashed var(--dot-color);
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: var(--texto);
 }
 
-/* 2. Checkbox de la To-Do List (REEMPLAZAR ESTA PARTE) */
 .todo-check {
-    min-width: 20px;
-    height: 20px;
-    border: 2px solid var(--accent); /* Cambiado var(--text) por var(--accent) para que el borde sea verde */
-    border-radius: 4px;
-    display: inline-block;
+    min-width: 24px;
+    height: 24px;
+    border: 2px solid var(--accent);
+    border-radius: 6px;
     cursor: pointer;
 }
-
-/* El relleno del check ya lo tienes con var(--accent), así que está perfecto */
-
 
 .completed .todo-check {
     background-color: var(--accent);
@@ -296,63 +247,72 @@ textarea {
     background-size: contain;
 }
 
-#calendarView {
-    display: block; /* Asegura que sea visible cuando debe */
-    width: 100%;
+.completed {
+    opacity: 0.5;
+    text-decoration: line-through;
 }
 
+/* --- 8. CALENDARIO --- */
 .calendar-grid {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr); /* 7 columnas idénticas */
-    grid-auto-rows: 1fr;
-    width: 100%;
-    table-layout: fixed; /* Fuerza a ignorar el ancho del contenido */
-    background: #e0e0e0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--dot-color);
     gap: 1px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--dot-color);
     margin-top: 10px;
-    overflow: hidden;
 }
 
 .calendar-day {
-    background: white;
-    min-height: 90px;
-    max-height: 90px;
-    min-width: 0; /* SECRETO: permite que el contenido se encoja */
-    overflow: hidden;
+    background-color: var(--bg-cuadro);
+    min-height: 80px;
+    padding: 4px;
     display: flex;
     flex-direction: column;
-    padding: 2px;
 }
 
-/* 1. Actividades en el Calendario (REEMPLAZAR ESTA PARTE) */
+.day-header {
+    background-color: var(--bg-pantalla);
+    font-weight: bold;
+    font-size: 0.7rem;
+    padding: 5px 0;
+    text-align: center;
+    color: var(--texto);
+}
+
 .event-tag {
-    background: var(--accent); /* Cambiado de #7d7d7d al verde de tu variable */
+    background-color: var(--accent);
     color: white;
     font-size: 9px;
-    padding: 2px 4px;
+    padding: 2px;
     margin-top: 2px;
     border-radius: 3px;
-    width: 100%;
-    box-sizing: border-box;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block;
-    text-align: center; /* Añadido para que se vea más ordenado */
 }
 
+/* --- 9. PANTALLA DE BLOQUEO --- */
+.lock-screen-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--bg-pantalla);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-.day-header {
-    background: #f0f0f0;
-    font-weight: bold;
-    font-size: 0.7em;
-    padding: 8px 0;
+.lock-screen-card {
+    background-color: var(--bg-cuadro);
+    padding: 30px;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
     text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-
-.other-month {
-    background: #fdfdfd;
-    opacity: 0.4;
-}
+/* --- 10. UTILIDADES --- */
+.full-width { width: 100%; }
+.divider { border: 0; border-top: 1px solid var(--dot-color); margin: 20px 0; }
+.danger-btn { border-color: #ff4d4d; color: #ff4d4d; }

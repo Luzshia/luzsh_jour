@@ -4,22 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Journal 2026</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <!-- Pantalla de Bloqueo Mejorada -->
-    <div id="lock-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-        <div style="background: white; padding: 30px; border-radius: 20px; width: 80%;">
-            <h2 style="font-family: 'Playfair Display', serif; color: #333;">Contenido Privado</h2>
-            <p style="opacity: 0.6; margin-bottom: 20px; font-size: 0.9em;">Introduce tu PIN para entrar</p>
+    <!-- Pantalla de Bloqueo -->
+    <div id="lock-screen" class="lock-screen-container">
+        <div class="lock-screen-card">
+            <h2>Contenido Privado</h2>
+            <p class="section-desc">Introduce tu PIN para entrar</p>
             
-            <input type="password" id="pinInput" inputmode="numeric" placeholder="****" 
-                style="text-align: center; font-size: 2.5em; width: 100%; border: none; border-bottom: 2px solid var(--accent); background: transparent; outline: none; margin-bottom: 20px;">
+            <input type="password" id="pinInput" inputmode="numeric" placeholder="****" class="pin-field">
             
-            <button onclick="checkPin()" class="menu-btn" style="width: 100%; background: var(--accent); color: white; border: none;">Desbloquear</button>
+            <button onclick="checkPin()" class="menu-btn primary-btn">Desbloquear</button>
         </div>
     </div>
 
@@ -33,40 +32,39 @@
                 <button class="menu-btn" onclick="showSection('habitos')"><span>🌿</span> Hábitos</button>
                 <button class="menu-btn" onclick="showSection('todo')"><span>✅</span> To-Do</button>
                 <button class="menu-btn" onclick="showSection('agenda')"><span>📅</span> Agenda</button>
-                <button class="menu-btn" onclick="showSection('config')">⚙️ Configuración</button>
+                <button class="menu-btn" onclick="showSection('config')"><span>⚙️</span> Configuración</button>
             </div>
         </div>
 
+        <!-- VISTA 2: METAS -->
         <div id="view-metas" class="section">
-            <!-- Cabecera a los extremos -->
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+            <div class="header-controls">
                 <button class="back-btn" onclick="window.history.back()">← Volver</button>
-                <button id="btnMode" class="back-btn" onclick="toggleMetaMode()" style="border-color: var(--accent);">✍️ Editar</button>
+                <button id="btnMode" class="back-btn accent-border" onclick="toggleMetaMode()">✍️ Editar</button>
             </div>
 
             <h1>🎯 Mis Metas <span id="currentYearDisplay"></span></h1>
-            <!-- Modo Edición -->
+            
             <div id="editMode" class="note-area" style="display: none;">
                 <textarea id="metasInput" placeholder="Escribe tus metas (una por línea)..." oninput="saveMetas()"></textarea>
             </div>
 
-            <!-- Modo Visualización -->
             <div id="viewMode" class="note-area">
                 <ul id="metasListDisplay" class="notebook-list"></ul>
             </div>
         </div>
 
+        <!-- VISTA 3: HÁBITOS -->
         <div id="view-habitos" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
-        <button class="back-btn" onclick="window.history.back()">← Volver</button>
-        <button id="btnHabitMode" class="back-btn" onclick="toggleHabitInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+            <div class="header-controls">
+                <button class="back-btn" onclick="window.history.back()">← Volver</button>
+                <button id="btnHabitMode" class="back-btn accent-border" onclick="toggleHabitInput()">➕ Nuevo</button>
             </div>
 
             <h1>🌿 Hábitos de <span id="monthDisplay"></span></h1>
-            <p id="habitStats" style="text-align: center; font-family: sans-serif; opacity: 0.7; font-size: 0.9em; margin-bottom: 15px;"></p>
+            <p id="habitStats" class="stats-text"></p>
 
-            <!-- Caja de entrada oculta por defecto -->
-            <div id="habitInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
+            <div id="habitInputArea" class="input-box" style="display: none;">
                 <div class="habit-input">
                     <input type="text" id="habitInput" placeholder="Ej: Meditar, Leer...">
                     <button onclick="addHabit()">Añadir</button>
@@ -76,24 +74,19 @@
             <div id="habitContainer"></div>
         </div>
 
-        <!-- VISTA 4: SECCIÓN TO-DO -->
+        <!-- VISTA 4: TO-DO -->
         <div id="view-tareas" class="section">
-            <!-- Cabecera con triple control -->
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
-                <!-- Extremo Izquierdo -->
+            <div class="header-controls">
                 <button class="back-btn" onclick="window.history.back()">← Volver</button>
-                
-                <!-- Extremo Derecho (Agrupados) -->
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button onclick="clearCompleted()" class="back-btn" style="border-color: #e07a5f; color: #e07a5f; padding: 5px 12px;">🧹</button>
-                    <button id="btnTodoMode" class="back-btn" onclick="toggleTodoInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+                <div class="group-controls">
+                    <button onclick="clearCompleted()" class="back-btn delete-accent">🧹</button>
+                    <button id="btnTodoMode" class="back-btn accent-border" onclick="toggleTodoInput()">➕ Nuevo</button>
                 </div>
             </div>
 
             <h1>📝 Lista de Tareas</h1>
             
-            <!-- Entrada oculta -->
-            <div id="todoInputArea" style="display: none; margin-bottom: 20px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px;">
+            <div id="todoInputArea" class="input-box" style="display: none;">
                 <div class="habit-input">
                     <input type="text" id="todoInput" placeholder="¿Qué tienes pendiente?">
                     <button onclick="addTodo()">Añadir</button>
@@ -103,162 +96,181 @@
             <div id="todoContainer" class="note-area">
                 <ul id="todoList" class="notebook-list"></ul>
             </div>
-        </div> <!-- AQUÍ TERMINA LA SECCIÓN CORRECTAMENTE -->
+        </div>
 
+        <!-- VISTA 5: AGENDA -->
         <div id="view-agenda" class="section">
-            <!-- Cabecera simétrica -->
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+            <div class="header-controls">
                 <button class="back-btn" onclick="window.history.back()">← Volver</button>
-                
-                <div style="display: flex; gap: 8px;">
-                    <button id="btnViewMode" class="back-btn" onclick="toggleAgendaView()" style="border-color: #81b29a;">📅 Vista</button>
-                    <button class="back-btn" onclick="toggleAgendaInput()" style="border-color: var(--accent);">➕ Nuevo</button>
+                <div class="group-controls">
+                    <button id="btnViewMode" class="back-btn secondary-accent" onclick="toggleAgendaView()">📅 Vista</button>
+                    <button class="back-btn accent-border" onclick="toggleAgendaInput()">➕ Nuevo</button>
                 </div>
             </div>
 
             <h1>📅 Mi Agenda</h1>
 
-            <!-- Formulario para Nuevo Evento (Oculto por defecto) -->
-            <div id="agendaInputArea" style="display: none; background: rgba(255,255,255,0.6); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed var(--accent);">
-                <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div id="agendaInputArea" class="input-box dash-border" style="display: none;">
+                <div class="flex-column">
                     <input type="text" id="eventTitle" placeholder="Nombre de la actividad">
-                    <div style="display: flex; gap: 5px;">
-                        <input type="date" id="eventDate" style="flex: 2;">
-                        <input type="time" id="eventTime" style="flex: 1;">
+                    <div class="flex-row">
+                        <input type="date" id="eventDate" class="flex-2">
+                        <input type="time" id="eventTime" class="flex-1">
                     </div>
-                    <button onclick="addEvent()" style="background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">Guardar Evento</button>
+                    <button onclick="addEvent()" class="save-btn">Guardar Evento</button>
                 </div>
             </div>
 
-            <!-- Contenedores de Vistas -->
             <div id="calendarView" class="note-area"></div>
             <div id="listView" class="note-area" style="display: none;"></div>
         </div>
+
+        <!-- VISTA 6: CONFIGURACIÓN -->
         <div id="view-config" class="section">
-        <!-- En la sección de Ajustes, el botón debe ser así: -->
-        <button class="back-btn" onclick="showSection('menu')">← Volver</button>
-        <h1>⚙️ Ajustes</h1>
+            <button class="back-btn" onclick="showSection('menu')">← Volver</button>
+            <h1>⚙️ Ajustes</h1>
 
-        <div class="note-area">
-            <h3>📦 Datos y Seguridad</h3>
-            <p style="font-size: 0.8em; opacity: 0.6;">Administra tus datos locales y copias de seguridad.</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                <button onclick="exportarDatos()" class="back-btn" style="width: 100%; text-align: left;">📥 Guardar Copia (Backup)</button>
-                <button onclick="importarDatos()" class="back-btn" style="width: 100%; text-align: left;">📤 Cargar Copia</button>
-                <input type="file" id="importFile" style="display: none;" onchange="procesarArchivo(this)">
-            </div>
-
-            <hr style="margin: 20px 0; opacity: 0.1;">
-
-            <h3>🎨 Personalización Cool</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Modo Oscuro</span>
-                    <button onclick="toggleDarkMode()" class="back-btn" style="padding: 5px 10px;">🌓</button>
+            <div class="note-area">
+                <h3>📦 Datos y Seguridad</h3>
+                <p class="section-desc">Administra tus datos locales y copias de seguridad.</p>
+                
+                <div class="flex-column gap-10">
+                    <button onclick="exportarDatos()" class="back-btn full-width">📥 Guardar Copia (Backup)</button>
+                    <button onclick="importarDatos()" class="back-btn full-width">📤 Cargar Copia</button>
+                    <input type="file" id="importFile" style="display: none;" onchange="procesarArchivo(this)">
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Color de Acento</span>
-                    <input type="color" onchange="changeAccent(this.value)" value="#e07a5f" style="border:none; background:none; cursor:pointer;">
+
+                <hr class="divider">
+
+                <h3>🎨 Personalización Cool</h3>
+                <div class="flex-column gap-10">
+                    <div class="flex-between">
+                        <span>Modo Oscuro</span>
+                        <button onclick="toggleDarkMode()" class="back-btn compact">🌓</button>
+                    </div>
+                    <div class="flex-between">
+                        <span>Color de Acento</span>
+                        <input type="color" onchange="changeAccent(this.value)" value="#e07a5f" class="color-picker">
+                    </div>
                 </div>
+
+                <hr class="divider">
+
+                <button onclick="borrarTodo()" class="back-btn danger-btn full-width">⚠️ Borrar todos los datos</button>
             </div>
-
-            <hr style="margin: 20px 0; opacity: 0.1;">
-
-            <button onclick="borrarTodo()" class="back-btn" style="color: #ee6c4d; border-color: #ee6c4d; width: 100%;">⚠️ Borrar todos los datos</button>
         </div>
-    </div>
 
     </div>
-
-    <script>
-        // --- 1. REGISTRO DEL SERVICE WORKER ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registrado'))
-                    .catch(err => console.log('Error en SW', err));
-            });
-        }
-
-        // --- 2. VARIABLES GLOBALES DE TIEMPO ---
+    <script>// --- 1. CONFIGURACIÓN Y VARIABLES GLOBALES ---
+        const MI_PIN_SECRETO = "1707"; 
         const ahora = new Date();
         const year = ahora.getFullYear();
         const mesActual = ahora.getMonth();
         const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        
+
+        // Keys de almacenamiento
         const storageKeyMetas = 'misMetas_' + year;
         const storageKeyTachadas = 'metasTachadas_' + year;
         const storageKeyHabitos = `myHabits_${year}_${mesActual}`;
+        const storageKeyEvents = 'myEvents';
+        const storageKeyTodos = 'myTodos';
 
-        // --- 3. CARGA INICIAL ---
+        // Estado de la aplicación
+        let habits = JSON.parse(localStorage.getItem(storageKeyHabitos)) || [];
+        let todos = JSON.parse(localStorage.getItem(storageKeyTodos)) || [];
+        let events = JSON.parse(localStorage.getItem(storageKeyEvents)) || [];
+        let metasTachadas = JSON.parse(localStorage.getItem(storageKeyTachadas)) || [];
+        let currentAgendaView = 'calendar'; 
+
+        // --- 2. INICIO DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Registro del Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('SW registrado'))
+                    .catch(err => console.log('Error en SW', err));
+            }
+
+            // Inicializar Interfaz
             if(document.getElementById('currentYearDisplay')) 
                 document.getElementById('currentYearDisplay').innerText = year;
             
             if(document.getElementById('monthDisplay')) 
                 document.getElementById('monthDisplay').innerText = nombresMeses[mesActual];
 
+            // Cargar Metas
             const metasInput = document.getElementById('metasInput');
             if(metasInput) {
                 metasInput.value = localStorage.getItem(storageKeyMetas) || '';
                 renderMetasVisual();
             }
+
+            // Aplicar Preferencias Guardadas (Color y Modo)
+            const savedAccent = localStorage.getItem('userAccent');
+            if(savedAccent) {
+                document.documentElement.style.setProperty('--accent', savedAccent);
+                if(document.querySelector('.color-picker')) document.querySelector('.color-picker').value = savedAccent;
+            }
             
-            // Cargar datos iniciales
+            if(localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Seguridad: Bloqueo de pantalla
+            if (sessionStorage.getItem('unlocked') === 'true') {
+                document.getElementById('lock-screen').style.display = 'none';
+            }
+
+            // Navegación inicial
+            history.replaceState({ section: 'menu' }, "", "#menu");
+            
+            // Renderizado inicial
             renderHabits();
             renderTodos();
         });
 
-        // --- 4. NAVEGACIÓN PRO (Soporta gestos del móvil) ---
-
+        // --- 3. NAVEGACIÓN Y HISTORIAL ---
         function showSection(sectionName, pushState = true) {
-            let targetId = sectionName;
-            if (sectionName === 'todo') targetId = 'tareas';
+            let targetId = sectionName === 'todo' ? 'tareas' : sectionName;
 
-            // 1. Quitar 'active' de todas las secciones
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             
-            // 2. Activar la sección destino
             const target = document.getElementById('view-' + targetId);
             if(target) {
                 target.classList.add('active');
-                
-                // 3. Registrar el movimiento en el historial del teléfono
-                // Solo lo hacemos si pushState es true (para evitar bucles infinitos)
-                if (pushState) {
-                    history.pushState({ section: sectionName }, "", "#" + sectionName);
-                }
+                if (pushState) history.pushState({ section: sectionName }, "", "#" + sectionName);
 
-                // 4. Refrescar contenido
+                // Refrescos específicos
                 if (targetId === 'tareas') renderTodos();
                 if (targetId === 'habitos') renderHabits();
                 if (targetId === 'agenda') renderAgenda();
             }
         }
 
-        // --- ESCUCHAR EL GESTO DE REGRESAR DEL TELÉFONO ---
         window.onpopstate = function(event) {
-            if (event.state && event.state.section) {
-                // Si el historial tiene una sección guardada, vamos a ella
-                showSection(event.state.section, false);
-            } else {
-                // Si no hay nada en el historial (llegamos al inicio), volvemos al menú
-                showSection('menu', false);
-            }
+            const section = (event.state && event.state.section) ? event.state.section : 'menu';
+            showSection(section, false);
         };
 
-        // Modificamos la carga inicial para que el menú sea el "punto cero"
-        document.addEventListener('DOMContentLoaded', () => {
-            // ... tus otras cargas de metas y hábitos ...
+        // --- 4. LÓGICA DE SEGURIDAD (PIN) ---
+        function checkPin() {
+            const input = document.getElementById('pinInput').value;
+            const muro = document.getElementById('lock-screen');
             
-            // Guardamos el estado inicial del menú en el historial
-            history.replaceState({ section: 'menu' }, "", "#menu");
-        });
+            if (input === MI_PIN_SECRETO) {
+                muro.style.transition = "opacity 0.5s ease";
+                muro.style.opacity = "0";
+                setTimeout(() => {
+                    muro.style.display = 'none';
+                    sessionStorage.setItem('unlocked', 'true');
+                }, 500);
+            } else {
+                alert("PIN Incorrecto");
+                document.getElementById('pinInput').value = '';
+            }
+        }
 
         // --- 5. LÓGICA DE METAS ---
-        let metasTachadas = JSON.parse(localStorage.getItem(storageKeyTachadas)) || [];
-
         function saveMetas() {
             localStorage.setItem(storageKeyMetas, document.getElementById('metasInput').value);
         }
@@ -307,34 +319,19 @@
         }
 
         // --- 6. LÓGICA DE HÁBITOS ---
-        let habits = JSON.parse(localStorage.getItem(storageKeyHabitos)) || [];
-
         function toggleHabitInput() {
             const area = document.getElementById('habitInputArea');
             const btn = document.getElementById('btnHabitMode');
-            const input = document.getElementById('habitInput');
-
-            if (area.style.display === 'none') {
-                area.style.display = 'block';
-                btn.innerText = '❌ Cerrar';
-                setTimeout(() => input.focus(), 100);
-            } else {
-                area.style.display = 'none';
-                btn.innerText = '➕ Nuevo';
-            }
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+            btn.innerText = area.style.display === 'none' ? '➕ Nuevo' : '❌ Cerrar';
+            if(area.style.display === 'block') document.getElementById('habitInput').focus();
         }
 
         function addHabit() {
             const input = document.getElementById('habitInput');
-            if (input.value.trim() === '') return;
+            if (!input.value.trim()) return;
 
-            const newHabit = {
-                id: Date.now(),
-                name: input.value,
-                history: []
-            };
-
-            habits.push(newHabit);
+            habits.push({ id: Date.now(), name: input.value, history: [] });
             saveAndRenderHabits();
             input.value = '';
             toggleHabitInput();
@@ -347,22 +344,16 @@
 
         function renderHabits() {
             const container = document.getElementById('habitContainer');
-            const statsUI = document.getElementById('habitStats'); // El nuevo texto
+            const statsUI = document.getElementById('habitStats');
             if(!container) return;
             
             const diasEnMes = new Date(year, mesActual + 1, 0).getDate();
-            
-            // CALCULAR ESTADÍSTICAS
             let totalChecks = 0;
             habits.forEach(h => totalChecks += h.history.length);
-            const totalPosibles = habits.length * diasEnMes;
-            const porcentaje = totalPosibles > 0 ? Math.round((totalChecks / totalPosibles) * 100) : 0;
+            const porcentaje = (habits.length * diasEnMes) > 0 ? Math.round((totalChecks / (habits.length * diasEnMes)) * 100) : 0;
             
-            if(statsUI) {
-                statsUI.innerText = habits.length > 0 ? `Progreso mensual: ${porcentaje}% (${totalChecks} marcas)` : "Añade un hábito para empezar";
-            }
+            if(statsUI) statsUI.innerText = habits.length > 0 ? `Progreso: ${porcentaje}% (${totalChecks} marcas)` : "Añade un hábito";
 
-            // ... aquí sigue tu código actual de container.innerHTML = habits.map(...)
             container.innerHTML = habits.map(habit => `
                 <div class="habit-card">
                     <div class="habit-header">
@@ -370,10 +361,7 @@
                         <button onclick="deleteHabit(${habit.id})" class="delete-btn">🗑️</button>
                     </div>
                     <div class="dots-grid">
-                        <div class="dot-label">L</div><div class="dot-label">M</div>
-                        <div class="dot-label">X</div><div class="dot-label">J</div>
-                        <div class="dot-label">V</div><div class="dot-label">S</div>
-                        <div class="dot-label">D</div>
+                        ${['L','M','X','J','V','S','D'].map(d => `<div class="dot-label">${d}</div>`).join('')}
                         ${generarPuntos(habit, diasEnMes)}
                     </div>
                 </div>
@@ -382,18 +370,15 @@
 
         function generarPuntos(habit, totalDias) {
             let html = '';
-            const primerDiaDelMes = new Date(year, mesActual, 1);
-            let diaSemanaInicio = primerDiaDelMes.getDay(); 
-            if (diaSemanaInicio === 0) diaSemanaInicio = 7; 
+            let diaSemanaInicio = new Date(year, mesActual, 1).getDay(); 
+            diaSemanaInicio = diaSemanaInicio === 0 ? 7 : diaSemanaInicio; 
             
-            for (let h = 1; h < diaSemanaInicio; h++) {
-                html += `<div class="dot-empty"></div>`;
-            }
+            for (let h = 1; h < diaSemanaInicio; h++) html += `<div class="dot-empty"></div>`;
             for (let i = 1; i <= totalDias; i++) {
-                const isChecked = habit.history.includes(i) ? 'checked' : '';
+                const checked = habit.history.includes(i) ? 'checked' : '';
                 html += `
                     <div style="display:flex; flex-direction:column; align-items:center;">
-                        <div class="dot ${isChecked}" onclick="toggleDot(${habit.id}, ${i})"></div>
+                        <div class="dot ${checked}" onclick="toggleDot(${habit.id}, ${i})"></div>
                         <span class="dot-label">${i}</span>
                     </div>
                 `;
@@ -403,11 +388,8 @@
 
         function toggleDot(habitId, dia) {
             const habit = habits.find(h => h.id === habitId);
-            if (habit.history.includes(dia)) {
-                habit.history = habit.history.filter(d => d !== dia);
-            } else {
-                habit.history.push(dia);
-            }
+            if (!habit) return;
+            habit.history.includes(dia) ? habit.history = habit.history.filter(d => d !== dia) : habit.history.push(dia);
             saveAndRenderHabits();
         }
 
@@ -418,64 +400,44 @@
             }
         }
 
-        // --- 7. LÓGICA DE TO-DO LIST ---
-        let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
-
-        // Función para mostrar/ocultar el input (Igual a la de hábitos)
+        // --- 7. LÓGICA DE TAREAS (TO-DO) ---
         function toggleTodoInput() {
             const area = document.getElementById('todoInputArea');
             const btn = document.getElementById('btnTodoMode');
-            const input = document.getElementById('todoInput'); // El input
-
-            if (area.style.display === 'none') {
-                area.style.display = 'block';
-                btn.innerText = '❌ Cerrar';
-                setTimeout(() => input.focus(), 100); // El pequeño retraso ayuda a que el móvil lo detecte
-            } else {
-                area.style.display = 'none';
-                btn.innerText = '➕ Nuevo';
-            }
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+            btn.innerText = area.style.display === 'none' ? '➕ Nuevo' : '❌ Cerrar';
+            if(area.style.display === 'block') document.getElementById('todoInput').focus();
         }
 
         function addTodo() {
             const input = document.getElementById('todoInput');
-            if (input.value.trim() === '') return;
+            if (!input.value.trim()) return;
 
-            const newTodo = {
-                id: Date.now(),
-                text: input.value,
-                completed: false
-            };
-
-            todos.push(newTodo);
+            todos.push({ id: Date.now(), text: input.value, completed: false });
             saveAndRenderTodos();
             input.value = '';
-            toggleTodoInput(); // Cierra el input automáticamente al añadir
+            toggleTodoInput();
         }
 
         function saveAndRenderTodos() {
-            localStorage.setItem('myTodos', JSON.stringify(todos));
+            localStorage.setItem(storageKeyTodos, JSON.stringify(todos));
             renderTodos();
         }
 
         function renderTodos() {
             const listUI = document.getElementById('todoList');
             if(!listUI) return;
-
             if (todos.length === 0) {
-                listUI.innerHTML = '<p style="text-align:center; opacity:0.5; font-family: sans-serif;">No hay pendientes por ahora.</p>';
+                listUI.innerHTML = '<p style="text-align:center; opacity:0.5;">No hay pendientes.</p>';
                 return;
             }
-
             listUI.innerHTML = todos.map(todo => `
-                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})" style="display:flex; align-items:center; gap:10px; cursor:pointer; list-style:none; padding: 10px 0; border-bottom: 1px dotted #ccc;">
+                <li class="${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${todo.id})">
                     <div class="todo-check"></div>
-                    <span style="${todo.completed ? 'text-decoration:line-through; opacity:0.6' : ''}">${todo.text}</span>
+                    <span>${todo.text}</span>
                 </li>
             `).join('');
         }
-
-        // ... (el resto de funciones toggleTodo y clearCompleted se quedan igual)
 
         function toggleTodo(id) {
             const todo = todos.find(t => t.id === id);
@@ -486,24 +448,15 @@
         }
 
         function clearCompleted() {
-            // Solo actuamos si hay tareas completadas para no molestar con alertas vacías
             const completadas = todos.filter(t => t.completed).length;
-            
-            if (completadas === 0) {
-                alert("No hay tareas completadas para limpiar.");
-                return;
-            }
-
-            if (confirm(`¿Quieres borrar las ${completadas} tareas terminadas?`)) {
+            if (completadas === 0) return alert("No hay tareas completadas.");
+            if (confirm(`¿Borrar ${completadas} tareas?`)) {
                 todos = todos.filter(t => !t.completed);
                 saveAndRenderTodos();
             }
         }
 
-        /* REEMPLAZA DESDE AQUÍ */
-        let events = JSON.parse(localStorage.getItem('myEvents')) || [];
-        let currentAgendaView = 'calendar'; 
-
+        // --- 8. LÓGICA DE AGENDA ---
         function toggleAgendaInput() {
             const area = document.getElementById('agendaInputArea');
             area.style.display = area.style.display === 'none' ? 'block' : 'none';
@@ -511,21 +464,10 @@
         }
 
         function toggleAgendaView() {
-            const cal = document.getElementById('calendarView');
-            const list = document.getElementById('listView');
-            const btn = document.getElementById('btnViewMode');
-
-            if (currentAgendaView === 'calendar') {
-                currentAgendaView = 'list';
-                cal.style.display = 'none';
-                list.style.display = 'block';
-                btn.innerText = '📖 Agenda';
-            } else {
-                currentAgendaView = 'calendar';
-                cal.style.display = 'block';
-                list.style.display = 'none';
-                btn.innerText = '📅 Calendario';
-            }
+            currentAgendaView = currentAgendaView === 'calendar' ? 'list' : 'calendar';
+            document.getElementById('calendarView').style.display = currentAgendaView === 'calendar' ? 'block' : 'none';
+            document.getElementById('listView').style.display = currentAgendaView === 'list' ? 'block' : 'none';
+            document.getElementById('btnViewMode').innerText = currentAgendaView === 'calendar' ? '📅 Vista' : '📖 Lista';
             renderAgenda();
         }
 
@@ -534,21 +476,10 @@
             const date = document.getElementById('eventDate').value;
             const time = document.getElementById('eventTime').value;
 
-            if (!title || !date) {
-                alert("Por favor, pon al menos un nombre y una fecha.");
-                return;
-            }
+            if (!title || !date) return alert("Pon nombre y fecha.");
 
-            const newEvent = {
-                id: Date.now(),
-                title,
-                date,
-                time: time || 'Todo el día',
-                completed: false
-            };
-
-            events.push(newEvent);
-            localStorage.setItem('myEvents', JSON.stringify(events));
+            events.push({ id: Date.now(), title, date, time: time || 'Todo el día', completed: false });
+            localStorage.setItem(storageKeyEvents, JSON.stringify(events));
             document.getElementById('eventTitle').value = '';
             toggleAgendaInput();
             renderAgenda();
@@ -557,252 +488,127 @@
         function renderAgenda() {
             const cal = document.getElementById('calendarView');
             const list = document.getElementById('listView');
-            if (!cal || !list) return;
             currentAgendaView === 'calendar' ? renderCalendarView(cal) : renderListView(list);
         }
 
-        /* REEMPLAZA DESDE AQUÍ */
         function renderCalendarView(container) {
-            const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
-            const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
             const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
             let html = `<div class="calendar-grid">`;
             diasSemana.forEach(d => html += `<div class="day-header">${d}</div>`);
 
-            const firstDay = new Date(y, m, 1);
-            const lastDay = new Date(y, m + 1, 0).getDate();
-            // Ajuste para que empiece en Lunes
+            const firstDay = new Date(year, mesActual, 1);
+            const lastDay = new Date(year, mesActual + 1, 0).getDate();
             let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-            // Espacios mes anterior
-            for (let i = 0; i < startOffset; i++) {
-                html += `<div class="calendar-day other-month"></div>`;
-            }
+            for (let i = 0; i < startOffset; i++) html += `<div class="calendar-day other-month"></div>`;
 
-            // Días del mes
             for (let d = 1; d <= lastDay; d++) {
-                const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const listaEventos = (typeof events !== 'undefined') ? events.filter(e => e.date === fechaStr) : [];
-                
-                // Máximo 2 etiquetas visibles para mantener el orden
-                const etiquetasHtml = listaEventos.slice(0, 2).map(e => `
-                    <div class="event-tag" title="${e.title}">${e.title}</div>
-                `).join('');
-
-                const mas = listaEventos.length > 2 ? `<div style="font-size:8px; color:#999; margin-top:2px;">+${listaEventos.length - 2}</div>` : '';
-
+                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const listaEventos = events.filter(e => e.date === fechaStr);
                 html += `
                     <div class="calendar-day">
-                        <span style="font-size:10px; font-weight:bold; margin-bottom:2px;">${d}</span>
-                        <div style="width:100%; display:flex; flex-direction:column; gap:1px;">
-                            ${etiquetasHtml}
-                        </div>
-                        ${mas}
+                        <span style="font-size:10px; font-weight:bold;">${d}</span>
+                        ${listaEventos.slice(0, 2).map(e => `<div class="event-tag">${e.title}</div>`).join('')}
+                        ${listaEventos.length > 2 ? `<div style="font-size:8px;">+${listaEventos.length - 2}</div>` : ''}
                     </div>
                 `;
             }
-            
-            html += `</div>`;
-            container.innerHTML = html;
+            container.innerHTML = html + `</div>`;
         }
-        /* HASTA AQUÍ */
 
         function renderListView(container) {
-            const y = (typeof year !== 'undefined') ? year : new Date().getFullYear();
-            const m = (typeof mesActual !== 'undefined') ? mesActual : new Date().getMonth();
-            const lastDay = new Date(y, m + 1, 0).getDate();
+            const lastDay = new Date(year, mesActual + 1, 0).getDate();
             const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-            
-            let html = '<div style="display: flex; flex-direction: column; gap: 0;">';
+            let html = '';
 
             for (let d = 1; d <= lastDay; d++) {
-                const fechaObj = new Date(y, m, d);
-                const diaNombre = nombresDias[fechaObj.getDay()];
-                const fechaStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                
-                const eventosDia = (typeof events !== 'undefined') ? events.filter(e => e.date === fechaStr) : [];
+                const fechaStr = `${year}-${String(mesActual + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const eventosDia = events.filter(e => e.date === fechaStr);
+                const diaNombre = nombresDias[new Date(year, mesActual, d).getDay()];
 
                 html += `
-                    <div style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 12px 5px; display: flex; align-items: flex-start; gap: 15px;">
-                        <div style="min-width: 45px; text-align: center; border-right: 1px solid var(--accent); padding-right: 10px;">
-                            <div style="font-size: 1.1em; font-weight: bold; color: var(--text);">${d}</div>
-                            <div style="font-size: 0.6em; text-transform: uppercase; opacity: 0.5;">${diaNombre}</div>
+                    <div style="border-bottom: 1px solid var(--dot-color); padding: 10px; display: flex; gap: 15px;">
+                        <div style="min-width: 40px; text-align: center;">
+                            <div style="font-weight: bold;">${d}</div>
+                            <div style="font-size: 0.7em; opacity: 0.5;">${diaNombre}</div>
                         </div>
-                        
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                           
-${eventosDia.length > 0 ? eventosDia.map(e => `
-    <div style="background: rgba(0,0,0,0.03); padding: 8px; border-radius: 8px; border-left: 3px solid ${e.completed ? '#81b29a' : '#7d7d7d'}; margin-bottom: 5px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span onclick="manageEvent(${e.id}, 'check')" style="cursor: pointer; font-size: 0.9em; color: #333; ${e.completed ? 'text-decoration: line-through; opacity: 0.4' : ''}">
-                ${e.time !== 'Todo el día' && e.time ? `<b style="color:var(--accent)">${e.time}</b> ` : ''}${e.title}
-            </span>
-            <div style="display: flex; gap: 12px; margin-left: 10px;">
-                <span onclick="event.stopPropagation(); manageEvent(${e.id}, 'reschedule')" style="cursor: pointer; font-size: 1em;">⏳</span>
-                <span onclick="event.stopPropagation(); manageEvent(${e.id}, 'delete')" style="cursor: pointer; font-size: 1em;">🗑️</span>
-            </div>
-        </div>
-    </div>
-`).join('') : '<div style="opacity: 0.1; font-size: 0.75em; padding-top: 5px; letter-spacing: 1px;">............................................................</div>'}
+                        <div style="flex: 1;">
+                            ${eventosDia.map(e => `
+                                <div style="background: rgba(0,0,0,0.05); padding: 5px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between;">
+                                    <span onclick="manageEvent(${e.id}, 'check')" style="${e.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">${e.title}</span>
+                                    <span onclick="manageEvent(${e.id}, 'delete')">🗑️</span>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
             }
-
-            html += '</div>';
             container.innerHTML = html;
         }
-        /* HASTA AQUÍ */
 
         function manageEvent(id, action) {
             const index = events.findIndex(e => e.id === id);
             if (index === -1) return;
-            if (action === 'check') {
-                events[index].completed = !events[index].completed;
-            } else if (action === 'delete') {
-                if (confirm("¿Cancelar esta actividad?")) events.splice(index, 1);
-            } else if (action === 'reschedule') {
-                const nuevaFecha = prompt("Introduce la nueva fecha (AAAA-MM-DD):", events[index].date);
-                if (nuevaFecha) events[index].date = nuevaFecha;
-            }
-            localStorage.setItem('myEvents', JSON.stringify(events));
+            if (action === 'check') events[index].completed = !events[index].completed;
+            else if (action === 'delete' && confirm("¿Borrar?")) events.splice(index, 1);
+            
+            localStorage.setItem(storageKeyEvents, JSON.stringify(events));
             renderAgenda();
         }
-        /* HASTA AQUÍ */
-        // Configura tu PIN aquí (cámbialo por el que quieras)
-        const MI_PIN_SECRETO = "1707"; 
 
-        function checkPin() {
-            const input = document.getElementById('pinInput').value;
-            const muro = document.getElementById('lock-screen');
-            
-            if (input === MI_PIN_SECRETO) {
-                // Usamos una transición suave para que desaparezca
-                muro.style.transition = "opacity 0.5s ease";
-                muro.style.opacity = "0";
-                setTimeout(() => {
-                    muro.style.display = 'none';
-                }, 500);
-                
-                sessionStorage.setItem('unlocked', 'true');
-            } else {
-                alert("PIN Incorrecto");
-                document.getElementById('pinInput').value = '';
-            }
-        }
-
-        // Comprobar si ya se desbloqueó antes (para no pedirlo en cada click)
-        window.onload = function() {
-            if (sessionStorage.getItem('unlocked') === 'true') {
-                document.getElementById('lock-screen').style.display = 'none';
-            }
-        }
-
-        function exportarDatos() {
-            try {
-                // Obtenemos los datos directamente del almacenamiento del teléfono
-                const todosLosDatos = {
-                    tareas: localStorage.getItem('myTodos'),
-                    habitos: localStorage.getItem(storageKeyHabitos), // Verifica que sea 'myHabits'
-                    agenda: localStorage.getItem('myEvents'),
-                    color: localStorage.getItem('userAccent'),
-                    oscuro: localStorage.getItem('darkMode')
-                };
-                
-                // Convertimos a texto y creamos el archivo
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todosLosDatos));
-                const downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", "mi_journal_backup.json");
-                document.body.appendChild(downloadAnchorNode);
-                downloadAnchorNode.click();
-                downloadAnchorNode.remove();
-                
-                alert("✅ Copia creada. ¡Los hábitos van incluidos!");
-            } catch (error) {
-                alert("❌ Error al exportar: " + error);
-            }
-        }
-
-        // --- CORRECCIÓN: Esta función faltaba para abrir el selector de archivos ---
-        function importarDatos() {
-            document.getElementById('importFile').click();
-        }
-
-        // --- CORRECCIÓN: Borrado con mensaje de éxito ---
-        function borrarTodo() {
-            if(confirm("¿Estás SEGURO? Se borrarán todas tus tareas, hábitos y eventos de forma permanente.")) {
-                localStorage.clear();
-                alert("✅ Todos los datos han sido borrados con éxito."); // Mensaje solicitado
-                location.reload();
-            }
-        }
-
-        // --- MEJORA: Asegurar que el modo oscuro se aplique correctamente al cargar ---
-        window.addEventListener('load', () => {
-            // Aplicar color guardado
-            const savedAccent = localStorage.getItem('userAccent');
-            if(savedAccent) {
-                document.documentElement.style.setProperty('--accent', savedAccent);
-                const colorInput = document.querySelector('input[type="color"]');
-                if(colorInput) colorInput.value = savedAccent;
-            }
-            
-            // CORRECCIÓN MODO OSCURO: Verificar el valor guardado
-            const darkModeSaved = localStorage.getItem('darkMode');
-            if(darkModeSaved === 'true') {
-                document.body.classList.add('dark-mode');
-            }
-        });
-
-        function procesarArchivo(input) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                try {
-                    const datos = JSON.parse(reader.result);
-                    
-                    // Guardamos todo en el teléfono
-                    if(datos.tareas) localStorage.setItem('myTodos', datos.tareas);
-                    if(datos.habitos) localStorage.setItem(storageKeyHabitos, datos.habitos);
-                    if(datos.agenda) localStorage.setItem('myEvents', datos.agenda);
-                    if(datos.color) localStorage.setItem('userAccent', datos.color);
-                    if(datos.oscuro) localStorage.setItem('darkMode', datos.oscuro);
-                    
-                    alert("✅ ¡Restauración completa! Los hábitos se han actualizado.");
-                    
-                    // Forzamos la recarga total para que el sistema lea los nuevos datos
-                    location.reload(); 
-                } catch (e) {
-                    alert("❌ El archivo no es válido.");
-                }
-            };
-            reader.readAsText(input.files[0]);
-        }
-        
-
-        // Cambiar el color principal de la app dinámicamente
+        // --- 9. CONFIGURACIÓN Y BACKUP ---
         function changeAccent(color) {
             document.documentElement.style.setProperty('--accent', color);
             localStorage.setItem('userAccent', color);
         }
 
-    function toggleDarkMode() {
-    // 1. Cambiamos la clase en el body
-    const esOscuro = document.body.classList.toggle('dark-mode');
-    
-    // 2. Guardamos la elección en el teléfono
-    localStorage.setItem('darkMode', esOscuro);
-}
-
-// ESTO ES VITAL: Al cargar la página, verificamos si estaba en oscuro
-    document.addEventListener('DOMContentLoaded', () => {
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            // Si tienes un switch (check), márcalo también:
-            // document.getElementById('tu-id-del-switch').checked = true;
+        function toggleDarkMode() {
+            const esOscuro = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', esOscuro);
         }
-    });
+
+        function exportarDatos() {
+            const data = {
+                tareas: localStorage.getItem(storageKeyTodos),
+                habitos: localStorage.getItem(storageKeyHabitos),
+                agenda: localStorage.getItem(storageKeyEvents),
+                color: localStorage.getItem('userAccent'),
+                oscuro: localStorage.getItem('darkMode'),
+                metas: localStorage.getItem(storageKeyMetas)
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "journal_backup.json";
+            a.click();
+        }
+
+        function importarDatos() { document.getElementById('importFile').click(); }
+
+        function procesarArchivo(input) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const d = JSON.parse(reader.result);
+                if(d.tareas) localStorage.setItem(storageKeyTodos, d.tareas);
+                if(d.habitos) localStorage.setItem(storageKeyHabitos, d.habitos);
+                if(d.agenda) localStorage.setItem(storageKeyEvents, d.agenda);
+                if(d.color) localStorage.setItem('userAccent', d.color);
+                if(d.oscuro) localStorage.setItem('darkMode', d.oscuro);
+                if(d.metas) localStorage.setItem(storageKeyMetas, d.metas);
+                alert("Restaurado.");
+                location.reload();
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        function borrarTodo() {
+            if(confirm("¿BORRAR TODO permanentemente?")) {
+                localStorage.clear();
+                alert("Datos borrados.");
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
