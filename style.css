@@ -28,6 +28,7 @@ body.dark-mode {
 }
 
 /* --- 2. ESTILOS BASE --- */
+/* --- 2. ESTILOS BASE --- */
 * {
     box-sizing: border-box;
     transition: background-color 0.3s, color 0.3s;
@@ -49,7 +50,8 @@ html, body {
     background-color: var(--bg-paper);
     background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
     background-size: 25px 25px; 
-    padding: 20px;
+    /* REDUCIMOS PADDING PARA GANAR ANCHO EN MÓVILES */
+    padding: 20px 10px; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -59,10 +61,11 @@ html, body {
 .section { 
     display: none; 
     width: 100%; 
-    max-width: 550px; /* Un poco más ancho para que el calendario respire */
+    /* SUBIMOS EL MÁXIMO PARA QUE NO SE DETENGA EN 550px */
+    max-width: 800px; 
     flex-direction: column; 
     align-items: center;    
-    padding: 10px;
+    padding: 0; /* QUITAMOS PADDING AQUÍ PORQUE LA TARJETA YA TIENE */
 }
 
 .section.active { 
@@ -85,6 +88,7 @@ h1 {
     align-items: center;
     width: 100%;
     margin-bottom: 20px;
+    padding: 0 10px;
 }
 
 .back-btn {
@@ -160,14 +164,15 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     border: 1px dashed var(--accent);
 }
 
-/* --- 6. HÁBITOS (CORREGIDO ANCHO Y MODOS) --- */
+/* --- 6. HÁBITOS (REPARADO ANCHO TOTAL) --- */
 .habit-card {
     background-color: var(--bg-cuadro);
     border: 1px solid var(--dot-color);
     border-radius: 15px;
-    padding: 25px 20px;
+    /* REDUCIMOS PADDING LATERAL DE LA TARJETA PARA QUE LOS DÍAS SE ESTIREN MÁS */
+    padding: 25px 10px; 
     margin-bottom: 25px;
-    width: 100%; /* Ocupa el ancho máximo del parent .section */
+    width: 100%; 
     box-shadow: 0 4px 10px var(--card-shadow);
 }
 
@@ -175,13 +180,13 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
+    padding: 0 10px 12px 10px;
     border-bottom: 1px solid var(--dot-color);
     margin-bottom: 15px;
 }
 
 .habit-header span {
-    font-family: 'Dancing Script', cursive; /* Fuente elegante como la original */
+    font-family: 'Dancing Script', cursive;
     font-size: 1.6rem;
     color: var(--texto);
 }
@@ -189,9 +194,11 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
 .dots-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 18px 5px; /* Más espacio vertical para que no se amontone */
+    /* REDUCIMOS EL GAP HORIZONTAL AL MÍNIMO PARA QUE QUEPAN LOS 7 */
+    gap: 20px 2px; 
     margin-top: 10px;
     justify-items: center;
+    width: 100%;
 }
 
 .dot-label-header {
@@ -210,18 +217,16 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     cursor: pointer;
 }
 
-/* Círculo: ahora usa el color del texto por defecto */
 .dot {
-    width: 25px;
-    height: 25px;
+    width: 26px; /* Ajuste para que se vea igual que en tu foto original */
+    height: 26px;
     border: 1.5px solid var(--texto); 
-    opacity: 0.4; /* Sutil cuando no está marcado */
+    opacity: 0.4;
     border-radius: 50%;
     background: transparent;
     transition: all 0.2s ease;
 }
 
-/* Cuando está marcado: usa el color de acento */
 .dot.checked {
     background-color: var(--accent);
     border-color: var(--accent);
@@ -236,8 +241,8 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
 }
 
 .dot-empty {
-    width: 25px;
-    height: 25px;
+    width: 26px;
+    height: 26px;
 }
 
 /* --- 7. TO-DO LIST --- */
