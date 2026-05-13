@@ -389,3 +389,76 @@ body.dark-mode {
     font-size: 0.85rem;
     cursor: pointer;
 }
+
+/* --- ESTILOS AGENDA --- */
+.agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.agenda-title-group { flex: 1; }
+#rango-semana-label { font-size: 0.8rem; opacity: 0.6; display: block; }
+
+.agenda-controls button {
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    color: var(--text-color);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.agenda-inputs { display: flex; flex-direction: column; gap: 10px; }
+.input-row { display: flex; gap: 10px; }
+.input-row input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line-color); background: var(--bg-color); color: var(--text-color); }
+
+.semana-grid {
+    margin-top: 25px;
+    border-top: 1px solid var(--line-color);
+}
+
+.dia-fila {
+    display: flex;
+    min-height: 80px;
+    border-bottom: 1px solid var(--line-color);
+    padding: 10px 0;
+}
+
+.dia-info {
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--line-color);
+    padding-right: 10px;
+}
+
+.dia-numero { font-size: 1.4rem; font-weight: bold; }
+.dia-nombre { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
+.dia-luna { font-size: 1rem; margin-top: 5px; }
+
+.dia-eventos {
+    flex: 1;
+    padding-left: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.evento-item {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    background: rgba(var(--accent-color-rgb, 46, 204, 113), 0.1);
+    border-left: 3px solid var(--accent-color);
+    border-radius: 4px;
+}
+
+.evento-hora { font-weight: bold; margin-right: 8px; font-size: 0.8rem; }
+
+/* Color especial para domingos como en la foto */
+.dia-fila.domingo .dia-numero, 
+.dia-fila.domingo .dia-nombre { color: #e74c3c; }

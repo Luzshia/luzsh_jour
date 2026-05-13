@@ -79,6 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Cargar tareas al iniciar
     cargarTareas();
+
+    // --- Listeners de la Agenda ---
+    const btnAddEvento = document.getElementById('btn-add-evento');
+    if (btnAddEvento) btnAddEvento.addEventListener('click', agregarEvento);
+
+    const btnPrev = document.getElementById('btn-semana-prev');
+    if (btnPrev) btnPrev.addEventListener('click', () => navegarSemana(-7));
+
+    const btnNext = document.getElementById('btn-semana-next');
+    if (btnNext) btnNext.addEventListener('click', () => navegarSemana(7));
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -461,4 +471,98 @@ function limpiarTareasCompletadas() {
         localStorage.setItem('journal_todo', JSON.stringify(tareas));
         cargarTareas();
     }
+}
+
+/* ============================================================
+   LÓGICA DE LA AGENDA (Estilo 43586.jpg)
+   ============================================================ */
+
+// Variable global para controlar qué semana estamos viendo
+let fechaReferenciaAgenda = new Date(); 
+
+function navegarSemana(dias) {
+    fechaReferenciaAgenda.setDate(fechaReferenciaAgenda.getDate() + dias);
+    renderizarSemana();
+}
+
+function renderizarSemana() {
+    const cont = document.getElementById('semana-container');
+    if (!cont) return;
+    
+    cont.innerHTML = "";
+    
+    // Calculamos el lunes de la semana actual
+    let lunes = new Date(fechaReferenciaAgenda);
+    const diaSemana = lunes.getDay();
+    const diferencia = (diaSemana === 0 ? -6 : 1 - diaSemana);
+    lunes.setDate(lunes.getDate() + diferencia);
+
+    // Actualizamos el título del mes/año en la cabecera
+    const labelRango = document.getElementById('rango-semana-label');
+    if (labelRango) {
+        labelRango.textContent = lunes.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+    }
+
+    const nombresDias = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
+
+    for (let i = 0; i < 7; i++) {
+        let d = new Date(lunes);
+        d.setDate(lunes.getDate() + i);
+        
+        const iso = d.toISOString().split('T')[0];
+        const evs = JSON.parse(localStorage.getItem(`agenda_${iso}`)) || [];
+        
+        // Creamos la fila inspirada en la imagen 43586.jpg
+        const fila = document.createElement('div');
+        fila.className = `dia-fila ${i === 6 ? 'domingo' : ''}`;
+        
+        fila.innerHTML = `
+            <div class="dia-info">
+                <span class="dia-nombre">${nombresDias[i]}</span>
+                <span class="dia-numero">${d.getDate()}</span>
+                <span class="dia-luna">${obtenerIconoLuna(d)}</span>
+            </div>
+            <div class="dia-eventos">
+                ${evs.sort((a, b) => a.hora.localeCompare(b.hora)).map(e => `
+                    <div class="evento-item">
+                        ${e.hora ? `<span class="evento-hora">${e.hora}</span>` : ''}
+                        <span class="evento-texto">${e.tarea}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        cont.appendChild(fila);
+    }
+}
+
+function agregarEvento() {
+    const tarea = document.getElementById('agenda-tarea').value;
+    const fecha = document.getElementById('agenda-fecha').value;
+    const hora = document.getElementById('agenda-hora').value;
+
+    if (!tarea || !fecha) {
+        alert("Por favor, introduce al menos la actividad y la fecha.");
+        return;
+    }
+
+    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+    evs.push({ tarea, hora });
+    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+
+    // Limpiar input y refrescar vista
+    document.getElementById('agenda-tarea').value = "";
+    renderizarSemana();
+}
+
+function obtenerIconoLuna(f) {
+    const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+    const cicloSinergico = 29.53059;
+    const fechaBase = new Date("2024-01-11"); // Luna nueva de referencia
+    const msPorDia = 86400000;
+    
+    const diasTranscurridos = (f - fechaBase) / msPorDia;
+    const posicionCiclo = (diasTranscurridos % cicloSinergico + cicloSinergico) % cicloSinergico;
+    const index = Math.floor((posicionCiclo / cicloSinergico) * 8);
+    
+    return lunas[index] || "🌙";
 }
