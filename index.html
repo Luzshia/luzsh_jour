@@ -108,13 +108,27 @@
                 </div>
             </section>
 
-            <!-- VISTA: TODO -->
+            <!-- VISTA: TODO LIST -->
             <section id="view-todo" class="view">
                 <header class="app-header">
                     <h1>To-Do List</h1>
                     <div class="header-line"></div>
                 </header>
-                <div id="todo-container" class="content-body"></div>
+                
+                <div class="content-body">
+                    <div class="input-group">
+                        <input type="text" id="input-nueva-tarea" placeholder="¿Qué tienes pendiente?">
+                        <button id="btn-add-tarea">+</button>
+                    </div>
+
+                    <div class="todo-controls">
+                        <button id="btn-limpiar-completadas" class="btn-secondary">🗑️ Borrar completadas</button>
+                    </div>
+
+                    <ul id="lista-tareas" class="todo-list">
+                        <!-- Las tareas se generarán aquí -->
+                    </ul>
+                </div>
             </section>
 
             <!-- VISTA: AGENDA -->

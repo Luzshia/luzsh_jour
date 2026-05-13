@@ -72,6 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Cargar hábitos al iniciar
     cargarHabitos();
+
+    // Escuchadores para To-Do List
+    document.getElementById('btn-add-tarea').addEventListener('click', agregarTarea);
+    document.getElementById('btn-limpiar-completadas').addEventListener('click', limpiarTareasCompletadas);
+    
+    // Cargar tareas al iniciar
+    cargarTareas();
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -395,5 +402,63 @@ function mostrarHistorialHabitos() {
             });
             contenedor.appendChild(div);
         }
+    }
+}
+
+/* --- FUNCIONES TO-DO LIST --- */
+
+function cargarTareas() {
+    const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    const lista = document.getElementById('lista-tareas');
+    lista.innerHTML = "";
+
+    tareas.forEach((tarea, index) => {
+        const li = document.createElement('li');
+        li.className = `todo-item ${tarea.completada ? 'done' : ''}`;
+        
+        li.innerHTML = `
+            <div class="todo-check ${tarea.completada ? 'active' : ''}" onclick="alternarTarea(${index})"></div>
+            <span onclick="alternarTarea(${index})">${tarea.texto}</span>
+        `;
+        lista.appendChild(li);
+    });
+}
+
+function agregarTarea() {
+    const input = document.getElementById('input-nueva-tarea');
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    tareas.push({ texto: texto, completada: false });
+    
+    localStorage.setItem('journal_todo', JSON.stringify(tareas));
+    input.value = "";
+    cargarTareas();
+}
+
+function alternarTarea(index) {
+    const tareas = JSON.parse(localStorage.getItem('journal_todo'));
+    tareas[index].completada = !tareas[index].completada;
+    localStorage.setItem('journal_todo', JSON.stringify(tareas));
+    cargarTareas();
+}
+
+function limpiarTareasCompletadas() {
+    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    const antes = tareas.length;
+    
+    // Filtramos para quedarnos solo con las que NO están completadas
+    tareas = tareas.filter(t => !t.completada);
+    
+    const despues = tareas.length;
+    if (antes === despues) {
+        alert("No hay tareas completadas para eliminar.");
+        return;
+    }
+
+    if (confirm(`¿Quieres eliminar ${antes - despues} tareas terminadas?`)) {
+        localStorage.setItem('journal_todo', JSON.stringify(tareas));
+        cargarTareas();
     }
 }
