@@ -89,6 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnNext = document.getElementById('btn-semana-next');
     if (btnNext) btnNext.addEventListener('click', () => navegarSemana(7));
+
+    const btnCiclo = document.getElementById('btn-guardar-ciclo');
+    if (btnCiclo) btnCiclo.addEventListener('click', guardarDatosCiclo);
+    
+    // Establecer fecha de hoy por defecto
+    const inputFechaCiclo = document.getElementById('ciclo-fecha-registro');
+    if (inputFechaCiclo) inputFechaCiclo.value = new Date().toISOString().split('T')[0];
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -565,4 +572,63 @@ function obtenerIconoLuna(f) {
     const index = Math.floor((posicionCiclo / cicloSinergico) * 8);
     
     return lunas[index] || "🌙";
+}
+
+/* ============================================================
+   LÓGICA DEL CICLO MENSTRUAL
+   ============================================================ */
+
+function guardarDatosCiclo() {
+    const fecha = document.getElementById('ciclo-fecha-registro').value;
+    if (!fecha) return alert("Selecciona una fecha");
+
+    // Recoger salud seleccionada
+    const saludChecks = [];
+    document.querySelectorAll('#ciclo-salud-check input:checked').forEach(c => saludChecks.push(c.value));
+
+    const registro = {
+        temp: document.getElementById('ciclo-temp').value,
+        horaTemp: document.getElementById('ciclo-temp-hora').value,
+        flujo: document.getElementById('ciclo-flujo').value,
+        color: document.getElementById('ciclo-color').value,
+        salud: saludChecks,
+        otrosSalud: document.getElementById('ciclo-otros-salud').value,
+        intervencion: document.getElementById('ciclo-intervencion').value,
+        animo: document.getElementById('ciclo-animo').value,
+        sexual: document.getElementById('ciclo-sexual').checked,
+        notas: document.getElementById('ciclo-notas').value
+    };
+
+    // Guardar por fecha única
+    localStorage.setItem(`ciclo_${fecha}`, JSON.stringify(registro));
+    alert("Datos guardados correctamente.");
+    cargarCicloActual();
+}
+
+function cargarCicloActual() {
+    const contenedor = document.getElementById('historial-ciclo');
+    if (!contenedor) return;
+    contenedor.innerHTML = "<h3>Registros Recientes</h3>";
+
+    // Buscar los últimos 7 días de registros
+    const registros = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('ciclo_')) {
+            registros.push({ fecha: key.replace('ciclo_', ''), datos: JSON.parse(localStorage.getItem(key)) });
+        }
+    }
+
+    // Ordenar por fecha descendente
+    registros.sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+    registros.slice(0, 5).forEach(r => {
+        const entry = document.createElement('div');
+        entry.className = 'history-entry';
+        entry.innerHTML = `
+            <strong>${r.fecha}</strong> - Flujo: ${r.datos.flujo || 'N/A'}<br>
+            <i>${r.datos.salud.join(', ')}</i>
+        `;
+        contenedor.appendChild(entry);
+    });
 }

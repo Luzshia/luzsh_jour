@@ -462,3 +462,40 @@ body.dark-mode {
 /* Color especial para domingos como en la foto */
 .dia-fila.domingo .dia-numero, 
 .dia-fila.domingo .dia-nombre { color: #e74c3c; }
+
+/* --- ESTILOS CICLO --- */
+.cycle-form .config-group { margin-bottom: 15px; }
+.full-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid var(--line-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+.checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.checklist-grid label {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.history-list { margin-top: 30px; }
+.history-entry {
+    background: var(--card-bg);
+    padding: 10px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+}

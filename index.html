@@ -166,16 +166,87 @@
                 </div>
             </section>
 
-            <!-- VISTA: CICLO -->
+            <!-- VISTA: CICLO MENSTRUAL -->
             <section id="view-ciclo" class="view">
                 <header class="app-header">
                     <h1>Ciclo Menstrual</h1>
                     <div class="header-line"></div>
                 </header>
-                <div id="ciclo-container" class="content-body"></div>
+                
+                <div class="content-body cycle-form">
+                    <!-- Selector de Fecha -->
+                    <div class="config-group">
+                        <label>Fecha de registro:</label>
+                        <input type="date" id="ciclo-fecha-registro" class="full-input">
+                    </div>
+
+                    <!-- Biomarcadores -->
+                    <div class="config-group">
+                        <h3>🌡️ Biomarcadores</h3>
+                        <div class="input-row">
+                            <input type="number" id="ciclo-temp" step="0.01" placeholder="Temp. Basal">
+                            <input type="time" id="ciclo-temp-hora">
+                        </div>
+                    </div>
+
+                    <!-- Menstruación -->
+                    <div class="config-group">
+                        <h3>🩸 Menstruación</h3>
+                        <select id="ciclo-flujo" class="full-input">
+                            <option value="">Intensidad de flujo...</option>
+                            <option value="Ninguno">Ninguno</option>
+                            <option value="Manchado">Manchado (Spotting)</option>
+                            <option value="Ligero">Ligero</option>
+                            <option value="Moderado">Moderado</option>
+                            <option value="Abundante">Abundante</option>
+                        </select>
+                        <select id="ciclo-color" class="full-input">
+                            <option value="">Color de flujo...</option>
+                            <option value="Rojo Brillante">Rojo Brillante</option>
+                            <option value="Rojo Oscuro">Rojo Oscuro / Marrón</option>
+                            <option value="Rosado">Rosado</option>
+                        </select>
+                    </div>
+
+                    <!-- Salud y Síntomas -->
+                    <div class="config-group">
+                        <h3>🏥 Salud y Factores</h3>
+                        <div class="checklist-grid" id="ciclo-salud-check">
+                            <label><input type="checkbox" value="Dolor Pélvico"> Dolor Pélvico</label>
+                            <label><input type="checkbox" value="Sensibilidad Pechos"> Sensibilidad Pechos</label>
+                            <label><input type="checkbox" value="Hinchazón"> Hinchazón</label>
+                            <label><input type="checkbox" value="Migraña"> Migraña</label>
+                        </div>
+                        <input type="text" id="ciclo-otros-salud" placeholder="Sueño, Energía, Digestión..." class="full-input">
+                    </div>
+
+                    <!-- Estilo de Vida e Intervenciones -->
+                    <div class="config-group">
+                        <h3>🧪 Factores de Intervención</h3>
+                        <input type="text" id="ciclo-intervencion" placeholder="Alcohol, estrés, viajes, medicinas..." class="full-input">
+                    </div>
+
+                    <!-- Estado de Ánimo -->
+                    <div class="config-group">
+                        <h3>🧠 Estado de Ánimo</h3>
+                        <input type="text" id="ciclo-animo" placeholder="Líbido, irritabilidad, ansiedad..." class="full-input">
+                    </div>
+
+                    <!-- Otros -->
+                    <div class="config-group">
+                        <h3>📝 Otros</h3>
+                        <label><input type="checkbox" id="ciclo-sexual"> Actividad Sexual</label>
+                        <textarea id="ciclo-notas" placeholder="Notas libres..." rows="3" class="full-input"></textarea>
+                    </div>
+
+                    <button id="btn-guardar-ciclo" class="config-item-btn btn-load">Guardar Registro del Día</button>
+                    
+                    <div id="historial-ciclo" class="history-list">
+                        <!-- Aquí se verán los días guardados -->
+                    </div>
+                </div>
             </section>
 
-            <!-- VISTA: CONFIGURACIÓN -->
             <!-- VISTA: CONFIGURACIÓN -->
             <section id="view-config" class="view">
                 <header class="app-header">
