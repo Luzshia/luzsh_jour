@@ -172,12 +172,6 @@
     </div>
 
     <script>
-        
-        // Ejecutar de inmediato para evitar el flash blanco
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-    
         // --- 1. REGISTRO DEL SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -794,9 +788,21 @@ ${eventosDia.length > 0 ? eventosDia.map(e => `
         }
 
     function toggleDarkMode() {
-        const isDark = document.body.classList.toggle('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-    }
+    // 1. Cambiamos la clase en el body
+    const esOscuro = document.body.classList.toggle('dark-mode');
+    
+    // 2. Guardamos la elección en el teléfono
+    localStorage.setItem('darkMode', esOscuro);
+}
+
+// ESTO ES VITAL: Al cargar la página, verificamos si estaba en oscuro
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            // Si tienes un switch (check), márcalo también:
+            // document.getElementById('tu-id-del-switch').checked = true;
+        }
+    });
     </script>
 </body>
 </html>

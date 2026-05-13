@@ -1,8 +1,17 @@
 :root {
-    --bg-paper: #fdfdfd;
-    --dot-color: #d1d1d1;
-    --accent: #6b705c; /* Un verde oliva tipo vintage */
-    --text: #463f3a;
+    /* Colores Modo Claro */
+    --bg-pantalla: #f4f4f4;
+    --bg-cuadro: #ffffff;
+    --texto: #333333;
+    --puntos: #ccc;
+}
+
+body.dark-mode {
+    /* Colores Modo Oscuro */
+    --bg-pantalla: #121212; /* Negro profundo */
+    --bg-cuadro: #1e1e1e;   /* Gris muy oscuro para el contenedor */
+    --texto: #ffffff;
+    --puntos: #333;
 }
 
 body {
@@ -10,6 +19,31 @@ body {
     background-color: #e9ecef;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text);
+}
+
+/* Esto controla TODA la pantalla */
+html, body {
+    height: 100%;
+    margin: 0;
+    background-color: var(--bg-pantalla) !important;
+    background-image: radial-gradient(var(--puntos) 1px, transparent 1px) !important;
+    background-size: 20px 20px;
+    color: var(--texto);
+    transition: background 0.3s, color 0.3s; /* Para que el cambio sea suave */
+}
+
+/* Esto controla el cuadro de tu Journal */
+.container {
+    background-color: var(--bg-cuadro) !important;
+    color: var(--texto);
+    /* Añade aquí tus bordes y sombras normales */
+}
+
+/* Botones del menú y otros */
+.menu-btn, button {
+    background-color: var(--bg-cuadro);
+    color: var(--texto);
+    border: 1px solid var(--puntos);
 }
 
 .notebook-page {
@@ -321,47 +355,4 @@ textarea {
 .other-month {
     background: #fdfdfd;
     opacity: 0.4;
-}
-
-/* --- MODO OSCURO TOTAL Y DEFINITIVO --- */
-/* Forzamos que el fondo de toda la página cambie */
-html, body.dark-mode {
-    background-color: #121212 !important;
-    background-image: radial-gradient(#333 1px, transparent 1px) !important;
-    color: #ffffff !important;
-    min-height: 100vh;
-}
-
-/* El contenedor principal debe integrarse, no flotar en blanco */
-body.dark-mode .container {
-    background-color: #1e1e1e !important;
-    border: 1px solid #333 !important;
-    box-shadow: none !important;
-}
-
-/* CORRECCIÓN BOTONES (Imagen 43374.jpg): Para que se vean los de Backup y Cargar */
-body.dark-mode button, 
-body.dark-mode .menu-btn,
-body.dark-mode .import-label { /* Si usas label para cargar */
-    background-color: #2d2d2d !important;
-    color: #ffffff !important;
-    border: 1px solid #444 !important;
-}
-
-/* Los textos explicativos grisáceos en Ajustes */
-body.dark-mode p, body.dark-mode .section-desc {
-    color: #aaa !important;
-}
-
-/* El botón de borrar debe resaltar pero ser legible */
-body.dark-mode .delete-all-btn {
-    background-color: rgba(255, 0, 0, 0.1) !important;
-    border: 1px solid #ff4444 !important;
-    color: #ff4444 !important;
-}
-
-/* Inputs y botones de volver */
-body.dark-mode .back-btn {
-    background: #333 !important;
-    color: #eee !important;
 }
