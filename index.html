@@ -371,15 +371,21 @@
         function generarPuntos(habit, totalDias) {
             let html = '';
             let diaSemanaInicio = new Date(year, mesActual, 1).getDay(); 
+            // Ajuste para que Lunes sea 1 y Domingo 7
             diaSemanaInicio = diaSemanaInicio === 0 ? 7 : diaSemanaInicio; 
             
-            for (let h = 1; h < diaSemanaInicio; h++) html += `<div class="dot-empty"></div>`;
+            // Espacios vacíos para los días del mes anterior
+            for (let h = 1; h < diaSemanaInicio; h++) {
+                html += `<div class="dot-empty"></div>`;
+            }
+
+            // Generar cada día del mes
             for (let i = 1; i <= totalDias; i++) {
                 const checked = habit.history.includes(i) ? 'checked' : '';
                 html += `
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <div class="dot ${checked}" onclick="toggleDot(${habit.id}, ${i})"></div>
-                        <span class="dot-label">${i}</span>
+                    <div class="dot-wrapper" onclick="toggleDot(${habit.id}, ${i})">
+                        <div class="dot ${checked}"></div>
+                        <span class="dot-number">${i}</span>
                     </div>
                 `;
             }

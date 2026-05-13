@@ -191,29 +191,59 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     color: var(--texto);
 }
 
+/* Contenedor principal de la cuadrícula */
 .dots-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    justify-items: center;
+    grid-template-columns: repeat(7, 1fr); /* 7 columnas iguales */
+    gap: 12px 8px; /* Espacio vertical y horizontal */
+    margin-top: 15px;
+    justify-items: center; /* Centra todo horizontalmente */
+    align-items: center;   /* Centra todo verticalmente */
 }
 
-.dot {
-    width: 22px;
-    height: 22px;
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
+/* Las letras de los días (L, M, X...) */
+.dot-label-header {
+    font-size: 0.7rem;
+    font-weight: bold;
+    opacity: 0.6;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+/* El grupo de Círculo + Número */
+.dot-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     cursor: pointer;
+}
+
+/* El círculo (dot) */
+.dot {
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--accent); /* Usa tu color de acento */
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .dot.checked {
     background-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
 }
 
-.dot-label {
-    font-size: 0.6rem;
-    color: var(--texto);
-    text-align: center;
+/* El número debajo del círculo */
+.dot-number {
+    font-size: 10px;
+    font-family: var(--font-main); /* Tu fuente principal */
+    opacity: 0.8;
+}
+
+/* Espacios vacíos al inicio del mes */
+.dot-empty {
+    width: 24px;
+    height: 24px;
 }
 
 /* --- 7. TO-DO LIST --- */
