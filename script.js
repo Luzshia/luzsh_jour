@@ -96,6 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Establecer fecha de hoy por defecto
     const inputFechaCiclo = document.getElementById('ciclo-fecha-registro');
     if (inputFechaCiclo) inputFechaCiclo.value = new Date().toISOString().split('T')[0];
+
+    // --- Listener Ciclo Menstrual ---
+    const btnGuardarCiclo = document.getElementById('btn-guardar-ciclo');
+    if (btnGuardarCiclo) btnGuardarCiclo.addEventListener('click', guardarDatosCiclo);
+    
+    // Poner fecha de hoy por defecto
+    const inputFecha = document.getElementById('ciclo-fecha');
+    if(inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
 });
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -574,61 +582,92 @@ function obtenerIconoLuna(f) {
     return lunas[index] || "🌙";
 }
 
-/* ============================================================
-   LÓGICA DEL CICLO MENSTRUAL
-   ============================================================ */
-
 function guardarDatosCiclo() {
-    const fecha = document.getElementById('ciclo-fecha-registro').value;
+    const fecha = document.getElementById('ciclo-fecha').value;
+    const esInicio = document.getElementById('ciclo-inicio-regla').checked;
+    
     if (!fecha) return alert("Selecciona una fecha");
 
-    // Recoger salud seleccionada
-    const saludChecks = [];
-    document.querySelectorAll('#ciclo-salud-check input:checked').forEach(c => saludChecks.push(c.value));
-
     const registro = {
-        temp: document.getElementById('ciclo-temp').value,
-        horaTemp: document.getElementById('ciclo-temp-hora').value,
+        fecha,
+        regla: esInicio,
         flujo: document.getElementById('ciclo-flujo').value,
         color: document.getElementById('ciclo-color').value,
-        salud: saludChecks,
-        otrosSalud: document.getElementById('ciclo-otros-salud').value,
-        intervencion: document.getElementById('ciclo-intervencion').value,
-        animo: document.getElementById('ciclo-animo').value,
-        sexual: document.getElementById('ciclo-sexual').checked,
+        salud: {
+            pelvico: document.getElementById('check-pelvico').checked,
+            migrana: document.getElementById('check-migrana').checked,
+            sueno: document.getElementById('ciclo-sueno').value,
+            energia: document.getElementById('ciclo-energia').value,
+            digestion: document.getElementById('ciclo-digestion').value,
+            sexo: document.getElementById('check-sexo').checked
+        },
+        animo: {
+            libido: document.getElementById('check-libido').checked,
+            irritabilidad: document.getElementById('check-irritabilidad').checked,
+            ansiedad: document.getElementById('check-ansiedad').checked,
+            paz: document.getElementById('check-paz').checked
+        },
         notas: document.getElementById('ciclo-notas').value
     };
 
-    // Guardar por fecha única
-    localStorage.setItem(`ciclo_${fecha}`, JSON.stringify(registro));
-    alert("Datos guardados correctamente.");
+    // Obtener todos los registros y añadir el nuevo
+    let todosLosRegistros = JSON.parse(localStorage.getItem('journal_ciclo_raw')) || [];
+    // Evitar duplicados de fecha
+    todosLosRegistros = todosLosRegistros.filter(r => r.fecha !== fecha);
+    todosLosRegistros.push(registro);
+    // Ordenar por fecha
+    todosLosRegistros.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    
+    localStorage.setItem('journal_ciclo_raw', JSON.stringify(todosLosRegistros));
+    alert("Día registrado");
     cargarCicloActual();
 }
 
 function cargarCicloActual() {
-    const contenedor = document.getElementById('historial-ciclo');
-    if (!contenedor) return;
-    contenedor.innerHTML = "<h3>Registros Recientes</h3>";
+    const cont = document.getElementById('historial-ciclos-tablas');
+    if (!cont) return;
+    cont.innerHTML = "<h3>📊 Historial de Ciclos</h3>";
 
-    // Buscar los últimos 7 días de registros
-    const registros = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('ciclo_')) {
-            registros.push({ fecha: key.replace('ciclo_', ''), datos: JSON.parse(localStorage.getItem(key)) });
+    const registros = JSON.parse(localStorage.getItem('journal_ciclo_raw')) || [];
+    if (registros.length === 0) return;
+
+    let ciclosAgrupados = [];
+    let cicloActual = [];
+
+    registros.forEach(r => {
+        if (r.regla && cicloActual.length > 0) {
+            ciclosAgrupados.push(cicloActual);
+            cicloActual = [];
         }
-    }
+        cicloActual.push(r);
+    });
+    ciclosAgrupados.push(cicloActual); // Añadir el último ciclo en curso
 
-    // Ordenar por fecha descendente
-    registros.sort((a, b) => b.fecha.localeCompare(a.fecha));
-
-    registros.slice(0, 5).forEach(r => {
-        const entry = document.createElement('div');
-        entry.className = 'history-entry';
-        entry.innerHTML = `
-            <strong>${r.fecha}</strong> - Flujo: ${r.datos.flujo || 'N/A'}<br>
-            <i>${r.datos.salud.join(', ')}</i>
-        `;
-        contenedor.appendChild(entry);
+    // Crear tablas (de la más reciente a la más antigua)
+    ciclosAgrupados.reverse().forEach((ciclo, index) => {
+        const titulo = `Ciclo iniciado el ${ciclo[0].fecha}`;
+        let tablaHTML = `
+            <div class="tabla-ciclo-wrapper">
+                <h4>${titulo}</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th><th>🩸</th><th>Salud</th><th>Ánimo</th><th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ciclo.map(d => `
+                            <tr>
+                                <td>${d.fecha.split('-')[2]}</td>
+                                <td>${d.flujo || '-'} ${d.color || ''}</td>
+                                <td>${d.salud.pelvico?'Pélvico ':''}${d.salud.migrana?'Migraña ':''}${d.salud.energia}</td>
+                                <td>${d.animo.paz?'Paz ':''}${d.animo.ansiedad?'Ansiedad ':''}</td>
+                                <td>${d.notas}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        cont.innerHTML += tablaHTML;
     });
 }
