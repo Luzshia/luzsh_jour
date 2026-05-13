@@ -74,44 +74,44 @@ function validarPin() {
     }
 }
 
-/* --- NAVEGACIÓN POR GESTOS (VERSIÓN BLINDADA) --- */
+/* --- NAVEGACIÓN POR GESTOS (SISTEMA DE ANCLAS NATIVAS) --- */
 
-// 1. Asegurar que el Menú sea el estado 0 nada más cargar la app
-history.replaceState({ page: 'menu' }, "", " "); 
-
-window.onpopstate = function(event) {
-    // Si el usuario le da atrás, verificamos qué página toca
-    if (event.state && event.state.page) {
-        ejecutarCambioVisual(event.state.page);
-    } else {
-        // Si llegamos al fondo del historial, forzamos el menú
-        ejecutarCambioVisual('menu');
-    }
-};
-
-function navegar(pantalla) {
-    // IMPORTANTE: El tercer parámetro "#" + pantalla fuerza al navegador a reconocer un cambio
-    history.pushState({ page: pantalla }, "", "#" + pantalla);
+// 1. Escuchar los cambios en la URL (cuando cambia el #)
+window.addEventListener('hashchange', () => {
+    // Leemos qué hay después del # (si no hay nada, vamos al menú)
+    const pantalla = location.hash.replace('#', '') || 'menu';
     ejecutarCambioVisual(pantalla);
+});
+
+// 2. Función navegar: Ahora solo cambia el # de la URL
+function navegar(pantalla) {
+    location.hash = pantalla;
 }
 
+// 3. Función visual: Solo se encarga de mostrar/ocultar
 function ejecutarCambioVisual(pantalla) {
-    // Ocultamos todas las vistas
-    const vistas = document.querySelectorAll('.view');
-    vistas.forEach(v => v.classList.remove('active'));
+    // Ocultar todas las vistas
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     
-    // Mostramos la que toca
+    // Mostrar la seleccionada
     const vistaDestino = document.getElementById(`view-${pantalla}`);
     if (vistaDestino) {
         vistaDestino.classList.add('active');
         
-        // Si regresamos al menú, refrescamos el año
         if (pantalla === 'menu') {
             const labelAnio = document.getElementById('year-label');
             if (labelAnio) labelAnio.textContent = new Date().getFullYear();
         }
     }
     window.scrollTo(0, 0);
+}
+
+// 4. Al cargar la app, forzar que empiece en el menú si no hay hash
+if (!location.hash) {
+    location.hash = 'menu';
+} else {
+    // Si recargas y ya hay un hash (ej. #habitos), que lo muestre
+    ejecutarCambioVisual(location.hash.replace('#', ''));
 }
 
 /* --- MODO OSCURO --- */
