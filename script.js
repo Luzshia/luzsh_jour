@@ -74,36 +74,43 @@ function validarPin() {
     }
 }
 
-/* --- NAVEGACIÓN POR GESTOS (CORREGIDA) --- */
+/* --- NAVEGACIÓN POR GESTOS (VERSIÓN BLINDADA) --- */
 
-// Detecta el gesto de atrás del teléfono
+// 1. Asegurar que el Menú sea el estado 0 nada más cargar la app
+history.replaceState({ page: 'menu' }, "", " "); 
+
 window.onpopstate = function(event) {
-    // Si hay un estado guardado, navegamos a él, si no, por defecto al menú
-    const destino = (event.state && event.state.page) ? event.state.page : 'menu';
-    ejecutarCambioVisual(destino);
+    // Si el usuario le da atrás, verificamos qué página toca
+    if (event.state && event.state.page) {
+        ejecutarCambioVisual(event.state.page);
+    } else {
+        // Si llegamos al fondo del historial, forzamos el menú
+        ejecutarCambioVisual('menu');
+    }
 };
 
 function navegar(pantalla) {
-    // Guardamos la nueva página en el historial
-    history.pushState({ page: pantalla }, "", `#${pantalla}`);
+    // IMPORTANTE: El tercer parámetro "#" + pantalla fuerza al navegador a reconocer un cambio
+    history.pushState({ page: pantalla }, "", "#" + pantalla);
     ejecutarCambioVisual(pantalla);
 }
 
 function ejecutarCambioVisual(pantalla) {
-    // Ocultar todo
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    // Ocultamos todas las vistas
+    const vistas = document.querySelectorAll('.view');
+    vistas.forEach(v => v.classList.remove('active'));
     
-    // Mostrar la sección correspondiente
+    // Mostramos la que toca
     const vistaDestino = document.getElementById(`view-${pantalla}`);
     if (vistaDestino) {
         vistaDestino.classList.add('active');
-        // Si volvemos al menú, nos aseguramos que el año se actualice si es necesario
+        
+        // Si regresamos al menú, refrescamos el año
         if (pantalla === 'menu') {
             const labelAnio = document.getElementById('year-label');
             if (labelAnio) labelAnio.textContent = new Date().getFullYear();
         }
     }
-    // Scroll al inicio para que la nueva pantalla no aparezca a mitad de página
     window.scrollTo(0, 0);
 }
 
