@@ -34,179 +34,54 @@ body.dark-mode {
     transition: background-color 0.3s, color 0.3s;
 }
 
-html, body {
-    height: 100%;
+/* 1. Resetear el contenedor principal para que NADA lo frene */
+body, html {
     margin: 0;
-    background-color: var(--bg-pantalla) !important;
-    background-image: radial-gradient(var(--puntos) 1px, transparent 1px) !important;
-    background-size: 20px 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--texto);
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Evita que aparezca scroll lateral */
 }
 
-.notebook-page {
-    width: 100%;
-    min-height: 100vh;
-    background-color: var(--bg-paper);
-    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
-    background-size: 25px 25px; 
-    /* REDUCIMOS PADDING PARA GANAR ANCHO EN MÓVILES */
-    padding: 20px 10px; 
+/* El contenedor que envuelve TODO */
+.container, main, #app { 
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box;
+}
+
+/* 2. El contenedor específico de los cuadros de hábitos */
+#habitContainer {
+    width: 100% !important;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; /* Centra las tarjetas */
+    gap: 20px;
 }
 
-/* --- 3. SECCIONES Y NAVEGACIÓN --- */
-.section { 
-    display: none; 
-    width: 100%; 
-    /* SUBIMOS EL MÁXIMO PARA QUE NO SE DETENGA EN 550px */
-    max-width: 800px; 
-    flex-direction: column; 
-    align-items: center;    
-    padding: 0; /* QUITAMOS PADDING AQUÍ PORQUE LA TARJETA YA TIENE */
-}
-
-.section.active { 
-    display: flex; 
-}
-
-h1 {
-    font-family: 'Georgia', serif;
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 10px;
-    margin-bottom: 30px;
-    text-align: center;
-    width: fit-content;
-    color: var(--texto);
-}
-
-.header-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 0 10px;
-}
-
-.back-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--texto);
-    padding: 8px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-/* --- 4. BOTONES Y MENÚ --- */
-.main-menu {
-    display: flex;
-    flex-direction: column; 
-    gap: 15px;
-    width: 100%;
-    max-width: 400px;
-}
-
-.menu-btn {
-    width: 100%; 
-    padding: 20px; 
-    background-color: var(--bg-cuadro);
-    color: var(--texto);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px; 
-    font-size: 1.3rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 4px 4px 0px var(--border-color);
-}
-
-.menu-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px var(--border-color);
-}
-
-/* --- 5. ENTRADAS Y TEXTO --- */
-textarea {
-    width: 100%;
-    height: 60vh;
-    background: transparent;
-    border: none;
-    line-height: 35px;
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--texto);
-    resize: none;
-    outline: none;   
-}
-
-input[type="text"], input[type="password"], input[type="date"], input[type="time"] {
-    background-color: var(--bg-input);
-    color: var(--texto);
-    border: 1px solid var(--dot-color);
-    padding: 10px;
-    border-radius: 8px;
-    outline: none;
-}
-
-.input-box {
-    background-color: var(--bg-input);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    width: 100%;
-    border: 1px dashed var(--accent);
-}
-
-/* --- 6. HÁBITOS (REPARADO ANCHO TOTAL) --- */
+/* 3. LA TARJETA (Aquí forzamos el ancho de la imagen original) */
 .habit-card {
-    background-color: var(--bg-cuadro);
-    border: 1px solid var(--dot-color);
+    background: var(--card-bg, #ffffff);
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 15px;
-    /* REDUCIMOS PADDING LATERAL DE LA TARJETA PARA QUE LOS DÍAS SE ESTIREN MÁS */
-    padding: 25px 10px; 
-    margin-bottom: 25px;
-    width: 100%; 
-    box-shadow: 0 4px 10px var(--card-shadow);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    
+    /* Forzamos que use el espacio lateral */
+    width: 92vw !important; /* Usa el 92% del ancho de la pantalla del móvil */
+    max-width: 480px !important; /* Pero que no se vea gigante en PC */
+    
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.habit-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 10px 12px 10px;
-    border-bottom: 1px solid var(--dot-color);
-    margin-bottom: 15px;
-}
-
-.habit-header span {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--texto);
-}
-
+/* 4. EL CALENDARIO (Para que los puntos respiren) */
 .dots-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    /* REDUCIMOS EL GAP HORIZONTAL AL MÍNIMO PARA QUE QUEPAN LOS 7 */
-    gap: 20px 2px; 
-    margin-top: 10px;
-    justify-items: center;
+    gap: 15px 5px; /* Más espacio vertical entre filas */
+    margin-top: 20px;
     width: 100%;
-}
-
-.dot-label-header {
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--texto);
-    opacity: 0.5;
-    margin-bottom: 8px;
 }
 
 .dot-wrapper {
@@ -214,30 +89,18 @@ input[type="text"], input[type="password"], input[type="date"], input[type="time
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    cursor: pointer;
 }
 
 .dot {
-    width: 26px; /* Ajuste para que se vea igual que en tu foto original */
-    height: 26px;
-    border: 1.5px solid var(--texto); 
-    opacity: 0.4;
+    width: 25px; /* Tamaño más cercano a tu versión "bonita" */
+    height: 25px;
+    border: 1.5px solid var(--accent, #2ecc71);
     border-radius: 50%;
-    background: transparent;
-    transition: all 0.2s ease;
-}
-
-.dot.checked {
-    background-color: var(--accent);
-    border-color: var(--accent);
-    opacity: 1;
-    box-shadow: 0 0 8px var(--accent);
 }
 
 .dot-number {
-    font-size: 10px;
-    color: var(--texto);
-    opacity: 0.8;
+    font-size: 11px;
+    opacity: 0.6;
 }
 
 .dot-empty {
