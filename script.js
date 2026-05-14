@@ -657,14 +657,25 @@ function limpiarTareasCompletadas() {
     }
 }
 
-/* --- FUNCIONES AGENDA ACTUALIZADAS --- */
-let eventoEditando = null; // { fecha: string, index: number }
+/* --- LÓGICA DE LA AGENDA (BLOQUE COMPLETO) --- */
 
+// Variables globales necesarias
+let fechaReferenciaAgenda = new Date(); 
+let eventoEditando = null; 
+
+// 1. Navegación entre semanas
+function navegarSemana(dias) {
+    fechaReferenciaAgenda.setDate(fechaReferenciaAgenda.getDate() + dias);
+    renderizarSemana();
+}
+
+// 2. Dibujar la semana en pantalla
 function renderizarSemana() {
     const cont = document.getElementById('semana-container');
     if (!cont) return;
     cont.innerHTML = "";
     
+    // Calcular el lunes de la semana actual
     let lunes = new Date(fechaReferenciaAgenda);
     const diaSemana = lunes.getDay();
     const diferencia = (diaSemana === 0 ? -6 : 1 - diaSemana);
@@ -705,45 +716,40 @@ function renderizarSemana() {
     }
 }
 
+// 3. Manejo de clicks en eventos (Tachar o Preparar Edición)
 function clickEvento(fecha, index) {
     const menuAbierto = !document.getElementById('input-container-agenda').classList.contains('hidden');
     const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
 
     if (menuAbierto) {
-        // MODO EDICIÓN/REPROGRAMAR
         eventoEditando = { fecha, index };
         document.getElementById('agenda-tarea').value = evs[index].tarea;
         document.getElementById('agenda-fecha').value = fecha;
         document.getElementById('agenda-hora').value = evs[index].hora;
         document.getElementById('agenda-tarea').focus();
     } else {
-        // MODO COMPLETAR/TACHAR
         evs[index].done = !evs[index].done;
         localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
         renderizarSemana();
     }
 }
 
+// 4. Guardar, Editar o Borrar
 function agregarEvento() {
     const tarea = document.getElementById('agenda-tarea').value.trim();
     const fecha = document.getElementById('agenda-fecha').value;
     const hora = document.getElementById('agenda-hora').value;
 
-    if (!tarea) {
-        // Si se vacía el texto al editar -> Cancelar/Borrar actividad
-        if (eventoEditando) {
-            let evs = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
-            evs.splice(eventoEditando.index, 1);
-            localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evs));
-        }
-    } else if (fecha) {
-        // Si estamos editando y cambiamos la fecha, borramos la vieja y creamos la nueva (Reprogramar)
+    if (!tarea && eventoEditando) {
+        let evs = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
+        evs.splice(eventoEditando.index, 1);
+        localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evs));
+    } else if (fecha && tarea) {
         if (eventoEditando) {
             let evsViejos = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
             evsViejos.splice(eventoEditando.index, 1);
             localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evsViejos));
         }
-
         const evsNuevos = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
         evsNuevos.push({ tarea, hora, done: false });
         localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsNuevos));
@@ -761,10 +767,9 @@ function cerrarEditorAgenda() {
 
 function limpiarAgendaCompletada() {
     if (!confirm("¿Borrar actividades tachadas?")) return;
-    // Recorrer toda la semana actual y limpiar
-    for (let i = 0; i < 30; i++) { // Rango amplio
+    for (let i = 0; i < 21; i++) { 
         let d = new Date(fechaReferenciaAgenda);
-        d.setDate(d.getDate() - 15 + i);
+        d.setDate(d.getDate() - 7 + i);
         const iso = d.toISOString().split('T')[0];
         let evs = JSON.parse(localStorage.getItem(`agenda_${iso}`));
         if (evs) {
@@ -773,6 +778,18 @@ function limpiarAgendaCompletada() {
         }
     }
     renderizarSemana();
+}
+
+// 5. El toque astronómico
+function obtenerIconoLuna(f) {
+    const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+    const cicloSinergico = 29.53059;
+    const fechaBase = new Date("2024-01-11"); 
+    const msPorDia = 86400000;
+    const diasTranscurridos = (f - fechaBase) / msPorDia;
+    const posicionCiclo = (diasTranscurridos % cicloSinergico + cicloSinergico) % cicloSinergico;
+    const index = Math.floor((posicionCiclo / cicloSinergico) * 8);
+    return lunas[index] || "🌙";
 }
 
 
