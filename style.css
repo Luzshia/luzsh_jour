@@ -454,78 +454,91 @@ body.dark-mode {
     outline: none;
 }
 
-/* --- ESTILOS AGENDA --- */
-.agenda-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+/* --- AGENDA ESTILO PLANNER --- */
+
+/* Domingo con color de acento dinámico */
+.dia-fila.domingo .dia-numero, 
+.dia-fila.domingo .dia-nombre { 
+    color: var(--accent-color); 
+    filter: brightness(0.8);
 }
 
-.agenda-title-group { flex: 1; }
-#rango-semana-label { font-size: 0.8rem; opacity: 0.6; display: block; }
-
-.agenda-controls button {
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
+/* Eventos con letra cursiva */
+.evento-texto {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.3rem;
     color: var(--text-color);
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-left: 5px;
-}
-
-.agenda-inputs { display: flex; flex-direction: column; gap: 10px; }
-.input-row { display: flex; gap: 10px; }
-.input-row input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line-color); background: var(--bg-color); color: var(--text-color); }
-
-.semana-grid {
-    margin-top: 25px;
-    border-top: 1px solid var(--line-color);
-}
-
-.dia-fila {
-    display: flex;
-    min-height: 80px;
-    border-bottom: 1px solid var(--line-color);
-    padding: 10px 0;
-}
-
-.dia-info {
-    width: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid var(--line-color);
-    padding-right: 10px;
-}
-
-.dia-numero { font-size: 1.4rem; font-weight: bold; }
-.dia-nombre { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; }
-.dia-luna { font-size: 1rem; margin-top: 5px; }
-
-.dia-eventos {
-    flex: 1;
-    padding-left: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
 }
 
 .evento-item {
-    font-size: 0.9rem;
-    padding: 4px 8px;
-    background: rgba(var(--accent-color-rgb, 46, 204, 113), 0.1);
-    border-left: 3px solid var(--accent-color);
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dotted rgba(0,0,0,0.05);
+    cursor: pointer;
 }
 
-.evento-hora { font-weight: bold; margin-right: 8px; font-size: 0.8rem; }
+.evento-item.done {
+    opacity: 0.4;
+    text-decoration: line-through;
+}
 
-/* Color especial para domingos como en la foto */
-.dia-fila.domingo .dia-numero, 
-.dia-fila.domingo .dia-nombre { color: #e74c3c; }
+.evento-hora {
+    font-family: Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: bold;
+    opacity: 0.6;
+    min-width: 45px;
+}
+
+/* Navegación sutil */
+.agenda-nav-overlay {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+}
+
+.nav-side-btn {
+    pointer-events: auto;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: var(--text-color);
+    opacity: 0.05; /* Casi invisible */
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.nav-side-btn:hover { opacity: 0.3; }
+
+/* Popup de entrada */
+.agenda-form-popup {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid var(--line-color);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.agenda-form-popup input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line-color);
+    color: var(--text-color);
+    padding: 8px;
+    margin-bottom: 10px;
+    outline: none;
+}
+
+.hint-text { font-size: 0.7rem; opacity: 0.5; text-align: center; margin: 0; }
 
 .ciclo-seccion { margin-top: 15px; border-top: 1px dashed var(--line-color); padding-top: 10px; }
 .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }

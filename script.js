@@ -150,15 +150,52 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarTareas();
 
 
-    // --- Listeners de la Agenda ---
-    const btnAddEvento = document.getElementById('btn-add-evento');
-    if (btnAddEvento) btnAddEvento.addEventListener('click', agregarEvento);
+    // --- Escuchadores Agenda ---
+    const btnAgendaMenu = document.getElementById('btn-agenda-menu');
+    const agendaDropdown = document.getElementById('agenda-dropdown');
 
-    const btnPrev = document.getElementById('btn-semana-prev');
-    if (btnPrev) btnPrev.addEventListener('click', () => navegarSemana(-7));
+    if (btnAgendaMenu) {
+        btnAgendaMenu.onclick = (e) => {
+            e.stopPropagation();
+            agendaDropdown.classList.toggle('hidden');
+        };
+    }
 
-    const btnNext = document.getElementById('btn-semana-next');
-    if (btnNext) btnNext.addEventListener('click', () => navegarSemana(7));
+    document.getElementById('opt-add-evento').onclick = () => {
+        document.getElementById('input-container-agenda').classList.remove('hidden');
+        document.getElementById('agenda-tarea').focus();
+    };
+
+    document.getElementById('opt-limpiar-completados-agenda').onclick = limpiarAgendaCompletada;
+
+    // Navegación
+    document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
+    document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
+
+    // Guardar con Enter
+    document.getElementById('input-container-agenda').onkeydown = (e) => {
+        if (e.key === 'Enter') agregarEvento();
+        if (e.key === 'Escape') cerrarEditorAgenda();
+    };
+
+    // --- SOPORTE SWIPE (Deslizar página) ---
+    let touchstartX = 0;
+    let touchendX = 0;
+    const swipeArea = document.getElementById('semana-container');
+
+    swipeArea.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
+    swipeArea.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        if (touchendX < touchstartX - 50) navegarSemana(7);  // Hacia la izquierda -> Siguiente
+        if (touchendX > touchstartX + 50) navegarSemana(-7); // Hacia la derecha -> Anterior
+    }
+
+    renderizarSemana();
+
 
 
     // --- Listener Ciclo Menstrual ---
@@ -620,31 +657,19 @@ function limpiarTareasCompletadas() {
     }
 }
 
-/* ============================================================
-   LÓGICA DE LA AGENDA (Estilo 43586.jpg)
-   ============================================================ */
-
-// Variable global para controlar qué semana estamos viendo
-let fechaReferenciaAgenda = new Date(); 
-
-function navegarSemana(dias) {
-    fechaReferenciaAgenda.setDate(fechaReferenciaAgenda.getDate() + dias);
-    renderizarSemana();
-}
+/* --- FUNCIONES AGENDA ACTUALIZADAS --- */
+let eventoEditando = null; // { fecha: string, index: number }
 
 function renderizarSemana() {
     const cont = document.getElementById('semana-container');
     if (!cont) return;
-    
     cont.innerHTML = "";
     
-    // Calculamos el lunes de la semana actual
     let lunes = new Date(fechaReferenciaAgenda);
     const diaSemana = lunes.getDay();
     const diferencia = (diaSemana === 0 ? -6 : 1 - diaSemana);
     lunes.setDate(lunes.getDate() + diferencia);
 
-    // Actualizamos el título del mes/año en la cabecera
     const labelRango = document.getElementById('rango-semana-label');
     if (labelRango) {
         labelRango.textContent = lunes.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -655,11 +680,9 @@ function renderizarSemana() {
     for (let i = 0; i < 7; i++) {
         let d = new Date(lunes);
         d.setDate(lunes.getDate() + i);
-        
         const iso = d.toISOString().split('T')[0];
         const evs = JSON.parse(localStorage.getItem(`agenda_${iso}`)) || [];
         
-        // Creamos la fila inspirada en la imagen 43586.jpg
         const fila = document.createElement('div');
         fila.className = `dia-fila ${i === 6 ? 'domingo' : ''}`;
         
@@ -670,9 +693,9 @@ function renderizarSemana() {
                 <span class="dia-luna">${obtenerIconoLuna(d)}</span>
             </div>
             <div class="dia-eventos">
-                ${evs.sort((a, b) => a.hora.localeCompare(b.hora)).map(e => `
-                    <div class="evento-item">
-                        ${e.hora ? `<span class="evento-hora">${e.hora}</span>` : ''}
+                ${evs.sort((a, b) => a.hora.localeCompare(b.hora)).map((e, idx) => `
+                    <div class="evento-item ${e.done ? 'done' : ''}" onclick="clickEvento('${iso}', ${idx})">
+                        <span class="evento-hora">${e.hora || '--:--'}</span>
                         <span class="evento-texto">${e.tarea}</span>
                     </div>
                 `).join('')}
@@ -682,37 +705,76 @@ function renderizarSemana() {
     }
 }
 
+function clickEvento(fecha, index) {
+    const menuAbierto = !document.getElementById('input-container-agenda').classList.contains('hidden');
+    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
+
+    if (menuAbierto) {
+        // MODO EDICIÓN/REPROGRAMAR
+        eventoEditando = { fecha, index };
+        document.getElementById('agenda-tarea').value = evs[index].tarea;
+        document.getElementById('agenda-fecha').value = fecha;
+        document.getElementById('agenda-hora').value = evs[index].hora;
+        document.getElementById('agenda-tarea').focus();
+    } else {
+        // MODO COMPLETAR/TACHAR
+        evs[index].done = !evs[index].done;
+        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+        renderizarSemana();
+    }
+}
+
 function agregarEvento() {
-    const tarea = document.getElementById('agenda-tarea').value;
+    const tarea = document.getElementById('agenda-tarea').value.trim();
     const fecha = document.getElementById('agenda-fecha').value;
     const hora = document.getElementById('agenda-hora').value;
 
-    if (!tarea || !fecha) {
-        alert("Por favor, introduce al menos la actividad y la fecha.");
-        return;
+    if (!tarea) {
+        // Si se vacía el texto al editar -> Cancelar/Borrar actividad
+        if (eventoEditando) {
+            let evs = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
+            evs.splice(eventoEditando.index, 1);
+            localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evs));
+        }
+    } else if (fecha) {
+        // Si estamos editando y cambiamos la fecha, borramos la vieja y creamos la nueva (Reprogramar)
+        if (eventoEditando) {
+            let evsViejos = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
+            evsViejos.splice(eventoEditando.index, 1);
+            localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evsViejos));
+        }
+
+        const evsNuevos = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+        evsNuevos.push({ tarea, hora, done: false });
+        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsNuevos));
     }
 
-    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
-    evs.push({ tarea, hora });
-    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
-
-    // Limpiar input y refrescar vista
-    document.getElementById('agenda-tarea').value = "";
+    cerrarEditorAgenda();
     renderizarSemana();
 }
 
-function obtenerIconoLuna(f) {
-    const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
-    const cicloSinergico = 29.53059;
-    const fechaBase = new Date("2024-01-11"); // Luna nueva de referencia
-    const msPorDia = 86400000;
-    
-    const diasTranscurridos = (f - fechaBase) / msPorDia;
-    const posicionCiclo = (diasTranscurridos % cicloSinergico + cicloSinergico) % cicloSinergico;
-    const index = Math.floor((posicionCiclo / cicloSinergico) * 8);
-    
-    return lunas[index] || "🌙";
+function cerrarEditorAgenda() {
+    document.getElementById('input-container-agenda').classList.add('hidden');
+    document.getElementById('agenda-tarea').value = "";
+    eventoEditando = null;
 }
+
+function limpiarAgendaCompletada() {
+    if (!confirm("¿Borrar actividades tachadas?")) return;
+    // Recorrer toda la semana actual y limpiar
+    for (let i = 0; i < 30; i++) { // Rango amplio
+        let d = new Date(fechaReferenciaAgenda);
+        d.setDate(d.getDate() - 15 + i);
+        const iso = d.toISOString().split('T')[0];
+        let evs = JSON.parse(localStorage.getItem(`agenda_${iso}`));
+        if (evs) {
+            evs = evs.filter(e => !e.done);
+            localStorage.setItem(`agenda_${iso}`, JSON.stringify(evs));
+        }
+    }
+    renderizarSemana();
+}
+
 
 
 function guardarDatosCiclo() {
