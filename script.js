@@ -270,8 +270,8 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- LÓGICA DE METAS CON EDICIÓN Y BORRADO --- */
-let metaEditandoIndex = null;
+/* --- LÓGICA DE METAS CON EDICIÓN Y BORRADO (CORREGIDO) --- */
+let metaEditandoIndex = null; 
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
@@ -285,16 +285,15 @@ function cargarMetas() {
     lista.innerHTML = "";
     metas.forEach((m, index) => {
         const li = document.createElement('li');
+        // Importante: mantenemos las clases para el tachado y la edición
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
         li.textContent = m.texto;
         
         li.onclick = () => {
             const containerInput = document.getElementById('input-container-meta');
-            // Si el modo añadir está abierto, editamos
             if (!containerInput.classList.contains('hidden')) {
                 prepararEdicion(index, m.texto);
             } else {
-                // Si está cerrado, tachamos
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
                 cargarMetas();
@@ -303,7 +302,7 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    // Actualizar el número del input para la siguiente meta
+    // CORRECCIÓN NUMERACIÓN: Actualiza el número que aparece al lado del input
     const nextNumLabel = document.getElementById('next-number-meta');
     if(nextNumLabel) nextNumLabel.textContent = (metas.length + 1) + ".";
 
@@ -311,30 +310,23 @@ function cargarMetas() {
     metaEditandoIndex = null;
 }
 
-function guardarMeta(texto) {
-    const anio = new Date().getFullYear();
-    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+function activarEscrituraMeta() {
+    const container = document.getElementById('input-container-meta');
+    const input = document.getElementById('input-nueva-meta');
+    
+    container.classList.remove('hidden');
+    input.value = ""; // Limpiamos el input al abrir
+    input.placeholder = "Escribir nueva meta...";
+    input.focus();
 
-    if (metaEditandoIndex !== null) {
-        // MODO EDICIÓN O BORRADO
-        if (texto === "") {
-            // Si el texto está vacío, borramos la meta
-            if (confirm("¿Deseas eliminar esta meta?")) {
-                metas.splice(metaEditandoIndex, 1);
-            }
-        } else {
-            // Si tiene texto, actualizamos
-            metas[metaEditandoIndex].texto = texto;
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarMeta(input.value.trim());
         }
-    } else {
-        // NUEVA META (solo si tiene texto)
-        if (!texto) return;
-        metas.push({ texto: texto, completada: false });
-    }
-
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    document.getElementById('input-nueva-meta').value = "";
-    cargarMetas();
+        if (e.key === 'Escape') {
+            cargarMetas(); 
+        }
+    };
 }
 
 function prepararEdicion(index, textoActual) {
@@ -345,7 +337,7 @@ function prepararEdicion(index, textoActual) {
     input.value = textoActual;
     input.placeholder = "Borra todo para eliminar...";
     
-    // Cambiamos el número de la izquierda para que coincida con la meta que editamos
+    // Cambia el número visual al de la meta que estás editando
     if(nextNumLabel) nextNumLabel.textContent = (index + 1) + ".";
     
     input.focus();
@@ -353,6 +345,38 @@ function prepararEdicion(index, textoActual) {
     const items = document.querySelectorAll('.meta-item');
     items.forEach(item => item.classList.remove('editando'));
     if(items[index]) items[index].classList.add('editando');
+}
+
+function guardarMeta(texto) {
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+
+    if (metaEditandoIndex !== null) {
+        // LÓGICA DE BORRADO: Si el texto está vacío, eliminamos
+        if (texto === "") {
+            if (confirm("¿Deseas eliminar esta meta?")) {
+                metas.splice(metaEditandoIndex, 1);
+            }
+        } else {
+            metas[metaEditandoIndex].texto = texto;
+        }
+    } else {
+        // NUEVA META: Solo si tiene contenido
+        if (!texto) return;
+        metas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    document.getElementById('input-nueva-meta').value = "";
+    cargarMetas();
+}
+
+function toggleHistorialMetas() {
+    const container = document.getElementById('historial-metas-container');
+    container.classList.toggle('hidden');
+    if (!container.classList.contains('hidden')) {
+        container.innerHTML = "<p style='font-family:sans-serif; font-size:0.8rem; text-align:center; opacity:0.5; margin:15px 0;'>--- Fin del historial ---</p>";
+    }
 }
 
 /* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
