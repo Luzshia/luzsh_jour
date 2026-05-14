@@ -198,14 +198,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // --- Listener Ciclo Menstrual ---
-    const btnGuardarCiclo = document.getElementById('btn-guardar-ciclo');
-    if (btnGuardarCiclo) btnGuardarCiclo.addEventListener('click', guardarDatosCiclo);
+    // --- Escuchadores Ciclo ---
+    document.getElementById('btn-ciclo-menu').onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('ciclo-dropdown').classList.toggle('hidden');
+    };
+
+    document.getElementById('opt-add-registro-ciclo').onclick = () => {
+        abrirFormularioCiclo(new Date().toISOString().split('T')[0]);
+    };
+
+    document.getElementById('btn-guardar-ciclo').onclick = guardarRegistroCiclo;
+    document.getElementById('btn-cerrar-ciclo').onclick = () => {
+        document.getElementById('modal-registro-ciclo').classList.add('hidden');
+    };
+
+    // Al cargar la vista
+    renderizarRueda();
+
+
+
     
-    // Poner fecha de hoy por defecto
-    const inputFecha = document.getElementById('ciclo-fecha');
-    if(inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
-});
 
 /* --- FUNCIONES DE SEGURIDAD --- */
 function actualizarInterfazPin() {
@@ -794,92 +807,99 @@ function obtenerIconoLuna(f) {
 
 
 
-function guardarDatosCiclo() {
-    const fecha = document.getElementById('ciclo-fecha').value;
-    const esInicio = document.getElementById('ciclo-inicio-regla').checked;
-    
-    if (!fecha) return alert("Selecciona una fecha");
+/* --- LÓGICA DEL CICLO MENSTRUAL --- */
+let inicioUltimoCiclo = new Date("2026-04-30T00:00:00"); // Tu fecha base
 
-    const registro = {
-        fecha,
-        regla: esInicio,
-        flujo: document.getElementById('ciclo-flujo').value,
-        color: document.getElementById('ciclo-color').value,
-        salud: {
-            pelvico: document.getElementById('check-pelvico').checked,
-            migrana: document.getElementById('check-migrana').checked,
-            sueno: document.getElementById('ciclo-sueno').value,
-            energia: document.getElementById('ciclo-energia').value,
-            digestion: document.getElementById('ciclo-digestion').value,
-            sexo: document.getElementById('check-sexo').checked
-        },
-        animo: {
-            libido: document.getElementById('check-libido').checked,
-            irritabilidad: document.getElementById('check-irritabilidad').checked,
-            ansiedad: document.getElementById('check-ansiedad').checked,
-            paz: document.getElementById('check-paz').checked
-        },
-        notas: document.getElementById('ciclo-notas').value
-    };
+function renderizarRueda() {
+    const rueda = document.getElementById('rueda-menstrual');
+    if (!rueda) return;
 
-    // Obtener todos los registros y añadir el nuevo
-    let todosLosRegistros = JSON.parse(localStorage.getItem('journal_ciclo_raw')) || [];
-    // Evitar duplicados de fecha
-    todosLosRegistros = todosLosRegistros.filter(r => r.fecha !== fecha);
-    todosLosRegistros.push(registro);
-    // Ordenar por fecha
-    todosLosRegistros.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    // Limpiar pero mantener el centro
+    const centro = rueda.querySelector('.centro-rueda');
+    rueda.innerHTML = '';
+    rueda.appendChild(centro);
+
+    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
+    const hoy = new Date();
     
-    localStorage.setItem('journal_ciclo_raw', JSON.stringify(todosLosRegistros));
-    alert("Día registrado");
-    cargarCicloActual();
+    // Dibujaremos 28 días (puedes ajustarlo)
+    const totalDiasRueda = 28;
+    const radio = 130; // Distancia del centro
+
+    for (let i = 0; i < totalDiasRueda; i++) {
+        let fechaDia = new Date(inicioUltimoCiclo);
+        fechaDia.setDate(inicioUltimoCiclo.getDate() + i);
+        const iso = fechaDia.toISOString().split('T')[0];
+        const reg = registros[iso];
+
+        const div = document.createElement('div');
+        div.className = 'dia-rueda';
+        
+        // Posicionamiento matemático circular
+        const angulo = (i * (360 / totalDiasRueda) - 90) * (Math.PI / 180);
+        const x = radio * Math.cos(angulo);
+        const y = radio * Math.sin(angulo);
+        div.style.transform = `translate(${x}px, ${y}px)`;
+
+        // Contenido del día: Luna + Número
+        const luna = obtenerIconoLuna(fechaDia);
+        div.innerHTML = `<span>${luna}</span><small>${fechaDia.getDate()}</small>`;
+
+        // Indicadores (Puntitos)
+        if (reg) {
+            if (reg.sangrado) div.innerHTML += '<div class="punto-menstruacion"></div>';
+            if (reg.relaciones) div.innerHTML += '<div class="punto-sexo"></div>';
+        }
+
+        // Si es el día de hoy, resaltarlo
+        if (iso === hoy.toISOString().split('T')[0]) {
+            div.style.color = 'var(--accent-color)';
+            div.style.fontWeight = 'bold';
+            document.getElementById('dia-ciclo-actual').textContent = `Día ${i + 1}`;
+            document.getElementById('fecha-rueda-centro').textContent = fechaDia.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+        }
+
+        div.onclick = () => abrirFormularioCiclo(iso);
+        rueda.appendChild(div);
+    }
 }
 
-function cargarCicloActual() {
-    const cont = document.getElementById('historial-ciclos-tablas');
-    if (!cont) return;
-    cont.innerHTML = "<h3>📊 Historial de Ciclos</h3>";
+function abrirFormularioCiclo(fechaIso) {
+    document.getElementById('modal-registro-ciclo').classList.remove('hidden');
+    document.getElementById('ciclo-fecha-input').value = fechaIso;
+    
+    // Cargar datos si ya existen
+    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
+    const reg = registros[fechaIso] || {};
+    
+    document.getElementById('ciclo-sangrado').value = reg.sangrado || "";
+    document.getElementById('ciclo-dolor').value = reg.dolor || "";
+    document.getElementById('ciclo-relaciones').checked = reg.relaciones || false;
+    document.getElementById('ciclo-energia').value = reg.energia || "3";
+    document.getElementById('ciclo-libido').value = reg.libido || "media";
+    document.getElementById('ciclo-animo').value = reg.animo || "tranquila";
+    document.getElementById('ciclo-sueno-inicio').value = reg.sueno_ini || "";
+    document.getElementById('ciclo-sueno-fin').value = reg.sueno_fin || "";
+}
 
-    const registros = JSON.parse(localStorage.getItem('journal_ciclo_raw')) || [];
-    if (registros.length === 0) return;
+function guardarRegistroCiclo() {
+    const fecha = document.getElementById('ciclo-fecha-input').value;
+    if (!fecha) return;
 
-    let ciclosAgrupados = [];
-    let cicloActual = [];
+    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
+    
+    registros[fecha] = {
+        sangrado: document.getElementById('ciclo-sangrado').value,
+        dolor: document.getElementById('ciclo-dolor').value,
+        relaciones: document.getElementById('ciclo-relaciones').checked,
+        energia: document.getElementById('ciclo-energia').value,
+        libido: document.getElementById('ciclo-libido').value,
+        animo: document.getElementById('ciclo-animo').value,
+        sueno_ini: document.getElementById('ciclo-sueno-inicio').value,
+        sueno_fin: document.getElementById('ciclo-sueno-fin').value
+    };
 
-    registros.forEach(r => {
-        if (r.regla && cicloActual.length > 0) {
-            ciclosAgrupados.push(cicloActual);
-            cicloActual = [];
-        }
-        cicloActual.push(r);
-    });
-    ciclosAgrupados.push(cicloActual); // Añadir el último ciclo en curso
-
-    // Crear tablas (de la más reciente a la más antigua)
-    ciclosAgrupados.reverse().forEach((ciclo, index) => {
-        const titulo = `Ciclo iniciado el ${ciclo[0].fecha}`;
-        let tablaHTML = `
-            <div class="tabla-ciclo-wrapper">
-                <h4>${titulo}</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th><th>🩸</th><th>Salud</th><th>Ánimo</th><th>Notas</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${ciclo.map(d => `
-                            <tr>
-                                <td>${d.fecha.split('-')[2]}</td>
-                                <td>${d.flujo || '-'} ${d.color || ''}</td>
-                                <td>${d.salud.pelvico?'Pélvico ':''}${d.salud.migrana?'Migraña ':''}${d.salud.energia}</td>
-                                <td>${d.animo.paz?'Paz ':''}${d.animo.ansiedad?'Ansiedad ':''}</td>
-                                <td>${d.notas}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        cont.innerHTML += tablaHTML;
-    });
+    localStorage.setItem('journal_ciclo_registros', JSON.stringify(registros));
+    document.getElementById('modal-registro-ciclo').classList.add('hidden');
+    renderizarRueda();
 }

@@ -589,11 +589,94 @@ body.dark-mode {
 
 .hint-text { font-size: 0.7rem; opacity: 0.5; text-align: center; margin: 0; }
 
-.ciclo-seccion { margin-top: 15px; border-top: 1px dashed var(--line-color); padding-top: 10px; }
-.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
-textarea { width: 100%; height: 80px; border-radius: 10px; border: 1px solid var(--line-color); background: var(--bg-color); color: var(--text-color); padding: 10px; }
 
-.tabla-ciclo-wrapper { overflow-x: auto; margin-top: 20px; background: var(--card-bg); border-radius: 15px; border: 1px solid var(--line-color); }
-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-th, td { padding: 10px; border-bottom: 1px solid var(--line-color); text-align: left; white-space: nowrap; }
-th { background: var(--accent-color); color: white; }
+/* --- ESTILOS CICLO MENSTRUAL --- */
+.diagrama-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    position: relative;
+}
+
+.rueda-menstrual {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 1px dashed var(--line-color);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.centro-rueda {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+}
+
+#dia-ciclo-actual { font-size: 1.5rem; font-weight: bold; color: var(--accent-color); }
+
+/* Los pétalos/días de la rueda */
+.dia-rueda {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.punto-menstruacion {
+    width: 6px;
+    height: 6px;
+    background: #e74c3c;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
+.punto-sexo {
+    width: 6px;
+    height: 6px;
+    background: #9b59b6;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
+/* Modal de registro */
+#modal-registro-ciclo {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-color);
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.seccion-form-ciclo {
+    background: rgba(0,0,0,0.02);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.grid-selects {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.seccion-form-ciclo select, .seccion-form-ciclo input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    margin-bottom: 10px;
+}

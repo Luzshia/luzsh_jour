@@ -205,55 +205,81 @@
 
             <section id="view-ciclo" class="view">
                 <header class="app-header">
-                    <h1>Ciclo Menstrual</h1>
+                    <div class="header-top-nav">
+                        <div class="menu-dots-container">
+                            <button id="btn-ciclo-menu" class="dots-btn">···</button>
+                            <div id="ciclo-dropdown" class="dropdown-content hidden">
+                                <button id="opt-add-registro-ciclo">📝 Añadir Registro Diario</button>
+                                <button id="opt-ver-tabla-ciclos">📊 Ver Historial por Ciclos</button>
+                            </div>
+                        </div>
+                    </div>
+                    <h1>Mi Ciclo Lunar</h1>
                     <div class="header-line"></div>
                 </header>
 
                 <div class="content-body">
-                    <!-- Formulario Diario -->
-                    <div class="config-group">
-                        <h3>📝 Registro del Día</h3>
-                        <div class="input-row">
-                            <input type="date" id="ciclo-fecha">
-                            <label><input type="checkbox" id="ciclo-inicio-regla"> ¿Inicia periodo?</label>
-                        </div>
-
-                        <div class="ciclo-seccion">
-                            <h4>🩸 Menstruación</h4>
-                            <select id="ciclo-flujo"><option value="">Intensidad Flujo</option><option>Ligero</option><option>Medio</option><option>Fuerte</option></select>
-                            <select id="ciclo-color"><option value="">Color</option><option>Rojo Brillante</option><option>Rojo Oscuro</option><option>Rosa/Marrón</option></select>
-                        </div>
-
-                        <div class="ciclo-seccion">
-                            <h4>🏥 Salud y Energía</h4>
-                            <div class="check-grid">
-                                <label><input type="checkbox" id="check-pelvico"> Dolor Pélvico</label>
-                                <label><input type="checkbox" id="check-migrana"> Migraña</label>
-                                <label><input type="checkbox" id="check-sexo"> Actividad Sexual</label>
-                            </div>
-                            <input type="number" id="ciclo-sueno" placeholder="Horas de sueño">
-                            <select id="ciclo-energia"><option value="">Energía</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-                            <select id="ciclo-digestion"><option value="">Digestión</option><option>Buena</option><option>Estreñimiento</option></select>
-                        </div>
-
-                        <div class="ciclo-seccion">
-                            <h4>🧠 Ánimo</h4>
-                            <div class="check-grid">
-                                <label><input type="checkbox" id="check-libido"> Libido Alto</label>
-                                <label><input type="checkbox" id="check-irritabilidad"> Irritabilidad</label>
-                                <label><input type="checkbox" id="check-ansiedad"> Ansiedad</label>
-                                <label><input type="checkbox" id="check-paz"> Paz</label>
+                    <div class="diagrama-container">
+                        <div id="rueda-menstrual" class="rueda-menstrual">
+                            <div class="centro-rueda">
+                                <span id="dia-ciclo-actual">Día --</span>
+                                <small id="fecha-rueda-centro"></small>
                             </div>
                         </div>
-
-                        <textarea id="ciclo-notas" placeholder="Notas de texto libre..."></textarea>
-                        <button id="btn-guardar-ciclo" class="config-item-btn btn-save">Guardar Registro</button>
                     </div>
 
-                    <!-- Historial por Tablas -->
-                    <div id="historial-ciclos-tablas" class="history-section">
-                        <h3>📊 Historial de Ciclos</h3>
-                        <!-- Aquí se generarán las tablas -->
+                    <div id="modal-registro-ciclo" class="hidden">
+                        <div class="form-scroll-container">
+                            <h3>Registro del Día</h3>
+                            <div class="input-fake-row">
+                                <label>Fecha:</label>
+                                <input type="date" id="ciclo-fecha-input">
+                            </div>
+                            
+                            <div class="seccion-form-ciclo">
+                                <h4>Fisiología</h4>
+                                <select id="ciclo-sangrado">
+                                    <option value="">¿Sangrado?</option>
+                                    <option value="ligero">Ligero (Rosa/Marrón)</option>
+                                    <option value="moderado">Moderado (Rojo)</option>
+                                    <option value="fuerte">Fuerte (Rojo Intenso)</option>
+                                </select>
+                                <select id="ciclo-dolor">
+                                    <option value="">¿Dolor?</option>
+                                    <option value="ninguno">Ninguno</option>
+                                    <option value="pelvico">Pélvico</option>
+                                    <option value="migraña">Migraña</option>
+                                    <option value="ambos">Ambos</option>
+                                </select>
+                                <label class="check-label">
+                                    <input type="checkbox" id="ciclo-relaciones"> 💜 Relaciones Sexuales
+                                </label>
+                            </div>
+
+                            <div class="seccion-form-ciclo">
+                                <h4>Estado Mental y Energía</h4>
+                                <div class="grid-selects">
+                                    <select id="ciclo-energia"><option value="3">⚡ Energía Media</option><option value="1">🔋 Baja</option><option value="5">🚀 Alta</option></select>
+                                    <select id="ciclo-libido"><option value="media">🔥 Libido Media</option><option value="baja">❄️ Baja</option><option value="alta">🌋 Alta</option></select>
+                                    <select id="ciclo-animo"><option value="tranquila">😌 Tranquila</option><option value="creativa">🎨 Creativa</option><option value="sensible">🥺 Sensible</option><option value="irritable">😤 Irritable</option></select>
+                                </div>
+                            </div>
+
+                            <div class="seccion-form-ciclo">
+                                <h4>Sueño</h4>
+                                <div class="input-row">
+                                    <input type="time" id="ciclo-sueno-inicio">
+                                    <input type="time" id="ciclo-sueno-fin">
+                                </div>
+                            </div>
+
+                            <button id="btn-guardar-ciclo" class="btn-load">Guardar Registro</button>
+                            <button id="btn-cerrar-ciclo" class="btn-cancel">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="historial-ciclos-container" class="hidden">
+                        <div id="tabla-ciclos-render"></div>
                     </div>
                 </div>
             </section>
