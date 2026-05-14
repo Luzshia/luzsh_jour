@@ -64,22 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const metasDropdown = document.getElementById('metas-dropdown');
 
     if (btnMetasMenu) {
-        btnMetasMenu.addEventListener('click', (e) => {
+        btnMetasMenu.onclick = (e) => {
             e.stopPropagation();
             metasDropdown.classList.toggle('hidden');
-        });
+        };
     }
 
-    // Cerrar menú al hacer clic fuera
     document.addEventListener('click', () => {
         if (metasDropdown) metasDropdown.classList.add('hidden');
     });
 
-    // Opciones del menú
-    document.getElementById('opt-add-meta').addEventListener('click', activarEscrituraMeta);
-    document.getElementById('opt-historial-metas').addEventListener('click', toggleHistorialMetas);
+    document.getElementById('opt-add-meta').onclick = () => activarEscrituraMeta();
+    document.getElementById('opt-historial-metas').onclick = () => toggleHistorialMetas();
 
-    // Carga inicial
     cargarMetas();
 
 
@@ -244,13 +241,11 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- LÓGICA DE METAS --- */
+/* --- LÓGICA DE METAS CON EDICIÓN --- */
+let metaEditandoIndex = null; // Variable global para saber qué editamos
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
-    const labelAnio = document.getElementById('meta-year-label');
-    if(labelAnio) labelAnio.textContent = anio;
-    
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     const lista = document.getElementById('lista-metas');
     if(!lista) return;
@@ -260,47 +255,79 @@ function cargarMetas() {
         const li = document.createElement('li');
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
         li.textContent = m.texto;
+        
         li.onclick = () => {
-            m.completada = !m.completada;
-            localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-            cargarMetas();
+            const containerInput = document.getElementById('input-container-meta');
+            
+            // Si el modo añadir está abierto, editamos
+            if (!containerInput.classList.contains('hidden')) {
+                prepararEdicion(index, m.texto);
+            } else {
+                // Si está cerrado, solo tachamos
+                m.completada = !m.completada;
+                localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+                cargarMetas();
+            }
         };
         lista.appendChild(li);
     });
 
-    // Asegurar que el input esté oculto al recargar la vista
     document.getElementById('input-container-meta').classList.add('hidden');
+    metaEditandoIndex = null;
 }
 
 function activarEscrituraMeta() {
     const container = document.getElementById('input-container-meta');
     const input = document.getElementById('input-nueva-meta');
-    const anio = new Date().getFullYear();
-    const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
-
+    
     container.classList.remove('hidden');
-    document.getElementById('next-number-meta').textContent = (metas.length + 1) + ".";
+    input.placeholder = "Escribir nueva meta...";
     input.focus();
 
     input.onkeydown = (e) => {
-        if (e.key === 'Enter' && input.value.trim()) {
-            metas.push({ texto: input.value.trim(), completada: false });
-            localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-            input.value = "";
-            cargarMetas(); // Esto actualiza la lista y oculta el input
+        if (e.key === 'Enter') {
+            guardarMeta(input.value.trim());
         }
         if (e.key === 'Escape') {
-            container.classList.add('hidden');
+            cargarMetas(); // Cancela y limpia
         }
     };
+}
+
+function prepararEdicion(index, textoActual) {
+    metaEditandoIndex = index;
+    const input = document.getElementById('input-nueva-meta');
+    input.value = textoActual;
+    input.focus();
+    // Resaltamos visualmente la meta que se está editando
+    const items = document.querySelectorAll('.meta-item');
+    items.forEach(item => item.classList.remove('editando'));
+    items[index].classList.add('editando');
+}
+
+function guardarMeta(texto) {
+    if (!texto) return;
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+
+    if (metaEditandoIndex !== null) {
+        // Editando una existente
+        metas[metaEditandoIndex].texto = texto;
+    } else {
+        // Nueva meta
+        metas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    document.getElementById('input-nueva-meta').value = "";
+    cargarMetas();
 }
 
 function toggleHistorialMetas() {
     const container = document.getElementById('historial-metas-container');
     container.classList.toggle('hidden');
     if (!container.classList.contains('hidden')) {
-        container.innerHTML = "<h3 style='font-size:1rem; opacity:0.7;'>Historial cargado</h3>";
-        // Aquí puedes expandir la lógica para leer otros años de LocalStorage
+        container.innerHTML = "<p style='font-family:sans-serif; font-size:0.8rem; text-align:center;'>--- Fin del historial ---</p>";
     }
 }
 
