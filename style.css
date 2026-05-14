@@ -302,72 +302,75 @@ body.dark-mode {
 .hidden { display: none !important; }
 
 
-/* --- ESTILOS DE HÁBITOS --- */
+/* --- HÁBITOS ESTILO LIMPIO --- */
+
+/* Reutilizamos la fuente cursiva para los nombres de hábitos */
+.habit-name {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 10px;
+}
+
 .habitos-grid {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 }
 
-.habit-card {
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-}
-
-.habit-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.habit-name {
-    font-weight: bold;
-    font-size: 1.1rem;
+/* Quitamos la tarjeta y dejamos solo el separador tenue */
+.habit-item {
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    padding-bottom: 15px;
 }
 
 .dots-container {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 días por fila */
-    gap: 10px;
-}
-
-.habit-dot-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
 }
 
 .habit-dot {
-    width: 30px;
-    height: 30px;
-    border: 1.5px solid var(--accent-color);
+    width: 25px;
+    height: 25px;
+    /* Color de borde igual al texto */
+    border: 1.5px solid var(--text-color);
     border-radius: 50%;
     cursor: pointer;
     transition: 0.2s;
+    opacity: 0.4;
 }
 
+/* Cuando se marca, se rellena con el color del texto */
 .habit-dot.checked {
-    background: var(--accent-color);
-    box-shadow: 0 0 8px var(--accent-color);
+    background: var(--text-color);
+    opacity: 1;
 }
 
 .dot-day {
-    font-size: 10px;
-    opacity: 0.5;
+    font-size: 9px;
+    font-family: Arial, sans-serif;
+    color: var(--text-color);
+    opacity: 0.6;
 }
 
-.btn-delete-habit {
-    background: none;
+/* Estilo para el input de hábito */
+#input-container-habito {
+    margin-bottom: 20px;
+}
+
+#input-nuevo-habito {
+    width: 100%;
     border: none;
-    color: #e74c3c;
-    cursor: pointer;
-    font-size: 0.9rem;
+    border-bottom: 1px dashed var(--accent-color);
+    background: transparent;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    outline: none;
+    padding: 5px;
 }
 
 /* --- ESTILOS TO-DO LIST --- */

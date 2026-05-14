@@ -60,7 +60,7 @@
                 </nav>
             </section>
 
-            
+
             <!-- VISTA: METAS -->
             <section id="view-metas" class="view">
                 <header class="app-header">
@@ -97,23 +97,31 @@
             <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
                 <header class="app-header">
+                    <div class="header-top-nav">
+                        <div class="menu-dots-container">
+                            <button id="btn-habitos-menu" class="dots-btn">···</button>
+                            <div id="habitos-dropdown" class="dropdown-content hidden">
+                                <button id="opt-add-habito">🖋️ Añadir Hábito</button>
+                                <button id="opt-historial-habitos">📜 Ver Historial</button>
+                            </div>
+                        </div>
+                    </div>
                     <h1>Mis Hábitos <span id="habit-month-label"></span></h1>
                     <div class="header-line"></div>
                 </header>
                 
                 <div class="content-body">
-                    <div class="input-group">
-                        <input type="text" id="input-nuevo-habito" placeholder="Ej: Beber agua, Leer...">
-                        <button id="btn-add-habito">+</button>
+                    <!-- Input para nuevo hábito (oculto por defecto) -->
+                    <div id="input-container-habito" class="hidden">
+                        <div class="input-fake-row">
+                            <input type="text" id="input-nuevo-habito" placeholder="Escribir nuevo hábito...">
+                        </div>
                     </div>
+
+                    <div id="historial-habitos-container" class="hidden"></div>
 
                     <div id="contenedor-habitos" class="habitos-grid">
-                        <!-- Aquí se generarán las tarjetas de hábitos -->
-                    </div>
-
-                    <div class="history-section">
-                        <button class="config-item-btn" id="btn-ver-historial-habitos">📜 Historial de Meses Pasados</button>
-                        <div id="historial-habitos" class="hidden"></div>
+                        <!-- Aquí se generarán los hábitos -->
                     </div>
                 </div>
             </section>

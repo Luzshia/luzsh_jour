@@ -80,12 +80,37 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMetas();
 
 
-    // Escuchadores para Hábitos
-    document.getElementById('btn-add-habito').addEventListener('click', agregarHabito);
-    document.getElementById('btn-ver-historial-habitos').addEventListener('click', toggleHistorialHabitos);
-    
-    // Cargar hábitos al iniciar
+    // --- Escuchadores de Hábitos ---
+    const btnHabitosMenu = document.getElementById('btn-habitos-menu');
+    const habitosDropdown = document.getElementById('habitos-dropdown');
+
+    if (btnHabitosMenu) {
+        btnHabitosMenu.onclick = (e) => {
+            e.stopPropagation();
+            habitosDropdown.classList.toggle('hidden');
+        };
+    }
+
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', () => {
+        if (habitosDropdown) habitosDropdown.classList.add('hidden');
+    });
+
+    document.getElementById('opt-add-habito').onclick = () => {
+        document.getElementById('input-container-habito').classList.remove('hidden');
+        document.getElementById('input-nuevo-habito').focus();
+    };
+
+    document.getElementById('opt-historial-habitos').onclick = toggleHistorialHabitos;
+
+    // Escuchar el Enter en el input de hábitos
+    document.getElementById('input-nuevo-habito').onkeydown = (e) => {
+        if (e.key === 'Enter') agregarHabito();
+        if (e.key === 'Escape') document.getElementById('input-container-habito').classList.add('hidden');
+    };
+
     cargarHabitos();
+
 
     // Escuchadores para To-Do List
     document.getElementById('btn-add-tarea').addEventListener('click', agregarTarea);
@@ -331,11 +356,10 @@ function toggleHistorialMetas() {
     }
 }
 
-/* --- FUNCIONES DE HÁBITOS --- */
+/* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
 
 function obtenerClaveMes() {
     const fecha = new Date();
-    // Crea una clave como "2026-05" (Año-Mes)
     return `journal_habits_${fecha.getFullYear()}_${fecha.getMonth() + 1}`;
 }
 
@@ -344,18 +368,18 @@ function cargarHabitos() {
     const fecha = new Date();
     const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     
-    document.getElementById('habit-month-label').textContent = nombresMeses[fecha.getMonth()];
+    const label = document.getElementById('habit-month-label');
+    if(label) label.textContent = nombresMeses[fecha.getMonth()];
     
     const habitos = JSON.parse(localStorage.getItem(clave)) || [];
     const contenedor = document.getElementById('contenedor-habitos');
     contenedor.innerHTML = "";
 
-    // Calculamos cuántos días tiene el mes actual
     const diasEnMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
 
     habitos.forEach((habito) => {
-        const tarjeta = document.createElement('div');
-        tarjeta.className = 'habit-card';
+        const item = document.createElement('div');
+        item.className = 'habit-item';
         
         let puntosHTML = "";
         for (let d = 1; d <= diasEnMes; d++) {
@@ -367,15 +391,15 @@ function cargarHabitos() {
                 </div>`;
         }
 
-        tarjeta.innerHTML = `
-            <div class="habit-header">
-                <span class="habit-name">${habito.nombre}</span>
-                <button class="btn-delete-habit" onclick="eliminarHabito('${habito.id}')">Eliminar</button>
-            </div>
+        item.innerHTML = `
+            <span class="habit-name">${habito.nombre}</span>
             <div class="dots-container">${puntosHTML}</div>
         `;
-        contenedor.appendChild(tarjeta);
+        contenedor.appendChild(item);
     });
+    
+    // Ocultar input tras cargar
+    document.getElementById('input-container-habito').classList.add('hidden');
 }
 
 function agregarHabito() {
@@ -389,7 +413,7 @@ function agregarHabito() {
     habitos.push({
         id: 'h-' + Date.now(),
         nombre: nombre,
-        completados: [] // Guardará los números de los días marcados
+        completados: []
     });
 
     localStorage.setItem(clave, JSON.stringify(habitos));
@@ -412,43 +436,11 @@ function alternarDiaHabito(id, dia) {
     cargarHabitos();
 }
 
-function eliminarHabito(id) {
-    if (confirm("¿Seguro que quieres eliminar este hábito del mes actual?")) {
-        const clave = obtenerClaveMes();
-        let habitos = JSON.parse(localStorage.getItem(clave));
-        habitos = habitos.filter(h => h.id !== id);
-        localStorage.setItem(clave, JSON.stringify(habitos));
-        cargarHabitos();
-    }
-}
-
 function toggleHistorialHabitos() {
-    const contenedor = document.getElementById('historial-habitos');
+    const contenedor = document.getElementById('historial-habitos-container');
     contenedor.classList.toggle('hidden');
-    if (!contenedor.classList.contains('hidden')) mostrarHistorialHabitos();
-}
-
-function mostrarHistorialHabitos() {
-    const contenedor = document.getElementById('historial-habitos');
-    contenedor.innerHTML = "";
-    const claveActual = obtenerClaveMes();
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('journal_habits_') && key !== claveActual) {
-            const [, , anio, mes] = key.split('_');
-            const datos = JSON.parse(localStorage.getItem(key));
-            
-            const div = document.createElement('div');
-            div.className = 'config-group';
-            div.style.marginTop = "10px";
-            div.innerHTML = `<h4>Mes: ${mes}/${anio}</h4>`;
-            datos.forEach(h => {
-                const porcentaje = Math.round((h.completados.length / 30) * 100);
-                div.innerHTML += `<p>${h.nombre}: ${h.completados.length} días (${porcentaje}%)</p>`;
-            });
-            contenedor.appendChild(div);
-        }
+    if (!contenedor.classList.contains('hidden')) {
+        contenedor.innerHTML = "<p style='text-align:center; font-size:0.8rem; opacity:0.5; margin: 20px 0;'>--- Historial de hábitos ---</p>";
     }
 }
 
