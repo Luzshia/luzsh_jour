@@ -245,21 +245,24 @@ body.dark-mode {
 .dropdown-content button:hover { background: var(--accent-color); color: white; }
 
 /* Lista de metas con letra manuscrita */
+/* Lista de metas corregida para numeración */
+.metas-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* Resetear el contador aquí asegura que empiece en cada carga */
+    counter-reset: meta-idx; 
+}
+
 .meta-item {
     display: flex;
     align-items: center;
     padding: 10px 5px;
-    /* Fuente cursiva real */
     font-family: 'Dancing Script', cursive; 
     font-size: 1.6rem; 
     font-weight: 500;
     border-bottom: 1px solid rgba(0,0,0,0.03);
     cursor: pointer;
-    transition: color 0.3s;
-}
-
-.meta-item:hover {
-    color: var(--accent-color);
 }
 
 .meta-item::before {
@@ -270,7 +273,10 @@ body.dark-mode {
     margin-right: 12px;
     color: var(--accent-color);
     font-size: 0.9rem;
-    font-style: normal;
+}
+
+.meta-item:hover {
+    color: var(--accent-color);
 }
 
 .meta-item.completed { opacity: 0.4; text-decoration: line-through; }
@@ -372,6 +378,13 @@ body.dark-mode {
     outline: none;
     padding: 5px;
 }
+
+.habit-item.editando .habit-name {
+    color: var(--accent-color);
+    text-decoration: underline wavy;
+}
+
+
 
 /* --- ESTILOS TO-DO LIST --- */
 .todo-list {

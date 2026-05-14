@@ -97,8 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('opt-add-habito').onclick = () => {
-        document.getElementById('input-container-habito').classList.remove('hidden');
-        document.getElementById('input-nuevo-habito').focus();
+        const container = document.getElementById('input-container-habito');
+        const input = document.getElementById('input-nuevo-habito');
+        container.classList.remove('hidden');
+        input.value = ""; // Limpiar por si acaso
+        input.placeholder = "Escribir nuevo o toca uno para editar/borrar...";
+        input.focus();
     };
 
     document.getElementById('opt-historial-habitos').onclick = toggleHistorialHabitos;
@@ -266,13 +270,16 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- LÓGICA DE METAS CON EDICIÓN --- */
-let metaEditandoIndex = null; // Variable global para saber qué editamos
+/* --- LÓGICA DE METAS CON EDICIÓN Y BORRADO --- */
+let metaEditandoIndex = null;
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     const lista = document.getElementById('lista-metas');
+    const labelAnio = document.getElementById('meta-year-label');
+    
+    if(labelAnio) labelAnio.textContent = anio;
     if(!lista) return;
 
     lista.innerHTML = "";
@@ -283,12 +290,11 @@ function cargarMetas() {
         
         li.onclick = () => {
             const containerInput = document.getElementById('input-container-meta');
-            
             // Si el modo añadir está abierto, editamos
             if (!containerInput.classList.contains('hidden')) {
                 prepararEdicion(index, m.texto);
             } else {
-                // Si está cerrado, solo tachamos
+                // Si está cerrado, tachamos
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
                 cargarMetas();
@@ -297,49 +303,32 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
+    // Actualizar el número del input para la siguiente meta
+    const nextNumLabel = document.getElementById('next-number-meta');
+    if(nextNumLabel) nextNumLabel.textContent = (metas.length + 1) + ".";
+
     document.getElementById('input-container-meta').classList.add('hidden');
     metaEditandoIndex = null;
 }
 
-function activarEscrituraMeta() {
-    const container = document.getElementById('input-container-meta');
-    const input = document.getElementById('input-nueva-meta');
-    
-    container.classList.remove('hidden');
-    input.placeholder = "Escribir nueva meta...";
-    input.focus();
-
-    input.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            guardarMeta(input.value.trim());
-        }
-        if (e.key === 'Escape') {
-            cargarMetas(); // Cancela y limpia
-        }
-    };
-}
-
-function prepararEdicion(index, textoActual) {
-    metaEditandoIndex = index;
-    const input = document.getElementById('input-nueva-meta');
-    input.value = textoActual;
-    input.focus();
-    // Resaltamos visualmente la meta que se está editando
-    const items = document.querySelectorAll('.meta-item');
-    items.forEach(item => item.classList.remove('editando'));
-    items[index].classList.add('editando');
-}
-
 function guardarMeta(texto) {
-    if (!texto) return;
     const anio = new Date().getFullYear();
     let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
 
     if (metaEditandoIndex !== null) {
-        // Editando una existente
-        metas[metaEditandoIndex].texto = texto;
+        // MODO EDICIÓN O BORRADO
+        if (texto === "") {
+            // Si el texto está vacío, borramos la meta
+            if (confirm("¿Deseas eliminar esta meta?")) {
+                metas.splice(metaEditandoIndex, 1);
+            }
+        } else {
+            // Si tiene texto, actualizamos
+            metas[metaEditandoIndex].texto = texto;
+        }
     } else {
-        // Nueva meta
+        // NUEVA META (solo si tiene texto)
+        if (!texto) return;
         metas.push({ texto: texto, completada: false });
     }
 
@@ -348,12 +337,22 @@ function guardarMeta(texto) {
     cargarMetas();
 }
 
-function toggleHistorialMetas() {
-    const container = document.getElementById('historial-metas-container');
-    container.classList.toggle('hidden');
-    if (!container.classList.contains('hidden')) {
-        container.innerHTML = "<p style='font-family:sans-serif; font-size:0.8rem; text-align:center;'>--- Fin del historial ---</p>";
-    }
+function prepararEdicion(index, textoActual) {
+    metaEditandoIndex = index;
+    const input = document.getElementById('input-nueva-meta');
+    const nextNumLabel = document.getElementById('next-number-meta');
+    
+    input.value = textoActual;
+    input.placeholder = "Borra todo para eliminar...";
+    
+    // Cambiamos el número de la izquierda para que coincida con la meta que editamos
+    if(nextNumLabel) nextNumLabel.textContent = (index + 1) + ".";
+    
+    input.focus();
+
+    const items = document.querySelectorAll('.meta-item');
+    items.forEach(item => item.classList.remove('editando'));
+    if(items[index]) items[index].classList.add('editando');
 }
 
 /* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
@@ -363,29 +362,27 @@ function obtenerClaveMes() {
     return `journal_habits_${fecha.getFullYear()}_${fecha.getMonth() + 1}`;
 }
 
+let habitoEditandoId = null; 
+
 function cargarHabitos() {
     const clave = obtenerClaveMes();
-    const fecha = new Date();
-    const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
-    const label = document.getElementById('habit-month-label');
-    if(label) label.textContent = nombresMeses[fecha.getMonth()];
-    
     const habitos = JSON.parse(localStorage.getItem(clave)) || [];
     const contenedor = document.getElementById('contenedor-habitos');
-    contenedor.innerHTML = "";
+    if(!contenedor) return;
 
-    const diasEnMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
+    contenedor.innerHTML = "";
+    const diasEnMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
 
     habitos.forEach((habito) => {
         const item = document.createElement('div');
         item.className = 'habit-item';
+        item.id = `item-${habito.id}`;
         
         let puntosHTML = "";
         for (let d = 1; d <= diasEnMes; d++) {
             const isChecked = habito.completados.includes(d) ? 'checked' : '';
             puntosHTML += `
-                <div class="habit-dot-wrapper" onclick="alternarDiaHabito('${habito.id}', ${d})">
+                <div class="habit-dot-wrapper" onclick="event.stopPropagation(); alternarDiaHabito('${habito.id}', ${d})">
                     <div class="habit-dot ${isChecked}"></div>
                     <span class="dot-day">${d}</span>
                 </div>`;
@@ -395,26 +392,59 @@ function cargarHabitos() {
             <span class="habit-name">${habito.nombre}</span>
             <div class="dots-container">${puntosHTML}</div>
         `;
+
+        // Al hacer clic en el nombre/área del hábito
+        item.onclick = () => {
+            const inputVisible = !document.getElementById('input-container-habito').classList.contains('hidden');
+            if (inputVisible) {
+                prepararEdicionHabito(habito);
+            }
+        };
+
         contenedor.appendChild(item);
     });
     
-    // Ocultar input tras cargar
     document.getElementById('input-container-habito').classList.add('hidden');
+    habitoEditandoId = null;
+}
+
+function prepararEdicionHabito(habito) {
+    habitoEditandoId = habito.id;
+    const input = document.getElementById('input-nuevo-habito');
+    input.value = habito.nombre;
+    input.placeholder = "Borra el nombre para eliminar hábito...";
+    input.focus();
+    
+    // Feedback visual
+    document.querySelectorAll('.habit-item').forEach(el => el.classList.remove('editando'));
+    document.getElementById(`item-${habito.id}`).classList.add('editando');
 }
 
 function agregarHabito() {
     const input = document.getElementById('input-nuevo-habito');
     const nombre = input.value.trim();
-    if (!nombre) return;
-
     const clave = obtenerClaveMes();
-    const habitos = JSON.parse(localStorage.getItem(clave)) || [];
-    
-    habitos.push({
-        id: 'h-' + Date.now(),
-        nombre: nombre,
-        completados: []
-    });
+    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
+
+    if (habitoEditandoId) {
+        // MODO EDICIÓN O ELIMINACIÓN
+        if (nombre === "") {
+            if (confirm("¿Deseas eliminar este hábito por completo?")) {
+                habitos = habitos.filter(h => h.id !== habitoEditandoId);
+            }
+        } else {
+            const index = habitos.findIndex(h => h.id === habitoEditandoId);
+            if (index !== -1) habitos[index].nombre = nombre;
+        }
+    } else {
+        // MODO NUEVO
+        if (!nombre) return;
+        habitos.push({
+            id: 'h-' + Date.now(),
+            nombre: nombre,
+            completados: []
+        });
+    }
 
     localStorage.setItem(clave, JSON.stringify(habitos));
     input.value = "";
