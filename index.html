@@ -129,18 +129,25 @@
             <!-- VISTA: TODO LIST -->
             <section id="view-todo" class="view">
                 <header class="app-header">
+                    <div class="header-top-nav">
+                        <div class="menu-dots-container">
+                            <button id="btn-todo-menu" class="dots-btn">···</button>
+                            <div id="todo-dropdown" class="dropdown-content hidden">
+                                <button id="opt-add-todo">🖋️ Añadir Tarea</button>
+                                <button id="opt-clear-todo">🗑️ Borrar Completadas</button>
+                            </div>
+                        </div>
+                    </div>
                     <h1>To-Do List</h1>
                     <div class="header-line"></div>
                 </header>
                 
                 <div class="content-body">
-                    <div class="input-group">
-                        <input type="text" id="input-nueva-tarea" placeholder="¿Qué tienes pendiente?">
-                        <button id="btn-add-tarea">+</button>
-                    </div>
-
-                    <div class="todo-controls">
-                        <button id="btn-limpiar-completadas" class="btn-secondary">🗑️ Borrar completadas</button>
+                    <!-- Input oculto por defecto -->
+                    <div id="input-container-todo" class="hidden">
+                        <div class="input-fake-row">
+                            <input type="text" id="input-nueva-tarea" placeholder="¿Qué tienes pendiente?">
+                        </div>
                     </div>
 
                     <ul id="lista-tareas" class="todo-list">
@@ -148,6 +155,7 @@
                     </ul>
                 </div>
             </section>
+
 
             <!-- VISTA: AGENDA -->
             <section id="view-agenda" class="view">

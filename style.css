@@ -386,7 +386,8 @@ body.dark-mode {
 
 
 
-/* --- ESTILOS TO-DO LIST --- */
+/* --- TO-DO LIST ESTILO CUADERNO --- */
+
 .todo-list {
     list-style: none;
     padding: 0;
@@ -394,62 +395,63 @@ body.dark-mode {
 }
 
 .todo-item {
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 15px;
-    transition: 0.2s;
+    padding: 12px 5px;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: opacity 0.3s;
 }
 
 .todo-item.done {
-    opacity: 0.6;
+    opacity: 0.4;
 }
 
 .todo-item.done span {
     text-decoration: line-through;
 }
 
-/* Checkbox personalizado */
+/* Checkbox estilo "dibujado a mano" */
 .todo-check {
     width: 22px;
     height: 22px;
-    border: 2px solid var(--accent-color);
-    border-radius: 6px;
+    border: 1.5px solid var(--text-color); /* Color de la letra */
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     flex-shrink: 0;
+    position: relative;
+    background: transparent;
 }
 
-.todo-check.active {
-    background: var(--accent-color);
-    color: white;
-}
-
+/* La "X" cuando está marcado */
 .todo-check.active::after {
-    content: "✔";
-    font-size: 14px;
+    content: "✕";
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
 }
 
-.todo-controls {
-    margin-top: 15px;
-    display: flex;
-    justify-content: flex-end;
+/* Input para To-Do */
+#input-container-todo {
+    margin-bottom: 15px;
 }
 
-.btn-secondary {
-    background: none;
-    border: 1px solid #e74c3c;
-    color: #e74c3c;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    cursor: pointer;
+#input-nueva-tarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1px dashed var(--accent-color);
+    background: transparent;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: var(--text-color);
+    outline: none;
 }
 
 /* --- ESTILOS AGENDA --- */

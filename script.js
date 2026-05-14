@@ -116,12 +116,39 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarHabitos();
 
 
-    // Escuchadores para To-Do List
-    document.getElementById('btn-add-tarea').addEventListener('click', agregarTarea);
-    document.getElementById('btn-limpiar-completadas').addEventListener('click', limpiarTareasCompletadas);
-    
-    // Cargar tareas al iniciar
+    // --- Escuchadores de To-Do List ---
+    const btnTodoMenu = document.getElementById('btn-todo-menu');
+    const todoDropdown = document.getElementById('todo-dropdown');
+
+    if (btnTodoMenu) {
+        btnTodoMenu.onclick = (e) => {
+            e.stopPropagation();
+            todoDropdown.classList.toggle('hidden');
+        };
+    }
+
+    document.addEventListener('click', () => {
+        if (todoDropdown) todoDropdown.classList.add('hidden');
+    });
+
+    document.getElementById('opt-add-todo').onclick = () => {
+        const container = document.getElementById('input-container-todo');
+        const input = document.getElementById('input-nueva-tarea');
+        container.classList.remove('hidden');
+        input.value = "";
+        input.placeholder = "Nueva tarea o toca una para editar...";
+        input.focus();
+    };
+
+    document.getElementById('opt-clear-todo').onclick = limpiarTareasCompletadas;
+
+    document.getElementById('input-nueva-tarea').onkeydown = (e) => {
+        if (e.key === 'Enter') guardarTarea(e.target.value.trim());
+        if (e.key === 'Escape') cargarTareas();
+    };
+
     cargarTareas();
+
 
     // --- Listeners de la Agenda ---
     const btnAddEvento = document.getElementById('btn-add-evento');
@@ -498,11 +525,14 @@ function toggleHistorialHabitos() {
     }
 }
 
-/* --- FUNCIONES TO-DO LIST --- */
+/* --- FUNCIONES TO-DO LIST CORREGIDAS --- */
+let todoEditandoIndex = null;
 
 function cargarTareas() {
     const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
     const lista = document.getElementById('lista-tareas');
+    if(!lista) return;
+
     lista.innerHTML = "";
 
     tareas.forEach((tarea, index) => {
@@ -510,24 +540,26 @@ function cargarTareas() {
         li.className = `todo-item ${tarea.completada ? 'done' : ''}`;
         
         li.innerHTML = `
-            <div class="todo-check ${tarea.completada ? 'active' : ''}" onclick="alternarTarea(${index})"></div>
-            <span onclick="alternarTarea(${index})">${tarea.texto}</span>
+            <div class="todo-check ${tarea.completada ? 'active' : ''}"></div>
+            <span>${tarea.texto}</span>
         `;
+
+        li.onclick = (e) => {
+            const containerInput = document.getElementById('input-container-todo');
+            // Si el modo añadir está abierto, editamos (al tocar el texto o el li)
+            if (!containerInput.classList.contains('hidden')) {
+                prepararEdicionTodo(index, tarea.texto);
+            } else {
+                // Si está cerrado, marcamos como completada
+                alternarTarea(index);
+            }
+        };
+
         lista.appendChild(li);
     });
-}
 
-function agregarTarea() {
-    const input = document.getElementById('input-nueva-tarea');
-    const texto = input.value.trim();
-    if (!texto) return;
-
-    const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
-    tareas.push({ texto: texto, completada: false });
-    
-    localStorage.setItem('journal_todo', JSON.stringify(tareas));
-    input.value = "";
-    cargarTareas();
+    document.getElementById('input-container-todo').classList.add('hidden');
+    todoEditandoIndex = null;
 }
 
 function alternarTarea(index) {
@@ -537,20 +569,52 @@ function alternarTarea(index) {
     cargarTareas();
 }
 
+function prepararEdicionTodo(index, texto) {
+    todoEditandoIndex = index;
+    const input = document.getElementById('input-nueva-tarea');
+    input.value = texto;
+    input.placeholder = "Borra todo para eliminar...";
+    input.focus();
+    
+    const items = document.querySelectorAll('.todo-item');
+    items.forEach(item => item.classList.remove('editando'));
+    items[index].classList.add('editando');
+}
+
+function guardarTarea(texto) {
+    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+
+    if (todoEditandoIndex !== null) {
+        // MODO EDICIÓN O BORRADO
+        if (texto === "") {
+            if (confirm("¿Eliminar esta tarea?")) {
+                tareas.splice(todoEditandoIndex, 1);
+            }
+        } else {
+            tareas[todoEditandoIndex].texto = texto;
+        }
+    } else {
+        // MODO NUEVO
+        if (!texto) return;
+        tareas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem('journal_todo', JSON.stringify(tareas));
+    document.getElementById('input-nueva-tarea').value = "";
+    cargarTareas();
+}
+
 function limpiarTareasCompletadas() {
     let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
-    const antes = tareas.length;
-    
-    // Filtramos para quedarnos solo con las que NO están completadas
+    const inicial = tareas.length;
     tareas = tareas.filter(t => !t.completada);
-    
-    const despues = tareas.length;
-    if (antes === despues) {
-        alert("No hay tareas completadas para eliminar.");
+
+    if (tareas.length === inicial) {
+        alert("No hay tareas terminadas para borrar.");
         return;
     }
 
-    if (confirm(`¿Quieres eliminar ${antes - despues} tareas terminadas?`)) {
+    if (confirm("¿Borrar todas las tareas marcadas con X?")) {
         localStorage.setItem('journal_todo', JSON.stringify(tareas));
         cargarTareas();
     }
