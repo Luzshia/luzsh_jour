@@ -198,27 +198,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // --- Escuchadores Ciclo ---
-    document.getElementById('btn-ciclo-menu').onclick = (e) => {
-        e.stopPropagation();
-        document.getElementById('ciclo-dropdown').classList.toggle('hidden');
-    };
-
-    document.getElementById('opt-add-registro-ciclo').onclick = () => {
-        abrirFormularioCiclo(new Date().toISOString().split('T')[0]);
-    };
-
-    document.getElementById('btn-guardar-ciclo').onclick = guardarRegistroCiclo;
-    document.getElementById('btn-cerrar-ciclo').onclick = () => {
-        document.getElementById('modal-registro-ciclo').classList.add('hidden');
-    };
-
-    // Al cargar la vista
-    renderizarRueda();
-
-
-
+    /* --- ESCUCHADORES DEL CICLO LUNAR --- */
     
+    // Abrir menú de tres puntos
+    const btnCicloMenu = document.getElementById('btn-ciclo-menu');
+    if(btnCicloMenu) {
+        btnCicloMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('ciclo-dropdown').classList.toggle('hidden');
+        });
+    }
+
+    // Opción Añadir Registro desde el menú
+    const optAddReg = document.getElementById('opt-add-registro');
+    if(optAddReg) {
+        optAddReg.addEventListener('click', () => {
+            abrirRegistro(new Date().toISOString().split('T')[0]);
+            document.getElementById('ciclo-dropdown').classList.add('hidden');
+        });
+    }
+
+    // Botones del Modal
+    const btnGuardar = document.getElementById('btn-guardar-reg');
+    if(btnGuardar) btnGuardar.addEventListener('click', guardarRegistro);
+
+    const btnCancelar = document.getElementById('btn-cancelar-reg');
+    if(btnCancelar) {
+        btnCancelar.addEventListener('click', () => {
+            document.getElementById('modal-registro').classList.add('hidden');
+        });
+    }
+
+    // Inicializar la rueda al cargar
+    dibujarRueda();
+});
+
+
 
 /* --- FUNCIONES DE SEGURIDAD --- */
 function actualizarInterfazPin() {
@@ -807,99 +822,89 @@ function obtenerIconoLuna(f) {
 
 
 
-/* --- LÓGICA DEL CICLO MENSTRUAL --- */
-let inicioUltimoCiclo = new Date("2026-04-30T00:00:00"); // Tu fecha base
+/* --- FUNCIONES DEL CICLO LUNAR --- */
+let inicioCiclo = new Date("2026-04-30T00:00:00");
 
-function renderizarRueda() {
-    const rueda = document.getElementById('rueda-menstrual');
-    if (!rueda) return;
+function dibujarRueda() {
+    const contenedor = document.getElementById('canvas-rueda');
+    if(!contenedor) return;
 
-    // Limpiar pero mantener el centro
-    const centro = rueda.querySelector('.centro-rueda');
-    rueda.innerHTML = '';
-    rueda.appendChild(centro);
+    // Limpiar puntos previos
+    contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
 
-    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
-    const hoy = new Date();
-    
-    // Dibujaremos 28 días (puedes ajustarlo)
-    const totalDiasRueda = 28;
-    const radio = 130; // Distancia del centro
+    const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
+    const hoyStr = new Date().toISOString().split('T')[0];
+    const radio = 135;
 
-    for (let i = 0; i < totalDiasRueda; i++) {
-        let fechaDia = new Date(inicioUltimoCiclo);
-        fechaDia.setDate(inicioUltimoCiclo.getDate() + i);
-        const iso = fechaDia.toISOString().split('T')[0];
-        const reg = registros[iso];
+    for (let i = 0; i < 28; i++) {
+        let fechaActual = new Date(inicioCiclo);
+        fechaActual.setDate(inicioCiclo.getDate() + i);
+        let iso = fechaActual.toISOString().split('T')[0];
+        let reg = registros[iso];
 
         const div = document.createElement('div');
-        div.className = 'dia-rueda';
+        div.className = 'punto-dia';
         
-        // Posicionamiento matemático circular
-        const angulo = (i * (360 / totalDiasRueda) - 90) * (Math.PI / 180);
-        const x = radio * Math.cos(angulo);
-        const y = radio * Math.sin(angulo);
-        div.style.transform = `translate(${x}px, ${y}px)`;
+        let angulo = (i * (360/28) - 90) * (Math.PI/180);
+        let x = radio * Math.cos(angulo);
+        let y = radio * Math.sin(angulo);
+        div.style.left = `calc(50% + ${x}px - 20px)`;
+        div.style.top = `calc(50% + ${y}px - 20px)`;
 
-        // Contenido del día: Luna + Número
-        const luna = obtenerIconoLuna(fechaDia);
-        div.innerHTML = `<span>${luna}</span><small>${fechaDia.getDate()}</small>`;
-
-        // Indicadores (Puntitos)
-        if (reg) {
-            if (reg.sangrado) div.innerHTML += '<div class="punto-menstruacion"></div>';
-            if (reg.relaciones) div.innerHTML += '<div class="punto-sexo"></div>';
+        div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
+        
+        if(reg) {
+            if(reg.sangrado) div.innerHTML += '<div class="indicador-sangre"></div>';
+            if(reg.sexo) div.innerHTML += '<div class="indicador-sexo"></div>';
         }
 
-        // Si es el día de hoy, resaltarlo
-        if (iso === hoy.toISOString().split('T')[0]) {
-            div.style.color = 'var(--accent-color)';
-            div.style.fontWeight = 'bold';
-            document.getElementById('dia-ciclo-actual').textContent = `Día ${i + 1}`;
-            document.getElementById('fecha-rueda-centro').textContent = fechaDia.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+        if(iso === hoyStr) {
+            div.classList.add('hoy-marcado');
+            document.getElementById('txt-dia-ciclo').textContent = `Día ${i+1}`;
+            document.getElementById('txt-fecha-ciclo').textContent = `${fechaActual.getDate()}/${fechaActual.getMonth()+1}`;
         }
 
-        div.onclick = () => abrirFormularioCiclo(iso);
-        rueda.appendChild(div);
+        div.onclick = () => abrirRegistro(iso);
+        contenedor.appendChild(div);
     }
 }
 
-function abrirFormularioCiclo(fechaIso) {
-    document.getElementById('modal-registro-ciclo').classList.remove('hidden');
-    document.getElementById('ciclo-fecha-input').value = fechaIso;
-    
-    // Cargar datos si ya existen
-    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
-    const reg = registros[fechaIso] || {};
-    
-    document.getElementById('ciclo-sangrado').value = reg.sangrado || "";
-    document.getElementById('ciclo-dolor').value = reg.dolor || "";
-    document.getElementById('ciclo-relaciones').checked = reg.relaciones || false;
-    document.getElementById('ciclo-energia').value = reg.energia || "3";
-    document.getElementById('ciclo-libido').value = reg.libido || "media";
-    document.getElementById('ciclo-animo').value = reg.animo || "tranquila";
-    document.getElementById('ciclo-sueno-inicio').value = reg.sueno_ini || "";
-    document.getElementById('ciclo-sueno-fin').value = reg.sueno_fin || "";
+function abrirRegistro(fecha) {
+    const modal = document.getElementById('modal-registro');
+    modal.classList.remove('hidden');
+    document.getElementById('reg-fecha').value = fecha;
+
+    const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
+    const datos = registros[fecha] || {};
+
+    document.getElementById('reg-sangrado').value = datos.sangrado || "";
+    document.getElementById('reg-dolor').value = datos.dolor || "";
+    document.getElementById('reg-energia').value = datos.energia || "media";
+    document.getElementById('reg-libido').value = datos.libido || "media";
+    document.getElementById('reg-social').value = datos.social || "media";
+    document.getElementById('reg-animo').value = datos.animo || "calma";
+    document.getElementById('reg-sexo').checked = datos.sexo || false;
+    document.getElementById('reg-sueno-ini').value = datos.sueno_ini || "";
+    document.getElementById('reg-sueno-fin').value = datos.sueno_fin || "";
 }
 
-function guardarRegistroCiclo() {
-    const fecha = document.getElementById('ciclo-fecha-input').value;
-    if (!fecha) return;
+function guardarRegistro() {
+    const fecha = document.getElementById('reg-fecha').value;
+    const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
 
-    const registros = JSON.parse(localStorage.getItem('journal_ciclo_registros')) || {};
-    
     registros[fecha] = {
-        sangrado: document.getElementById('ciclo-sangrado').value,
-        dolor: document.getElementById('ciclo-dolor').value,
-        relaciones: document.getElementById('ciclo-relaciones').checked,
-        energia: document.getElementById('ciclo-energia').value,
-        libido: document.getElementById('ciclo-libido').value,
-        animo: document.getElementById('ciclo-animo').value,
-        sueno_ini: document.getElementById('ciclo-sueno-inicio').value,
-        sueno_fin: document.getElementById('ciclo-sueno-fin').value
+        sangrado: document.getElementById('reg-sangrado').value,
+        dolor: document.getElementById('reg-dolor').value,
+        energia: document.getElementById('reg-energia').value,
+        libido: document.getElementById('reg-libido').value,
+        social: document.getElementById('reg-social').value,
+        animo: document.getElementById('reg-animo').value,
+        sexo: document.getElementById('reg-sexo').checked,
+        sueno_ini: document.getElementById('reg-sueno-ini').value,
+        sueno_fin: document.getElementById('reg-sueno-fin').value
     };
 
-    localStorage.setItem('journal_ciclo_registros', JSON.stringify(registros));
-    document.getElementById('modal-registro-ciclo').classList.add('hidden');
-    renderizarRueda();
+    localStorage.setItem('ciclo_logs', JSON.stringify(registros));
+    document.getElementById('modal-registro').classList.add('hidden');
+    dibujarRueda();
 }

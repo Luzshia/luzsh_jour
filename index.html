@@ -209,8 +209,8 @@
                         <div class="menu-dots-container">
                             <button id="btn-ciclo-menu" class="dots-btn">···</button>
                             <div id="ciclo-dropdown" class="dropdown-content hidden">
-                                <button id="opt-add-registro-ciclo">📝 Añadir Registro Diario</button>
-                                <button id="opt-ver-tabla-ciclos">📊 Ver Historial por Ciclos</button>
+                                <button id="opt-add-registro">🖋️ Registrar Día</button>
+                                <button id="opt-ver-ciclos">📅 Ciclos Anteriores</button>
                             </div>
                         </div>
                     </div>
@@ -219,72 +219,97 @@
                 </header>
 
                 <div class="content-body">
-                    <div class="diagrama-container">
-                        <div id="rueda-menstrual" class="rueda-menstrual">
-                            <div class="centro-rueda">
-                                <span id="dia-ciclo-actual">Día --</span>
-                                <small id="fecha-rueda-centro"></small>
-                            </div>
+                    <div id="canvas-rueda" class="rueda-wrapper">
+                        <div class="info-central">
+                            <span id="txt-dia-ciclo">Día --</span>
+                            <span id="txt-fecha-ciclo">--/--</span>
                         </div>
                     </div>
 
-                    <div id="modal-registro-ciclo" class="hidden">
-                        <div class="form-scroll-container">
-                            <h3>Registro del Día</h3>
-                            <div class="input-fake-row">
-                                <label>Fecha:</label>
-                                <input type="date" id="ciclo-fecha-input">
-                            </div>
-                            
-                            <div class="seccion-form-ciclo">
-                                <h4>Fisiología</h4>
-                                <select id="ciclo-sangrado">
-                                    <option value="">¿Sangrado?</option>
-                                    <option value="ligero">Ligero (Rosa/Marrón)</option>
-                                    <option value="moderado">Moderado (Rojo)</option>
-                                    <option value="fuerte">Fuerte (Rojo Intenso)</option>
-                                </select>
-                                <select id="ciclo-dolor">
-                                    <option value="">¿Dolor?</option>
-                                    <option value="ninguno">Ninguno</option>
-                                    <option value="pelvico">Pélvico</option>
-                                    <option value="migraña">Migraña</option>
-                                    <option value="ambos">Ambos</option>
-                                </select>
-                                <label class="check-label">
-                                    <input type="checkbox" id="ciclo-relaciones"> 💜 Relaciones Sexuales
-                                </label>
-                            </div>
-
-                            <div class="seccion-form-ciclo">
-                                <h4>Estado Mental y Energía</h4>
-                                <div class="grid-selects">
-                                    <select id="ciclo-energia"><option value="3">⚡ Energía Media</option><option value="1">🔋 Baja</option><option value="5">🚀 Alta</option></select>
-                                    <select id="ciclo-libido"><option value="media">🔥 Libido Media</option><option value="baja">❄️ Baja</option><option value="alta">🌋 Alta</option></select>
-                                    <select id="ciclo-animo"><option value="tranquila">😌 Tranquila</option><option value="creativa">🎨 Creativa</option><option value="sensible">🥺 Sensible</option><option value="irritable">😤 Irritable</option></select>
+                    <div id="modal-registro" class="modal-overlay hidden">
+                        <div class="modal-card">
+                            <h3>Diario del Ciclo</h3>
+                            <div class="form-grid">
+                                <div class="form-item">
+                                    <label>Fecha</label>
+                                    <input type="date" id="reg-fecha">
+                                </div>
+                                <div class="form-item">
+                                    <label>Sangrado / Color</label>
+                                    <select id="reg-sangrado">
+                                        <option value="">Ninguno</option>
+                                        <option value="rosa">Rosa (Inicio/Fin)</option>
+                                        <option value="rojo">Rojo (Normal)</option>
+                                        <option value="oscuro">Oscuro (Abundante)</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Dolor</label>
+                                    <select id="reg-dolor">
+                                        <option value="">Sin dolor</option>
+                                        <option value="pelvico">Pélvico</option>
+                                        <option value="migraña">Migraña</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Sentimiento</label>
+                                    <select id="reg-animo">
+                                        <option value="calma">😌 Calma</option>
+                                        <option value="energia">🔥 Enérgica</option>
+                                        <option value="sensible">🥺 Sensible</option>
+                                        <option value="irritable">😤 Irritable</option>
+                                        <option value="creativa">🎨 Creativa</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Energía</label>
+                                    <select id="reg-energia">
+                                        <option value="alta">Alta</option>
+                                        <option value="media">Media</option>
+                                        <option value="baja">Baja</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Líbido</label>
+                                    <select id="reg-libido">
+                                        <option value="alta">Alta</option>
+                                        <option value="media">Media</option>
+                                        <option value="baja">Baja</option>
+                                    </select>
+                                </div>
+                                <div class="form-item">
+                                    <label>Sociabilidad</label>
+                                    <select id="reg-social">
+                                        <option value="alta">Alta</option>
+                                        <option value="media">Media</option>
+                                        <option value="baja">Baja</option>
+                                    </select>
+                                </div>
+                                <div class="form-item full">
+                                    <label>Relaciones Sexuales</label>
+                                    <input type="checkbox" id="reg-sexo">
+                                </div>
+                                <div class="form-item">
+                                    <label>Sueño (Desde)</label>
+                                    <input type="time" id="reg-sueno-ini">
+                                </div>
+                                <div class="form-item">
+                                    <label>Sueño (Hasta)</label>
+                                    <input type="time" id="reg-sueno-fin">
                                 </div>
                             </div>
-
-                            <div class="seccion-form-ciclo">
-                                <h4>Sueño</h4>
-                                <div class="input-row">
-                                    <input type="time" id="ciclo-sueno-inicio">
-                                    <input type="time" id="ciclo-sueno-fin">
-                                </div>
+                            <div class="modal-btns">
+                                <button id="btn-cancelar-reg">Cerrar</button>
+                                <button id="btn-guardar-reg" class="btn-primario">Guardar</button>
                             </div>
-
-                            <button id="btn-guardar-ciclo" class="btn-load">Guardar Registro</button>
-                            <button id="btn-cerrar-ciclo" class="btn-cancel">Cancelar</button>
                         </div>
-                    </div>
-
-                    <div id="historial-ciclos-container" class="hidden">
-                        <div id="tabla-ciclos-render"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- VISTA: CONFIGURACIÓN -->
+
+            
             <!-- VISTA: CONFIGURACIÓN -->
             <section id="view-config" class="view">
                 <header class="app-header">
