@@ -63,27 +63,34 @@
             <!-- VISTA: METAS -->
             <section id="view-metas" class="view">
                 <header class="app-header">
-                    <h1>Mis Metas <span id="meta-year-label"></span></h1>
+                    <div class="header-main-row">
+                        <h1>Mis Metas <span id="meta-year-label"></span></h1>
+                        <div class="header-actions">
+                            <button id="btn-ver-historial" title="Ver Historial">📜</button>
+                            <button id="btn-add-meta" title="Nueva Meta">+</button>
+                        </div>
+                    </div>
                     <div class="header-line"></div>
                 </header>
                 
                 <div class="content-body">
-                    <div class="input-group">
-                        <input type="text" id="input-nueva-meta" placeholder="Escribe una meta anual...">
-                        <button id="btn-add-meta">+</button>
-                    </div>
+                    <!-- Contenedor del historial (se muestra arriba si se activa) -->
+                    <div id="historial-metas" class="hidden"></div>
 
                     <ul id="lista-metas" class="metas-list">
                         <!-- Las metas aparecerán aquí -->
                     </ul>
 
-                    <div class="history-section">
-                        <button class="config-item-btn" id="btn-ver-historial">📜 Ver Metas de Años Pasados</button>
-                        <div id="historial-metas" class="hidden"></div>
+                    <!-- Input invisible que solo aparece al dar al + -->
+                    <div id="input-container-meta" class="hidden">
+                        <div class="input-fake-row">
+                            <span id="next-number"></span>
+                            <input type="text" id="input-nueva-meta" placeholder="Escribir meta...">
+                        </div>
                     </div>
                 </div>
             </section>
-
+            
             <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
                 <header class="app-header">
