@@ -203,58 +203,91 @@ body.dark-mode {
     background: none;
 }
 
-/* --- ESTILOS DE METAS --- */
+/* --- METAS 2.0: ESTILO CUADERNO LIMPIO --- */
+.header-top-nav {
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+}
+
+.dots-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3; /* Casi invisible */
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.dots-btn:hover { opacity: 1; }
+
+.dropdown-content {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dropdown-content button {
+    background: transparent;
+    border: none;
+    padding: 12px 15px;
+    text-align: left;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover { background: var(--accent-color); color: white; }
+
+/* Lista de Metas */
 .metas-list {
     list-style: none;
     padding: 0;
     margin-top: 20px;
+    counter-reset: meta-idx;
 }
 
 .meta-item {
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
     display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: 0.3s;
+    padding: 12px 5px;
+    font-style: italic;
+    font-size: 1.1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05); /* Línea muy tenue como de cuaderno */
 }
 
-.meta-item.completed {
-    opacity: 0.6;
-    background: var(--bg-color);
-    text-decoration: line-through;
-    border-left: 5px solid var(--accent-color);
+.meta-item::before {
+    counter-increment: meta-idx;
+    content: counter(meta-idx) ". ";
+    font-weight: bold;
+    margin-right: 12px;
+    color: var(--accent-color);
+    font-style: normal;
 }
 
-.input-group {
-    display: flex;
-    gap: 10px;
-}
+.meta-item.completed { opacity: 0.4; text-decoration: line-through; }
 
+/* Input de escritura */
+.input-fake-row { display: flex; align-items: center; padding: 12px 5px; }
 #input-nueva-meta {
     flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--line-color);
-    background: var(--card-bg);
-    color: var(--text-color);
-}
-
-#btn-add-meta {
-    padding: 0 20px;
-    border-radius: 10px;
     border: none;
-    background: var(--accent-color);
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
+    background: transparent;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    outline: none;
 }
 
-.history-section { margin-top: 40px; }
-.hidden { display: none; }
 
 /* --- ESTILOS DE HÁBITOS --- */
 .habitos-grid {

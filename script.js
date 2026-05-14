@@ -59,12 +59,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export').addEventListener('click', exportarDatos);
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
-    // Escuchadores para Metas
-    document.getElementById('btn-add-meta').addEventListener('click', agregarMeta);
-    document.getElementById('btn-ver-historial').addEventListener('click', toggleHistorialMetas);
-    
-    // Cargar metas al iniciar
-    cargarMetas();
+    // --- LISTENERS DE METAS ---
+const btnMenu = document.getElementById('btn-metas-menu');
+if(btnMenu) btnMenu.addEventListener('click', () => document.getElementById('metas-dropdown').classList.toggle('hidden'));
+
+document.getElementById('opt-add-meta').addEventListener('click', () => {
+    document.getElementById('metas-dropdown').classList.add('hidden');
+    activarEscrituraMeta();
+});
+
+document.getElementById('opt-clear-metas').addEventListener('click', borrarMetasCompletadas);
+document.getElementById('opt-historial-metas').addEventListener('click', toggleHistorialMetas);
+
+// Cerrar menú si haces clic fuera
+window.addEventListener('click', (e) => {
+    if (!e.target.matches('.dots-btn')) {
+        document.getElementById('metas-dropdown')?.classList.add('hidden');
+    }
+});
+
+cargarMetas();
+
 
     // Escuchadores para Hábitos
     document.getElementById('btn-add-habito').addEventListener('click', agregarHabito);
@@ -227,79 +242,67 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- FUNCIONES DE METAS --- */
+/* --- FUNCIONES DE METAS (REINICIO TOTAL) --- */
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
     document.getElementById('meta-year-label').textContent = anio;
     
-    // Estructura en LocalStorage: journal_metas_2026, journal_metas_2027...
-    const metasGuardadas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+    const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     const lista = document.getElementById('lista-metas');
     lista.innerHTML = "";
 
-    metasGuardadas.forEach((meta, index) => {
+    metas.forEach((m, index) => {
         const li = document.createElement('li');
-        li.className = `meta-item ${meta.completada ? 'completed' : ''}`;
-        li.textContent = meta.texto;
-        li.onclick = () => alternarMeta(index);
+        li.className = `meta-item ${m.completada ? 'completed' : ''}`;
+        li.textContent = m.texto;
+        li.onclick = () => {
+            m.completada = !m.completada;
+            localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+            cargarMetas();
+        };
         lista.appendChild(li);
     });
+
+    document.getElementById('next-number-meta').textContent = (metas.length + 1) + ".";
+    document.getElementById('input-container-meta').classList.add('hidden');
 }
 
-function agregarMeta() {
+function activarEscrituraMeta() {
+    const container = document.getElementById('input-container-meta');
     const input = document.getElementById('input-nueva-meta');
-    const texto = input.value.trim();
-    if (!texto) return;
+    container.classList.remove('hidden');
+    input.focus();
 
-    const anio = new Date().getFullYear();
-    const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
-    
-    metas.push({ texto: texto, completada: false });
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    
-    input.value = "";
-    cargarMetas();
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+            const anio = new Date().getFullYear();
+            const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+            metas.push({ texto: input.value.trim(), completada: false });
+            localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+            input.value = "";
+            cargarMetas();
+        } else if (e.key === 'Escape') {
+            container.classList.add('hidden');
+        }
+    };
 }
 
-function alternarMeta(index) {
+function borrarMetasCompletadas() {
+    if(!confirm("¿Borrar metas completadas?")) return;
     const anio = new Date().getFullYear();
-    const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`));
-    
-    metas[index].completada = !metas[index].completada;
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+    metas = metas.filter(m => !m.completada);
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     cargarMetas();
 }
 
 function toggleHistorialMetas() {
-    const contenedor = document.getElementById('historial-metas');
-    if (contenedor.classList.contains('hidden')) {
-        contenedor.classList.remove('hidden');
-        mostrarHistorialMetas();
-    } else {
-        contenedor.classList.add('hidden');
-    }
-}
-
-function mostrarHistorialMetas() {
-    const contenedor = document.getElementById('historial-metas');
-    contenedor.innerHTML = "";
-    const anioActual = new Date().getFullYear();
-
-    // Buscamos en el almacenamiento años anteriores
-    for (let key in localStorage) {
-        if (key.startsWith('journal_metas_')) {
-            const anioMeta = key.split('_')[2];
-            if (anioMeta != anioActual) {
-                const metas = JSON.parse(localStorage.getItem(key));
-                const divAnio = document.createElement('div');
-                divAnio.innerHTML = `<h4>Año ${anioMeta}</h4>`;
-                metas.forEach(m => {
-                    divAnio.innerHTML += `<p style="${m.completada ? 'text-decoration:line-through' : ''}">- ${m.texto}</p>`;
-                });
-                contenedor.appendChild(divAnio);
-            }
-        }
+    const container = document.getElementById('historial-metas-container');
+    container.classList.toggle('hidden');
+    if (!container.classList.contains('hidden')) {
+        container.innerHTML = "<h3>Historial Años Pasados</h3>";
+        // Aquí iría la lógica de buscar otros años en localStorage
     }
 }
 
