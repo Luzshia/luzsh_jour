@@ -59,26 +59,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export').addEventListener('click', exportarDatos);
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
-    // --- LISTENERS DE METAS ---
-const btnMenu = document.getElementById('btn-metas-menu');
-if(btnMenu) btnMenu.addEventListener('click', () => document.getElementById('metas-dropdown').classList.toggle('hidden'));
+    // --- Escuchadores de Metas ---
+    const btnMetasMenu = document.getElementById('btn-metas-menu');
+    const metasDropdown = document.getElementById('metas-dropdown');
 
-document.getElementById('opt-add-meta').addEventListener('click', () => {
-    document.getElementById('metas-dropdown').classList.add('hidden');
-    activarEscrituraMeta();
-});
-
-document.getElementById('opt-clear-metas').addEventListener('click', borrarMetasCompletadas);
-document.getElementById('opt-historial-metas').addEventListener('click', toggleHistorialMetas);
-
-// Cerrar menú si haces clic fuera
-window.addEventListener('click', (e) => {
-    if (!e.target.matches('.dots-btn')) {
-        document.getElementById('metas-dropdown')?.classList.add('hidden');
+    if (btnMetasMenu) {
+        btnMetasMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            metasDropdown.classList.toggle('hidden');
+        });
     }
-});
 
-cargarMetas();
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', () => {
+        if (metasDropdown) metasDropdown.classList.add('hidden');
+    });
+
+    // Opciones del menú
+    document.getElementById('opt-add-meta').addEventListener('click', activarEscrituraMeta);
+    document.getElementById('opt-historial-metas').addEventListener('click', toggleHistorialMetas);
+
+    // Carga inicial
+    cargarMetas();
 
 
     // Escuchadores para Hábitos
@@ -242,16 +244,18 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- FUNCIONES DE METAS (REINICIO TOTAL) --- */
+/* --- LÓGICA DE METAS --- */
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
-    document.getElementById('meta-year-label').textContent = anio;
+    const labelAnio = document.getElementById('meta-year-label');
+    if(labelAnio) labelAnio.textContent = anio;
     
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     const lista = document.getElementById('lista-metas');
-    lista.innerHTML = "";
+    if(!lista) return;
 
+    lista.innerHTML = "";
     metas.forEach((m, index) => {
         const li = document.createElement('li');
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
@@ -264,45 +268,39 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    document.getElementById('next-number-meta').textContent = (metas.length + 1) + ".";
+    // Asegurar que el input esté oculto al recargar la vista
     document.getElementById('input-container-meta').classList.add('hidden');
 }
 
 function activarEscrituraMeta() {
     const container = document.getElementById('input-container-meta');
     const input = document.getElementById('input-nueva-meta');
+    const anio = new Date().getFullYear();
+    const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+
     container.classList.remove('hidden');
+    document.getElementById('next-number-meta').textContent = (metas.length + 1) + ".";
     input.focus();
 
     input.onkeydown = (e) => {
         if (e.key === 'Enter' && input.value.trim()) {
-            const anio = new Date().getFullYear();
-            const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
             metas.push({ texto: input.value.trim(), completada: false });
             localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
             input.value = "";
-            cargarMetas();
-        } else if (e.key === 'Escape') {
+            cargarMetas(); // Esto actualiza la lista y oculta el input
+        }
+        if (e.key === 'Escape') {
             container.classList.add('hidden');
         }
     };
-}
-
-function borrarMetasCompletadas() {
-    if(!confirm("¿Borrar metas completadas?")) return;
-    const anio = new Date().getFullYear();
-    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
-    metas = metas.filter(m => !m.completada);
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    cargarMetas();
 }
 
 function toggleHistorialMetas() {
     const container = document.getElementById('historial-metas-container');
     container.classList.toggle('hidden');
     if (!container.classList.contains('hidden')) {
-        container.innerHTML = "<h3>Historial Años Pasados</h3>";
-        // Aquí iría la lógica de buscar otros años en localStorage
+        container.innerHTML = "<h3 style='font-size:1rem; opacity:0.7;'>Historial cargado</h3>";
+        // Aquí puedes expandir la lógica para leer otros años de LocalStorage
     }
 }
 

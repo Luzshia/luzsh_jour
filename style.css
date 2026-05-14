@@ -203,90 +203,89 @@ body.dark-mode {
     background: none;
 }
 
-/* --- METAS 2.0: ESTILO CUADERNO LIMPIO --- */
-.header-top-nav {
-    display: flex;
-    justify-content: flex-end;
-    position: relative;
-}
+/* 1. Importar fuente cursiva al inicio del CSS */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
+
+/* --- ESTILOS METAS --- */
+.header-top-nav { display: flex; justify-content: flex-end; position: relative; }
 
 .dots-btn {
     background: transparent;
     border: none;
     color: var(--text-color);
-    opacity: 0.3; /* Casi invisible */
-    font-size: 1.5rem;
+    opacity: 0.3;
+    font-size: 2rem;
     cursor: pointer;
-    padding: 10px;
+    padding: 0 10px;
 }
-
-.dots-btn:hover { opacity: 1; }
 
 .dropdown-content {
     position: absolute;
     right: 0;
-    top: 40px;
+    top: 45px;
     background: var(--card-bg);
     border: 1px solid var(--line-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 100;
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 150px;
 }
 
 .dropdown-content button {
+    width: 100%;
     background: transparent;
     border: none;
-    padding: 12px 15px;
+    padding: 12px;
     text-align: left;
     color: var(--text-color);
-    font-size: 0.9rem;
     cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .dropdown-content button:hover { background: var(--accent-color); color: white; }
 
-/* Lista de Metas */
-.metas-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-    counter-reset: meta-idx;
-}
-
+/* Lista de metas con letra manuscrita */
 .meta-item {
     display: flex;
+    align-items: center;
     padding: 12px 5px;
-    font-style: italic;
-    font-size: 1.1rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05); /* Línea muy tenue como de cuaderno */
+    font-family: 'Caveat', cursive; /* Letra cursiva real */
+    font-size: 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    cursor: pointer;
 }
 
 .meta-item::before {
     counter-increment: meta-idx;
     content: counter(meta-idx) ". ";
+    font-family: 'Arial', sans-serif;
     font-weight: bold;
     margin-right: 12px;
     color: var(--accent-color);
-    font-style: normal;
+    font-size: 1rem;
 }
 
 .meta-item.completed { opacity: 0.4; text-decoration: line-through; }
 
-/* Input de escritura */
-.input-fake-row { display: flex; align-items: center; padding: 12px 5px; }
+/* Input de escritura sutil */
+.input-fake-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 5px;
+    margin-top: 10px;
+}
+
 #input-nueva-meta {
     flex: 1;
     border: none;
     background: transparent;
-    font-style: italic;
-    font-size: 1.1rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.5rem;
     color: var(--text-color);
     outline: none;
 }
+
+.hidden { display: none !important; }
 
 
 /* --- ESTILOS DE HÁBITOS --- */
