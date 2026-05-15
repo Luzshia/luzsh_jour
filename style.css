@@ -244,8 +244,6 @@ body.dark-mode {
 
 .dropdown-content button:hover { background: var(--accent-color); color: white; }
 
-/* Lista de metas con letra manuscrita */
-/* Lista de metas corregida para numeración */
 .metas-list {
     list-style: none;
     padding: 0;
@@ -395,19 +393,31 @@ body.dark-mode {
     padding-top: 15px;
 }
 
-/* Ajuste de las letras L M M J V S D */
-.dots-container::before {
-    content: "L M M J V S D";
+/* Nueva clase para los días de la semana */
+.habit-day-header {
     grid-column: 1 / span 7;
-    display: flex;
-    justify-content: space-around; /* Mejor que grid para separar letras */
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* Misma cuadrícula que los puntos */
     width: 100%;
+    margin-bottom: 10px;
+}
+
+.habit-day-label {
     text-align: center;
     font-size: 0.7rem;
     opacity: 0.4;
-    word-spacing: 15px; /* Separa las letras para que no se amontonen */
-    margin-bottom: 8px;
     font-family: sans-serif;
+    font-weight: bold;
+}
+
+/* Limpia tu .dots-container actual (quita el ::before) */
+.dots-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    justify-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 15px;
 }
 
 .habit-dot-wrapper {

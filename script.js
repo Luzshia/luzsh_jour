@@ -659,20 +659,25 @@ function cargarHabitos() {
                 </div>`;
         }
 
-        item.innerHTML = `
-            <div class="habit-header">
-                <span class="habit-name">${habito.nombre}</span>
-                ${modoEdicionHabitos ? `<button class="btn-delete-habit" onclick="event.stopPropagation(); borrarHabito('${habito.id}')">×</button>` : ''}
-            </div>
-            <div class="dots-container">${puntosHTML}</div>
-        `;
-
-        if (modoEdicionHabitos) {
-            item.onclick = () => prepararEdicionHabito(habito);
-        }
-
-        contenedor.appendChild(item);
-    });
+        // Dentro de habitos.forEach((habito) => { ...
+item.innerHTML = `
+    <div class="habit-header">
+        <span class="habit-name">${habito.nombre}</span>
+        ${modoEdicionHabitos ? `<button class="btn-delete-habit" onclick="event.stopPropagation(); borrarHabito('${habito.id}')">×</button>` : ''}
+    </div>
+    <div class="dots-container">
+        <div class="habit-day-header">
+            <span class="habit-day-label">L</span>
+            <span class="habit-day-label">M</span>
+            <span class="habit-day-label">M</span>
+            <span class="habit-day-label">J</span>
+            <span class="habit-day-label">V</span>
+            <span class="habit-day-label">S</span>
+            <span class="habit-day-label">D</span>
+        </div>
+        ${puntosHTML}
+    </div>
+`;
 
     if (modoEdicionHabitos) {
         const divAdd = document.createElement('div');
