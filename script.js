@@ -113,25 +113,69 @@ if(inputMeta) {
 cargarMetas();
 
 
-    /* --- ESCUCHADORES DE HÁBITOS --- */
-document.getElementById('btn-habitos-menu').onclick = (e) => {
-    e.stopPropagation();
-    document.getElementById('habitos-dropdown').classList.toggle('hidden');
-};
+    /* --- ESCUCHADORES DE HÁBITOS (CORREGIDOS) --- */
+const btnHabitosMenu = document.getElementById('btn-habitos-menu');
+const habitosDropdown = document.getElementById('habitos-dropdown');
 
-document.getElementById('opt-edit-habitos').onclick = () => {
-    modoEdicionHabitos = !modoEdicionHabitos;
-    cargarHabitos();
-};
+if (btnHabitosMenu) {
+    btnHabitosMenu.onclick = (e) => {
+        e.stopPropagation(); // Evita que el clic llegue al document
+        habitosDropdown.classList.toggle('hidden');
+    };
+}
 
-document.getElementById('opt-historial-habitos').onclick = toggleHistorialHabitos;
+// CERRAR MENÚ AL CLICAR FUERA (CORREGIDO)
+document.addEventListener('click', (e) => {
+    if (habitosDropdown && !habitosDropdown.classList.contains('hidden')) {
+        // Si el clic no es dentro del menú ni en el botón de los tres puntos
+        if (!habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
+            habitosDropdown.classList.add('hidden');
+        }
+    }
+});
 
-document.getElementById('btn-save-habito').onclick = guardarHabito;
+const optEditHab = document.getElementById('opt-edit-habitos');
+if (optEditHab) {
+    optEditHab.onclick = () => {
+        modoEdicionHabitos = !modoEdicionHabitos;
+        cargarHabitos();
+        // Cerramos el menú al elegir la opción
+        habitosDropdown.classList.add('hidden');
+    };
+}
 
-document.getElementById('input-nuevo-habito').onkeydown = (e) => {
-    if (e.key === 'Enter') guardarHabito();
-};
+const optHistHab = document.getElementById('opt-historial-habitos');
+if (optHistHab) {
+    optHistHab.onclick = () => {
+        toggleHistorialHabitos();
+        habitosDropdown.classList.add('hidden');
+    };
+}
 
+const btnSaveHabito = document.getElementById('btn-save-habito');
+if (btnSaveHabito) {
+    btnSaveHabito.onclick = (e) => {
+        e.preventDefault();
+        guardarHabito();
+    };
+}
+
+const inputNuevoHabito = document.getElementById('input-nuevo-habito');
+if (inputNuevoHabito) {
+    inputNuevoHabito.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            guardarHabito();
+        }
+        if (e.key === 'Escape') {
+            document.getElementById('input-container-habito').classList.add('hidden');
+            modoEdicionHabitos = false;
+            cargarHabitos();
+        }
+    };
+}
+
+// Carga inicial
 cargarHabitos();
 
 
@@ -653,28 +697,42 @@ function activarEscrituraHabito() {
     input.focus();
 }
 
+/* --- FUNCIONES DE HÁBITOS (REFORZADO) --- */
+let modoEdicionHabitos = false;
+let habitoEditandoId = null;
+
 function guardarHabito() {
     const input = document.getElementById('input-nuevo-habito');
+    if (!input) return;
+    
     const nombre = input.value.trim();
-    if(!nombre) {
-        modoEdicionHabitos = false;
-        cargarHabitos();
-        return;
-    }
-
     const clave = obtenerClaveMes();
     let habitos = JSON.parse(localStorage.getItem(clave)) || [];
 
-    if (habitoEditandoId) {
-        const index = habitos.findIndex(h => h.id === habitoEditandoId);
-        if (index !== -1) habitos[index].nombre = nombre;
-    } else {
-        habitos.push({ id: 'h-' + Date.now(), nombre: nombre, completados: [] });
+    // Si hay nombre, guardamos o editamos
+    if (nombre !== "") {
+        if (habitoEditandoId) {
+            const index = habitos.findIndex(h => h.id === habitoEditandoId);
+            if (index !== -1) habitos[index].nombre = nombre;
+        } else {
+            habitos.push({ 
+                id: 'h-' + Date.now(), 
+                nombre: nombre, 
+                completados: [] 
+            });
+        }
+        localStorage.setItem(clave, JSON.stringify(habitos));
     }
 
-    localStorage.setItem(clave, JSON.stringify(habitos));
+    // Resetear todo y cerrar modo edición
     habitoEditandoId = null;
     modoEdicionHabitos = false;
+    input.value = "";
+    
+    // Ocultar el contenedor de input
+    const inputContainer = document.getElementById('input-container-habito');
+    if(inputContainer) inputContainer.classList.add('hidden');
+    
     cargarHabitos();
 }
 

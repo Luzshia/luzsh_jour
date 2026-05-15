@@ -355,7 +355,7 @@ body.dark-mode {
 }
 
 
-/* --- HÁBITOS ESTILO CAJITA --- */
+/* --- HÁBITOS ESTILO CAJITA (CORREGIDO) --- */
 .habitos-grid {
     margin-top: 20px;
     display: flex;
@@ -364,10 +364,10 @@ body.dark-mode {
 }
 
 .habit-item {
-    border: 1px solid rgba(0,0,0,0.1); /* Borde delgado para la caja */
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 12px;
     padding: 15px;
-    background: transparent; /* Sin fondo para ver los puntos del fondo general */
+    background: transparent;
     position: relative;
     transition: all 0.3s;
 }
@@ -376,7 +376,7 @@ body.dark-mode {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px; /* Espacio antes de la línea */
 }
 
 .habit-name {
@@ -385,12 +385,29 @@ body.dark-mode {
     color: var(--text-color);
 }
 
-/* Calendario preciso */
+/* Contenedor de puntos con línea divisoria arriba */
 .dots-container {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 columnas para los días */
+    grid-template-columns: repeat(7, 1fr);
     gap: 10px;
     justify-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05); /* LA LÍNEA DIVISORIA */
+    padding-top: 15px;
+}
+
+/* Ajuste de las letras L M M J V S D */
+.dots-container::before {
+    content: "L M M J V S D";
+    grid-column: 1 / span 7;
+    display: flex;
+    justify-content: space-around; /* Mejor que grid para separar letras */
+    width: 100%;
+    text-align: center;
+    font-size: 0.7rem;
+    opacity: 0.4;
+    word-spacing: 15px; /* Separa las letras para que no se amontonen */
+    margin-bottom: 8px;
+    font-family: sans-serif;
 }
 
 .habit-dot-wrapper {
@@ -410,28 +427,15 @@ body.dark-mode {
     opacity: 0.3;
 }
 
-.habit-dot-spacer {
-    width: 22px; /* Mismo ancho que el habit-dot */
-    height: 22px;
-}
-
-/* Opcional: añade una fila de letras para los días arriba de los puntos */
-.dots-container::before {
-    content: "L M M J V S D";
-    grid-column: 1 / span 7;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-size: 0.7rem;
-    opacity: 0.4;
-    letter-spacing: 5px; /* Ajusta según el ancho de tus círculos */
-    margin-bottom: 5px;
-}
-
 .habit-dot.checked {
     background: var(--accent-color);
     border-color: var(--accent-color);
     opacity: 1;
+}
+
+.habit-dot-spacer {
+    width: 22px;
+    height: 22px;
 }
 
 .dot-day {
@@ -444,6 +448,7 @@ body.dark-mode {
 .habit-item.editando {
     border-color: var(--accent-color);
     border-style: dashed;
+    background: rgba(var(--accent-rgb), 0.02);
 }
 
 .btn-delete-habit {
