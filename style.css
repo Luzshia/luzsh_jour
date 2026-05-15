@@ -353,7 +353,7 @@ body.dark-mode {
 }
 
 
-/* --- HÁBITOS ESTILO CAJITA (CORREGIDO) --- */
+/* --- HÁBITOS ESTILO CAJITA --- */
 .habitos-grid {
     margin-top: 20px;
     display: flex;
@@ -374,7 +374,7 @@ body.dark-mode {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px; /* Espacio antes de la línea */
+    margin-bottom: 10px;
 }
 
 .habit-name {
@@ -383,23 +383,22 @@ body.dark-mode {
     color: var(--text-color);
 }
 
-/* Contenedor de puntos con línea divisoria arriba */
 .dots-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
     justify-items: center;
-    border-top: 1px solid rgba(0,0,0,0.05); /* LA LÍNEA DIVISORIA */
+    border-top: 1px solid rgba(0,0,0,0.05);
     padding-top: 15px;
 }
 
-/* Nueva clase para los días de la semana */
+/* Cabecera de días L M M J V S D */
 .habit-day-header {
     grid-column: 1 / span 7;
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* Misma cuadrícula que los puntos */
+    grid-template-columns: repeat(7, 1fr);
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .habit-day-label {
@@ -408,16 +407,6 @@ body.dark-mode {
     opacity: 0.4;
     font-family: sans-serif;
     font-weight: bold;
-}
-
-/* Limpia tu .dots-container actual (quita el ::before) */
-.dots-container {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    justify-items: center;
-    border-top: 1px solid rgba(0,0,0,0.05);
-    padding-top: 15px;
 }
 
 .habit-dot-wrapper {
@@ -454,7 +443,6 @@ body.dark-mode {
     font-family: sans-serif;
 }
 
-/* Feedback de edición */
 .habit-item.editando {
     border-color: var(--accent-color);
     border-style: dashed;
@@ -465,9 +453,9 @@ body.dark-mode {
     background: transparent;
     border: none;
     color: var(--accent-color);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    line-height: 1;
     cursor: pointer;
-    padding: 0 5px;
 }
 
 
