@@ -697,9 +697,6 @@ function activarEscrituraHabito() {
     input.focus();
 }
 
-/* --- FUNCIONES DE HÁBITOS (REFORZADO) --- */
-let modoEdicionHabitos = false;
-let habitoEditandoId = null;
 
 function guardarHabito() {
     const input = document.getElementById('input-nuevo-habito');
