@@ -65,11 +65,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
 /* --- ESCUCHADORES DE METAS --- */
-let modoEdicionMetas = false; 
-
 const btnMetasMenu = document.getElementById('btn-metas-menu');
 const metasDropdown = document.getElementById('metas-dropdown');
 
+// 1. Manejo de clics globales (Cerrar dropdown y modo edición)
+document.addEventListener('click', (e) => {
+    const listaMetas = document.getElementById('lista-metas');
+    const inputContainerMeta = document.getElementById('input-container-meta');
+
+    // Cerrar menú de 3 puntitos si clicas fuera
+    if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
+        metasDropdown.classList.add('hidden');
+    }
+
+    // Salir del modo edición si clicas fuera de la lista y del input
+    if (modoEdicionActivo) {
+        const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
+        const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
+        const clicFueraBotonMenu = e.target !== btnMetasMenu;
+
+        if (clicFueraLista && clicFueraInput && clicFueraBotonMenu) {
+            modoEdicionActivo = false;
+            metaEditandoIndex = null;
+            cargarMetas();
+        }
+    }
+});
+
+// 2. Abrir menú de metas
 if (btnMetasMenu) {
     btnMetasMenu.onclick = (e) => {
         e.stopPropagation();
@@ -77,69 +100,52 @@ if (btnMetasMenu) {
     };
 }
 
-document.addEventListener('click', (e) => {
-    const contenedorMetas = document.getElementById('contenedor-metas');
-    const inputMetas = document.getElementById('input-container-metas');
-
-    // Cerrar menú dropdown
-    if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
-        metasDropdown.classList.add('hidden');
-    }
-
-    // Salir de modo edición si clicas fuera del área activa
-    if (modoEdicionMetas) {
-        const clicFueraGrid = contenedorMetas && !contenedorMetas.contains(e.target);
-        const clicFueraInput = inputMetas && !inputMetas.contains(e.target);
-        const clicFueraBotonMenu = e.target !== btnMetasMenu;
-
-        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
-            modoEdicionMetas = false;
-            if(inputMetas) inputMetas.classList.add('hidden');
-            cargarMetas();
-        }
-    }
-});
-
-const optEdit = document.getElementById('opt-edit-metas');
-if(optEdit) {
-    optEdit.onclick = (e) => {
+// 3. Activar/Desactivar modo edición desde el menú
+const optEditMetas = document.getElementById('opt-edit-metas');
+if(optEditMetas) {
+    optEditMetas.onclick = (e) => {
         e.stopPropagation();
-        modoEdicionMetas = !modoEdicionMetas;
+        modoEdicionActivo = !modoEdicionActivo;
         metasDropdown.classList.add('hidden');
         cargarMetas();
     };
 }
 
-const optHist = document.getElementById('opt-historial-metas');
-if(optHist) {
-    optHist.onclick = () => {
+// 4. Botón Historial
+const optHistMetas = document.getElementById('opt-historial-metas');
+if(optHistMetas) {
+    optHistMetas.onclick = () => {
         toggleHistorialMetas();
         metasDropdown.classList.add('hidden');
     };
 }
 
-const btnSave = document.getElementById('btn-save-meta');
-if(btnSave) {
-    btnSave.onclick = () => {
+// 5. Botón Guardar (Cierra el editor)
+const btnSaveMeta = document.getElementById('btn-save-meta');
+if(btnSaveMeta) {
+    btnSaveMeta.onclick = (e) => {
+        e.stopPropagation();
         const val = document.getElementById('input-nueva-meta').value.trim();
-        guardarMeta(val);
+        guardarMeta(val, true); // true = cerrar
     };
 }
 
-const inputMeta = document.getElementById('input-nueva-meta');
-if(inputMeta) {
-    inputMeta.onkeydown = (e) => {
-        if (e.key === 'Enter') guardarMeta(e.target.value.trim());
+// 6. Teclado: Enter (Guarda y sigue) / Esc (Cancela)
+const inputNuevaMeta = document.getElementById('input-nueva-meta');
+if(inputNuevaMeta) {
+    inputNuevaMeta.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarMeta(e.target.value.trim(), false); // false = no cerrar, para añadir varias
+        }
         if (e.key === 'Escape') {
-            modoEdicionMetas = false;
-            document.getElementById('input-container-metas').classList.add('hidden');
+            modoEdicionActivo = false;
             cargarMetas();
         }
     };
 }
 
+// Carga inicial
 cargarMetas();
-
 
 
 /* --- ESCUCHADORES DE HÁBITOS --- */
@@ -528,7 +534,7 @@ function cargarMetas() {
     if(labelAnio) labelAnio.textContent = anio;
     if(!lista) return;
 
-    // Actualizar texto del menú
+    // Actualizar texto del botón en el menú
     if(btnEditarMenu) {
         btnEditarMenu.textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
     }
@@ -553,10 +559,13 @@ function cargarMetas() {
             };
             li.appendChild(btnDel);
             
-            // Clic para editar
-            li.onclick = () => prepararEdicion(index, m.texto);
+            // Clic en el item para editarlo
+            li.onclick = (e) => {
+                e.stopPropagation();
+                prepararEdicion(index, m.texto);
+            };
         } else {
-            // Modo normal: Tachar
+            // Modo normal: Tachar/Completar
             li.onclick = () => {
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
@@ -566,19 +575,19 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    // Opción añadir nueva al final (solo en edición)
+    // Opción añadir nueva (solo en edición)
     if (modoEdicionActivo) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
         liNueva.textContent = "+ Añadir nueva meta...";
-        liNueva.onclick = () => activarEscrituraMeta();
+        liNueva.onclick = (e) => {
+            e.stopPropagation();
+            activarEscrituraMeta();
+        };
         lista.appendChild(liNueva);
     }
 
-    const nextNumLabel = document.getElementById('next-number-meta');
-    if(nextNumLabel) nextNumLabel.textContent = (metas.length + 1) + ".";
-
-    // Ocultar input si no estamos editando
+    // Control visual del contenedor de input
     if (!modoEdicionActivo && inputContainer) {
         inputContainer.classList.add('hidden');
     }
@@ -588,14 +597,11 @@ function prepararEdicion(index, textoActual) {
     metaEditandoIndex = index;
     const container = document.getElementById('input-container-meta');
     const input = document.getElementById('input-nueva-meta');
-    const nextNumLabel = document.getElementById('next-number-meta');
-
     if(container) container.classList.remove('hidden');
     if(input) {
         input.value = textoActual;
         input.focus();
     }
-    if(nextNumLabel) nextNumLabel.textContent = (index + 1) + ".";
 }
 
 function activarEscrituraMeta() {
@@ -609,23 +615,26 @@ function activarEscrituraMeta() {
     }
 }
 
-function guardarMeta(texto) {
+function guardarMeta(texto, cerrarEditor = false) {
+    if (texto === "") return;
     const anio = new Date().getFullYear();
     let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
 
-    if (texto !== "") {
-        if (metaEditandoIndex !== null) {
-            metas[metaEditandoIndex].texto = texto;
-        } else {
-            metas.push({ texto: texto, completada: false });
-        }
-        localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    if (metaEditandoIndex !== null) {
+        metas[metaEditandoIndex].texto = texto;
+    } else {
+        metas.push({ texto: texto, completada: false });
     }
-
-    // Salir siempre del modo edición al guardar
-    metaEditandoIndex = null;
-    modoEdicionActivo = false;
+    
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     document.getElementById('input-nueva-meta').value = "";
+    metaEditandoIndex = null;
+
+    if (cerrarEditor) {
+        modoEdicionActivo = false;
+        document.getElementById('input-container-meta').classList.add('hidden');
+    }
+    
     cargarMetas();
 }
 
@@ -639,49 +648,8 @@ function borrarMetaDirecto(index) {
 
 function toggleHistorialMetas() {
     const container = document.getElementById('historial-metas-container');
-    const btnHistorial = document.getElementById('opt-historial-metas');
-    if(!container || !btnHistorial) return;
-
-    container.classList.toggle('hidden');
-    if (!container.classList.contains('hidden')) {
-        btnHistorial.textContent = "📜 Ocultar Historial";
-        renderizarHistorialAnual(container);
-    } else {
-        btnHistorial.textContent = "📜 Ver Historial";
-    }
+    if(container) container.classList.toggle('hidden');
 }
-
-function renderizarHistorialAnual(container) {
-    const anioActual = new Date().getFullYear();
-    container.innerHTML = "";
-    let hayDatos = false;
-
-    for(let i = 1; i <= 5; i++) {
-        const anioPast = anioActual - i;
-        const metasPast = JSON.parse(localStorage.getItem(`journal_metas_${anioPast}`)) || [];
-        if(metasPast.length > 0) {
-            hayDatos = true;
-            const h3 = document.createElement('h3');
-            h3.textContent = anioPast;
-            h3.style.margin = "15px 0 5px 0";
-            h3.style.fontSize = "1rem";
-            container.appendChild(h3);
-            
-            const ul = document.createElement('ul');
-            ul.className = "metas-list";
-            metasPast.forEach(m => {
-                const li = document.createElement('li');
-                li.className = "meta-item";
-                li.style.fontSize = "1.2rem";
-                li.textContent = m.texto;
-                ul.appendChild(li);
-            });
-            container.appendChild(ul);
-        }
-    }
-    if(!hayDatos) container.innerHTML = "<p style='text-align:center; opacity:0.5; margin:20px;'>No hay metas de años anteriores.</p>";
-}
-
 
 /* --- FUNCIONES DE HÁBITOS --- */
 let modoEdicionHabitos = false;
