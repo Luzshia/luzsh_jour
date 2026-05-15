@@ -113,40 +113,27 @@ if(inputMeta) {
 cargarMetas();
 
 
-    // --- Escuchadores de Hábitos ---
-    const btnHabitosMenu = document.getElementById('btn-habitos-menu');
-    const habitosDropdown = document.getElementById('habitos-dropdown');
+    /* --- ESCUCHADORES DE HÁBITOS --- */
+document.getElementById('btn-habitos-menu').onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('habitos-dropdown').classList.toggle('hidden');
+};
 
-    if (btnHabitosMenu) {
-        btnHabitosMenu.onclick = (e) => {
-            e.stopPropagation();
-            habitosDropdown.classList.toggle('hidden');
-        };
-    }
-
-    // Cerrar menú al hacer clic fuera
-    document.addEventListener('click', () => {
-        if (habitosDropdown) habitosDropdown.classList.add('hidden');
-    });
-
-    document.getElementById('opt-add-habito').onclick = () => {
-        const container = document.getElementById('input-container-habito');
-        const input = document.getElementById('input-nuevo-habito');
-        container.classList.remove('hidden');
-        input.value = ""; // Limpiar por si acaso
-        input.placeholder = "Escribir nuevo o toca uno para editar/borrar...";
-        input.focus();
-    };
-
-    document.getElementById('opt-historial-habitos').onclick = toggleHistorialHabitos;
-
-    // Escuchar el Enter en el input de hábitos
-    document.getElementById('input-nuevo-habito').onkeydown = (e) => {
-        if (e.key === 'Enter') agregarHabito();
-        if (e.key === 'Escape') document.getElementById('input-container-habito').classList.add('hidden');
-    };
-
+document.getElementById('opt-edit-habitos').onclick = () => {
+    modoEdicionHabitos = !modoEdicionHabitos;
     cargarHabitos();
+};
+
+document.getElementById('opt-historial-habitos').onclick = toggleHistorialHabitos;
+
+document.getElementById('btn-save-habito').onclick = guardarHabito;
+
+document.getElementById('input-nuevo-habito').onkeydown = (e) => {
+    if (e.key === 'Enter') guardarHabito();
+};
+
+cargarHabitos();
+
 
 
     // --- Escuchadores de To-Do List ---
@@ -565,30 +552,55 @@ function renderizarHistorialAnual(container) {
 }
 
 
-/* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
+/* --- FUNCIONES DE HÁBITOS --- */
+let modoEdicionHabitos = false;
+let habitoEditandoId = null;
 
-function obtenerClaveMes() {
+function obtenerClaveMes(offsetAnio = 0, offsetMes = 0) {
     const fecha = new Date();
-    return `journal_habits_${fecha.getFullYear()}_${fecha.getMonth() + 1}`;
+    let m = fecha.getMonth() + 1 + offsetMes;
+    let a = fecha.getFullYear() + offsetAnio;
+    return `journal_habits_${a}_${m}`;
 }
-
-let habitoEditandoId = null; 
 
 function cargarHabitos() {
     const clave = obtenerClaveMes();
     const habitos = JSON.parse(localStorage.getItem(clave)) || [];
     const contenedor = document.getElementById('contenedor-habitos');
+    const labelMes = document.getElementById('habit-month-label');
+    
     if(!contenedor) return;
-
     contenedor.innerHTML = "";
-    const diasEnMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+
+    const fechaActual = new Date();
+    const anio = fechaActual.getFullYear();
+    const mes = fechaActual.getMonth();
+
+    // 1. Nombre del mes para el título
+    if(labelMes) {
+        const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        labelMes.textContent = "- " + nombresMeses[mes];
+    }
+
+    // 2. Calcular días y el primer día de la semana
+    const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+    // getDay() devuelve 0 para domingo, 1 para lunes... 
+    // Ajustamos para que la semana empiece en Lunes (1)
+    let primerDiaSemana = new Date(anio, mes, 1).getDay(); 
+    if (primerDiaSemana === 0) primerDiaSemana = 7; // Domingo al final o ajuste según prefieras
 
     habitos.forEach((habito) => {
         const item = document.createElement('div');
-        item.className = 'habit-item';
-        item.id = `item-${habito.id}`;
+        item.className = `habit-item ${habitoEditandoId === habito.id ? 'editando' : ''}`;
         
         let puntosHTML = "";
+
+        // 3. Crear huecos vacíos para los días antes del día 1 del mes
+        for (let i = 1; i < primerDiaSemana; i++) {
+            puntosHTML += `<div class="habit-dot-spacer"></div>`;
+        }
+
+        // 4. Crear los días reales
         for (let d = 1; d <= diasEnMes; d++) {
             const isChecked = habito.completados.includes(d) ? 'checked' : '';
             puntosHTML += `
@@ -599,90 +611,126 @@ function cargarHabitos() {
         }
 
         item.innerHTML = `
-            <span class="habit-name">${habito.nombre}</span>
+            <div class="habit-header">
+                <span class="habit-name">${habito.nombre}</span>
+                ${modoEdicionHabitos ? `<button class="btn-delete-habit" onclick="event.stopPropagation(); borrarHabito('${habito.id}')">×</button>` : ''}
+            </div>
             <div class="dots-container">${puntosHTML}</div>
         `;
 
-        // Al hacer clic en el nombre/área del hábito
-        item.onclick = () => {
-            const inputVisible = !document.getElementById('input-container-habito').classList.contains('hidden');
-            if (inputVisible) {
-                prepararEdicionHabito(habito);
-            }
-        };
+        if (modoEdicionHabitos) {
+            item.onclick = () => prepararEdicionHabito(habito);
+        }
 
         contenedor.appendChild(item);
     });
-    
-    document.getElementById('input-container-habito').classList.add('hidden');
-    habitoEditandoId = null;
+
+    if (modoEdicionHabitos) {
+        const divAdd = document.createElement('div');
+        divAdd.className = "add-trigger-area";
+        divAdd.style.textAlign = "center";
+        divAdd.textContent = "+ Añadir nuevo hábito...";
+        divAdd.onclick = () => activarEscrituraHabito();
+        contenedor.appendChild(divAdd);
+    }
 }
 
 function prepararEdicionHabito(habito) {
     habitoEditandoId = habito.id;
+    const container = document.getElementById('input-container-habito');
     const input = document.getElementById('input-nuevo-habito');
+    container.classList.remove('hidden');
     input.value = habito.nombre;
-    input.placeholder = "Borra el nombre para eliminar hábito...";
     input.focus();
-    
-    // Feedback visual
-    document.querySelectorAll('.habit-item').forEach(el => el.classList.remove('editando'));
-    document.getElementById(`item-${habito.id}`).classList.add('editando');
+    cargarHabitos(); // Para resaltar la cajita
 }
 
-function agregarHabito() {
+function activarEscrituraHabito() {
+    habitoEditandoId = null;
+    document.getElementById('input-container-habito').classList.remove('hidden');
+    const input = document.getElementById('input-nuevo-habito');
+    input.value = "";
+    input.focus();
+}
+
+function guardarHabito() {
     const input = document.getElementById('input-nuevo-habito');
     const nombre = input.value.trim();
+    if(!nombre) {
+        modoEdicionHabitos = false;
+        cargarHabitos();
+        return;
+    }
+
     const clave = obtenerClaveMes();
     let habitos = JSON.parse(localStorage.getItem(clave)) || [];
 
     if (habitoEditandoId) {
-        // MODO EDICIÓN O ELIMINACIÓN
-        if (nombre === "") {
-            if (confirm("¿Deseas eliminar este hábito por completo?")) {
-                habitos = habitos.filter(h => h.id !== habitoEditandoId);
-            }
-        } else {
-            const index = habitos.findIndex(h => h.id === habitoEditandoId);
-            if (index !== -1) habitos[index].nombre = nombre;
-        }
+        const index = habitos.findIndex(h => h.id === habitoEditandoId);
+        if (index !== -1) habitos[index].nombre = nombre;
     } else {
-        // MODO NUEVO
-        if (!nombre) return;
-        habitos.push({
-            id: 'h-' + Date.now(),
-            nombre: nombre,
-            completados: []
-        });
+        habitos.push({ id: 'h-' + Date.now(), nombre: nombre, completados: [] });
     }
 
     localStorage.setItem(clave, JSON.stringify(habitos));
-    input.value = "";
+    habitoEditandoId = null;
+    modoEdicionHabitos = false;
+    cargarHabitos();
+}
+
+function borrarHabito(id) {
+    const clave = obtenerClaveMes();
+    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
+    habitos = habitos.filter(h => h.id !== id);
+    localStorage.setItem(clave, JSON.stringify(habitos));
     cargarHabitos();
 }
 
 function alternarDiaHabito(id, dia) {
+    if(modoEdicionHabitos) return; // No marcar puntos mientras editamos
     const clave = obtenerClaveMes();
     let habitos = JSON.parse(localStorage.getItem(clave));
     const habito = habitos.find(h => h.id === id);
-
     if (habito.completados.includes(dia)) {
         habito.completados = habito.completados.filter(d => d !== dia);
     } else {
         habito.completados.push(dia);
     }
-
     localStorage.setItem(clave, JSON.stringify(habitos));
     cargarHabitos();
 }
 
 function toggleHistorialHabitos() {
     const contenedor = document.getElementById('historial-habitos-container');
+    const btn = document.getElementById('opt-historial-habitos');
     contenedor.classList.toggle('hidden');
-    if (!contenedor.classList.contains('hidden')) {
-        contenedor.innerHTML = "<p style='text-align:center; font-size:0.8rem; opacity:0.5; margin: 20px 0;'>--- Historial de hábitos ---</p>";
+    
+    if(!contenedor.classList.contains('hidden')) {
+        btn.textContent = "📜 Ocultar Historial";
+        contenedor.innerHTML = "";
+        // Mostrar últimos 3 meses
+        for(let i = 1; i <= 3; i++) {
+            const clavePast = obtenerClaveMes(0, -i);
+            const habitosPast = JSON.parse(localStorage.getItem(clavePast)) || [];
+            if(habitosPast.length > 0) {
+                const titulo = document.createElement('h3');
+                titulo.textContent = `Mes -${i}`; // Aquí podrías calcular el nombre del mes
+                titulo.className = "historial-anio-titulo";
+                contenedor.appendChild(titulo);
+                // Mini resumen o lista
+                habitosPast.forEach(h => {
+                    const p = document.createElement('p');
+                    p.style.fontFamily = "Dancing Script";
+                    p.textContent = `• ${h.nombre} (${h.completados.length} días logrados)`;
+                    contenedor.appendChild(p);
+                });
+            }
+        }
+    } else {
+        btn.textContent = "📜 Ver Historial";
     }
 }
+
 
 /* --- FUNCIONES TO-DO LIST CORREGIDAS --- */
 let todoEditandoIndex = null;

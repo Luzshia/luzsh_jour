@@ -94,37 +94,37 @@
                 </div>
             </section>            
             
-            <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
-                <header class="app-header">
-                    <div class="header-top-nav">
-                        <div class="menu-dots-container">
-                            <button id="btn-habitos-menu" class="dots-btn">···</button>
-                            <div id="habitos-dropdown" class="dropdown-content hidden">
-                                <button id="opt-add-habito">🖋️ Añadir Hábito</button>
-                                <button id="opt-historial-habitos">📜 Ver Historial</button>
-                            </div>
-                        </div>
-                    </div>
-                    <h1>Mis Hábitos <span id="habit-month-label"></span></h1>
-                    <div class="header-line"></div>
-                </header>
-                
-                <div class="content-body">
-                    <!-- Input para nuevo hábito (oculto por defecto) -->
-                    <div id="input-container-habito" class="hidden">
-                        <div class="input-fake-row">
-                            <input type="text" id="input-nuevo-habito" placeholder="Escribir nuevo hábito...">
-                        </div>
-                    </div>
-
-                    <div id="historial-habitos-container" class="hidden"></div>
-
-                    <div id="contenedor-habitos" class="habitos-grid">
-                        <!-- Aquí se generarán los hábitos -->
-                    </div>
+    <header class="app-header">
+        <div class="header-top-nav">
+            <div class="menu-dots-container">
+                <button id="btn-habitos-menu" class="dots-btn">···</button>
+                <div id="habitos-dropdown" class="dropdown-content hidden">
+                    <button id="opt-edit-habitos">📝 Editar Hábitos</button>
+                    <button id="opt-historial-habitos">📜 Ver Historial</button>
                 </div>
-            </section>
+            </div>
+        </div>
+        <h1>Mis Hábitos <span id="habit-month-label"></span></h1>
+        <div class="header-line"></div>
+    </header>
+    
+    <div class="content-body">
+        <div id="historial-habitos-container" class="hidden"></div>
+
+        <div id="contenedor-habitos" class="habitos-grid">
+            </div>
+
+        <div id="input-container-habito" class="hidden">
+            <div class="input-fake-row">
+                <input type="text" id="input-nuevo-habito" placeholder="Escribir hábito...">
+            </div>
+            <div class="save-btn-container">
+                <button id="btn-save-habito" class="minimal-save-btn">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</section>
 
             <!-- VISTA: TODO LIST -->
             <section id="view-todo" class="view">

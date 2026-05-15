@@ -355,80 +355,104 @@ body.dark-mode {
 }
 
 
-/* --- HÁBITOS ESTILO LIMPIO --- */
-
-/* Reutilizamos la fuente cursiva para los nombres de hábitos */
-.habit-name {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--text-color);
-    display: block;
-    margin-bottom: 10px;
-}
-
+/* --- HÁBITOS ESTILO CAJITA --- */
 .habitos-grid {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
 }
 
-/* Quitamos la tarjeta y dejamos solo el separador tenue */
 .habit-item {
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-    padding-bottom: 15px;
+    border: 1px solid rgba(0,0,0,0.1); /* Borde delgado para la caja */
+    border-radius: 12px;
+    padding: 15px;
+    background: transparent; /* Sin fondo para ver los puntos del fondo general */
+    position: relative;
+    transition: all 0.3s;
 }
 
+.habit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.habit-name {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+/* Calendario preciso */
 .dots-container {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(7, 1fr); /* 7 columnas para los días */
+    gap: 10px;
+    justify-items: center;
+}
+
+.habit-dot-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 .habit-dot {
-    width: 25px;
-    height: 25px;
-    /* Color de borde igual al texto */
+    width: 22px;
+    height: 22px;
     border: 1.5px solid var(--text-color);
     border-radius: 50%;
     cursor: pointer;
     transition: 0.2s;
-    opacity: 0.4;
+    opacity: 0.3;
 }
 
-/* Cuando se marca, se rellena con el color del texto */
+.habit-dot-spacer {
+    width: 22px; /* Mismo ancho que el habit-dot */
+    height: 22px;
+}
+
+/* Opcional: añade una fila de letras para los días arriba de los puntos */
+.dots-container::before {
+    content: "L M M J V S D";
+    grid-column: 1 / span 7;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.7rem;
+    opacity: 0.4;
+    letter-spacing: 5px; /* Ajusta según el ancho de tus círculos */
+    margin-bottom: 5px;
+}
+
 .habit-dot.checked {
-    background: var(--text-color);
+    background: var(--accent-color);
+    border-color: var(--accent-color);
     opacity: 1;
 }
 
 .dot-day {
-    font-size: 9px;
-    font-family: Arial, sans-serif;
-    color: var(--text-color);
-    opacity: 0.6;
+    font-size: 10px;
+    opacity: 0.5;
+    font-family: sans-serif;
 }
 
-/* Estilo para el input de hábito */
-#input-container-habito {
-    margin-bottom: 20px;
+/* Feedback de edición */
+.habit-item.editando {
+    border-color: var(--accent-color);
+    border-style: dashed;
 }
 
-#input-nuevo-habito {
-    width: 100%;
-    border: none;
-    border-bottom: 1px dashed var(--accent-color);
+.btn-delete-habit {
     background: transparent;
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.5rem;
-    color: var(--text-color);
-    outline: none;
-    padding: 5px;
-}
-
-.habit-item.editando .habit-name {
+    border: none;
     color: var(--accent-color);
-    text-decoration: underline wavy;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
 }
 
 
