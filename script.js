@@ -64,8 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export').addEventListener('click', exportarDatos);
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
-    /* --- ESCUCHADORES DE METAS --- */
-/* --- ESCUCHADORES DE METAS (MODIFICADO) --- */
+/* --- ESCUCHADORES DE METAS --- */
+let modoEdicionMetas = false; 
+
 const btnMetasMenu = document.getElementById('btn-metas-menu');
 const metasDropdown = document.getElementById('metas-dropdown');
 
@@ -80,40 +81,43 @@ document.addEventListener('click', (e) => {
     const contenedorMetas = document.getElementById('contenedor-metas');
     const inputMetas = document.getElementById('input-container-metas');
 
-    // Cerrar dropdown
+    // Cerrar menú dropdown
     if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
         metasDropdown.classList.add('hidden');
     }
 
-    // Salir de modo edición metas
-    if (typeof modoEdicionMetas !== 'undefined' && modoEdicionMetas) {
+    // Salir de modo edición si clicas fuera del área activa
+    if (modoEdicionMetas) {
         const clicFueraGrid = contenedorMetas && !contenedorMetas.contains(e.target);
         const clicFueraInput = inputMetas && !inputMetas.contains(e.target);
-        
-        if (clicFueraGrid && clicFueraInput && e.target !== btnMetasMenu) {
+        const clicFueraBotonMenu = e.target !== btnMetasMenu;
+
+        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
             modoEdicionMetas = false;
             if(inputMetas) inputMetas.classList.add('hidden');
-            if(typeof cargarMetas === 'function') cargarMetas();
+            cargarMetas();
         }
     }
 });
 
-// Botón Editar desde el menú
 const optEdit = document.getElementById('opt-edit-metas');
 if(optEdit) {
-    optEdit.onclick = () => {
-        modoEdicionActivo = !modoEdicionActivo;
+    optEdit.onclick = (e) => {
+        e.stopPropagation();
+        modoEdicionMetas = !modoEdicionMetas;
+        metasDropdown.classList.add('hidden');
         cargarMetas();
     };
 }
 
-// Botón Historial
 const optHist = document.getElementById('opt-historial-metas');
 if(optHist) {
-    optHist.onclick = () => toggleHistorialMetas();
+    optHist.onclick = () => {
+        toggleHistorialMetas();
+        metasDropdown.classList.add('hidden');
+    };
 }
 
-// Botón Guardar Cambios (Minimalista)
 const btnSave = document.getElementById('btn-save-meta');
 if(btnSave) {
     btnSave.onclick = () => {
@@ -122,22 +126,23 @@ if(btnSave) {
     };
 }
 
-// Guardar con Enter
 const inputMeta = document.getElementById('input-nueva-meta');
 if(inputMeta) {
     inputMeta.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            guardarMeta(e.target.value.trim());
+        if (e.key === 'Enter') guardarMeta(e.target.value.trim());
+        if (e.key === 'Escape') {
+            modoEdicionMetas = false;
+            document.getElementById('input-container-metas').classList.add('hidden');
+            cargarMetas();
         }
     };
 }
 
-// Carga inicial
 cargarMetas();
 
 
-    /* --- ESCUCHADORES DE HÁBITOS --- */
-/* --- ESCUCHADORES DE HÁBITOS (MODIFICADO) --- */
+
+/* --- ESCUCHADORES DE HÁBITOS --- */
 const btnHabitosMenu = document.getElementById('btn-habitos-menu');
 const habitosDropdown = document.getElementById('habitos-dropdown');
 
@@ -148,17 +153,14 @@ if (btnHabitosMenu) {
     };
 }
 
-// CERRAR TODO AL CLICAR FUERA
 document.addEventListener('click', (e) => {
     const contenedorHabitos = document.getElementById('contenedor-habitos');
     const inputContainer = document.getElementById('input-container-habito');
     
-    // 1. Cerrar dropdown de hábitos
     if (habitosDropdown && !habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
         habitosDropdown.classList.add('hidden');
     }
 
-    // 2. Salir de modo edición si clicas en el "blanco" (fuera del grid y del input)
     if (modoEdicionHabitos) {
         const clicFueraGrid = contenedorHabitos && !contenedorHabitos.contains(e.target);
         const clicFueraInput = inputContainer && !inputContainer.contains(e.target);
@@ -173,11 +175,10 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Los demás escuchadores (optEditHab, btnSaveHabito, etc.) se mantienen igual
-
 const optEditHab = document.getElementById('opt-edit-habitos');
 if (optEditHab) {
-    optEditHab.onclick = () => {
+    optEditHab.onclick = (e) => {
+        e.stopPropagation();
         modoEdicionHabitos = !modoEdicionHabitos;
         habitosDropdown.classList.add('hidden');
         cargarHabitos();
@@ -194,10 +195,7 @@ if (optHistHab) {
 
 const btnSaveHabito = document.getElementById('btn-save-habito');
 if (btnSaveHabito) {
-    btnSaveHabito.onclick = (e) => {
-        e.preventDefault();
-        guardarHabito();
-    };
+    btnSaveHabito.onclick = () => guardarHabito();
 }
 
 const inputNuevoHabito = document.getElementById('input-nuevo-habito');
@@ -208,50 +206,89 @@ if (inputNuevoHabito) {
             guardarHabito();
         }
         if (e.key === 'Escape') {
-            document.getElementById('input-container-habito').classList.add('hidden');
             modoEdicionHabitos = false;
+            document.getElementById('input-container-habito').classList.add('hidden');
             cargarHabitos();
         }
     };
 }
 
-// Carga inicial
 cargarHabitos();
 
 
+/* --- ESCUCHADORES DE TO-DO LIST --- */
+let modoEdicionTodo = false; 
 
-    // --- Escuchadores de To-Do List ---
-    const btnTodoMenu = document.getElementById('btn-todo-menu');
-    const todoDropdown = document.getElementById('todo-dropdown');
+const btnTodoMenu = document.getElementById('btn-todo-menu');
+const todoDropdown = document.getElementById('todo-dropdown');
 
-    if (btnTodoMenu) {
-        btnTodoMenu.onclick = (e) => {
-            e.stopPropagation();
-            todoDropdown.classList.toggle('hidden');
-        };
+if (btnTodoMenu) {
+    btnTodoMenu.onclick = (e) => {
+        e.stopPropagation();
+        todoDropdown.classList.toggle('hidden');
+    };
+}
+
+document.addEventListener('click', (e) => {
+    const contenedorTodo = document.getElementById('contenedor-tareas');
+    const inputTodo = document.getElementById('input-container-todo');
+
+    if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
+        todoDropdown.classList.add('hidden');
     }
 
-    document.addEventListener('click', () => {
-        if (todoDropdown) todoDropdown.classList.add('hidden');
-    });
+    if (modoEdicionTodo) {
+        const clicFueraGrid = contenedorTodo && !contenedorTodo.contains(e.target);
+        const clicFueraInput = inputTodo && !inputTodo.contains(e.target);
+        const clicFueraBotonMenu = e.target !== btnTodoMenu;
 
-    document.getElementById('opt-add-todo').onclick = () => {
+        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
+            modoEdicionTodo = false;
+            if(inputTodo) inputTodo.classList.add('hidden');
+            cargarTareas();
+        }
+    }
+});
+
+const optAddTodo = document.getElementById('opt-add-todo');
+if (optAddTodo) {
+    optAddTodo.onclick = (e) => {
+        e.stopPropagation();
+        modoEdicionTodo = true;
+        todoDropdown.classList.add('hidden');
         const container = document.getElementById('input-container-todo');
         const input = document.getElementById('input-nueva-tarea');
         container.classList.remove('hidden');
         input.value = "";
-        input.placeholder = "Nueva tarea o toca una para editar...";
         input.focus();
+        cargarTareas();
     };
+}
 
-    document.getElementById('opt-clear-todo').onclick = limpiarTareasCompletadas;
-
-    document.getElementById('input-nueva-tarea').onkeydown = (e) => {
-        if (e.key === 'Enter') guardarTarea(e.target.value.trim());
-        if (e.key === 'Escape') cargarTareas();
+const optClearTodo = document.getElementById('opt-clear-todo');
+if (optClearTodo) {
+    optClearTodo.onclick = () => {
+        limpiarTareasCompletadas();
+        todoDropdown.classList.add('hidden');
     };
+}
 
-    cargarTareas();
+const inputTarea = document.getElementById('input-nueva-tarea');
+if (inputTarea) {
+    inputTarea.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarTarea(e.target.value.trim());
+            modoEdicionTodo = false;
+        }
+        if (e.key === 'Escape') {
+            modoEdicionTodo = false;
+            document.getElementById('input-container-todo').classList.add('hidden');
+            cargarTareas();
+        }
+    };
+}
+
+cargarTareas();
 
 
     /* --- ESCUCHADORES AGENDA --- */
