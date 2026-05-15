@@ -70,28 +70,46 @@ if (btnMetasMenu) {
     };
 }
 
+// Cerrar menú al hacer clic fuera
 document.addEventListener('click', () => {
     if (metasDropdown) metasDropdown.classList.add('hidden');
 });
 
-document.getElementById('opt-edit-metas').onclick = () => {
-    modoEdicionActivo = !modoEdicionActivo;
-    cargarMetas();
-};
+// Botón Editar desde el menú
+const optEdit = document.getElementById('opt-edit-metas');
+if(optEdit) {
+    optEdit.onclick = () => {
+        modoEdicionActivo = !modoEdicionActivo;
+        cargarMetas();
+    };
+}
 
-document.getElementById('opt-historial-metas').onclick = () => toggleHistorialMetas();
+// Botón Historial
+const optHist = document.getElementById('opt-historial-metas');
+if(optHist) {
+    optHist.onclick = () => toggleHistorialMetas();
+}
 
-document.getElementById('btn-save-meta').onclick = () => {
-    const input = document.getElementById('input-nueva-meta');
-    guardarMeta(input.value.trim());
-};
+// Botón Guardar Cambios (Minimalista)
+const btnSave = document.getElementById('btn-save-meta');
+if(btnSave) {
+    btnSave.onclick = () => {
+        const val = document.getElementById('input-nueva-meta').value.trim();
+        guardarMeta(val);
+    };
+}
 
-document.getElementById('input-nueva-meta').onkeydown = (e) => {
-    if (e.key === 'Enter') {
-        guardarMeta(e.target.value.trim());
-    }
-};
+// Guardar con Enter
+const inputMeta = document.getElementById('input-nueva-meta');
+if(inputMeta) {
+    inputMeta.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarMeta(e.target.value.trim());
+        }
+    };
+}
 
+// Carga inicial
 cargarMetas();
 
 
@@ -377,7 +395,7 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- LÓGICA DE METAS AJUSTADA --- */
+/* --- LÓGICA DE METAS: FUNCIONES --- */
 let modoEdicionActivo = false;
 let metaEditandoIndex = null;
 
@@ -387,11 +405,12 @@ function cargarMetas() {
     const lista = document.getElementById('lista-metas');
     const labelAnio = document.getElementById('meta-year-label');
     const btnEditarMenu = document.getElementById('opt-edit-metas');
+    const inputContainer = document.getElementById('input-container-meta');
     
     if(labelAnio) labelAnio.textContent = anio;
     if(!lista) return;
 
-    // Actualizar el texto del botón del menú según el estado
+    // Actualizar texto del menú
     if(btnEditarMenu) {
         btnEditarMenu.textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
     }
@@ -406,6 +425,7 @@ function cargarMetas() {
         li.appendChild(span);
 
         if (modoEdicionActivo) {
+            // Botón X para borrar
             const btnDel = document.createElement('button');
             btnDel.className = "btn-delete-meta";
             btnDel.textContent = "×";
@@ -414,8 +434,11 @@ function cargarMetas() {
                 borrarMetaDirecto(index);
             };
             li.appendChild(btnDel);
+            
+            // Clic para editar
             li.onclick = () => prepararEdicion(index, m.texto);
         } else {
+            // Modo normal: Tachar
             li.onclick = () => {
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
@@ -425,6 +448,7 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
+    // Opción añadir nueva al final (solo en edición)
     if (modoEdicionActivo) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
@@ -436,38 +460,109 @@ function cargarMetas() {
     const nextNumLabel = document.getElementById('next-number-meta');
     if(nextNumLabel) nextNumLabel.textContent = (metas.length + 1) + ".";
 
-    if (!modoEdicionActivo) {
-        document.getElementById('input-container-meta').classList.add('hidden');
+    // Ocultar input si no estamos editando
+    if (!modoEdicionActivo && inputContainer) {
+        inputContainer.classList.add('hidden');
+    }
+}
+
+function prepararEdicion(index, textoActual) {
+    metaEditandoIndex = index;
+    const container = document.getElementById('input-container-meta');
+    const input = document.getElementById('input-nueva-meta');
+    const nextNumLabel = document.getElementById('next-number-meta');
+
+    if(container) container.classList.remove('hidden');
+    if(input) {
+        input.value = textoActual;
+        input.focus();
+    }
+    if(nextNumLabel) nextNumLabel.textContent = (index + 1) + ".";
+}
+
+function activarEscrituraMeta() {
+    metaEditandoIndex = null;
+    const container = document.getElementById('input-container-meta');
+    const input = document.getElementById('input-nueva-meta');
+    if(container) container.classList.remove('hidden');
+    if(input) {
+        input.value = "";
+        input.focus();
     }
 }
 
 function guardarMeta(texto) {
-    if (!texto) {
-        // Si el usuario borra todo y da a guardar, mejor solo cerramos
-        modoEdicionActivo = false;
-        cargarMetas();
-        return;
-    }
-    
     const anio = new Date().getFullYear();
     let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
 
-    if (metaEditandoIndex !== null) {
-        metas[metaEditandoIndex].texto = texto;
-    } else {
-        metas.push({ texto: texto, completada: false });
+    if (texto !== "") {
+        if (metaEditandoIndex !== null) {
+            metas[metaEditandoIndex].texto = texto;
+        } else {
+            metas.push({ texto: texto, completada: false });
+        }
+        localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     }
 
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    
-    // resetear estados y salir de edición
+    // Salir siempre del modo edición al guardar
     metaEditandoIndex = null;
-    modoEdicionActivo = false; 
+    modoEdicionActivo = false;
     document.getElementById('input-nueva-meta').value = "";
     cargarMetas();
 }
 
-// ... (el resto de funciones como borrarMetaDirecto y toggleHistorial se mantienen igual)}
+function borrarMetaDirecto(index) {
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+    metas.splice(index, 1);
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    cargarMetas();
+}
+
+function toggleHistorialMetas() {
+    const container = document.getElementById('historial-metas-container');
+    const btnHistorial = document.getElementById('opt-historial-metas');
+    if(!container || !btnHistorial) return;
+
+    container.classList.toggle('hidden');
+    if (!container.classList.contains('hidden')) {
+        btnHistorial.textContent = "📜 Ocultar Historial";
+        renderizarHistorialAnual(container);
+    } else {
+        btnHistorial.textContent = "📜 Ver Historial";
+    }
+}
+
+function renderizarHistorialAnual(container) {
+    const anioActual = new Date().getFullYear();
+    container.innerHTML = "";
+    let hayDatos = false;
+
+    for(let i = 1; i <= 5; i++) {
+        const anioPast = anioActual - i;
+        const metasPast = JSON.parse(localStorage.getItem(`journal_metas_${anioPast}`)) || [];
+        if(metasPast.length > 0) {
+            hayDatos = true;
+            const h3 = document.createElement('h3');
+            h3.textContent = anioPast;
+            h3.style.margin = "15px 0 5px 0";
+            h3.style.fontSize = "1rem";
+            container.appendChild(h3);
+            
+            const ul = document.createElement('ul');
+            ul.className = "metas-list";
+            metasPast.forEach(m => {
+                const li = document.createElement('li');
+                li.className = "meta-item";
+                li.style.fontSize = "1.2rem";
+                li.textContent = m.texto;
+                ul.appendChild(li);
+            });
+            container.appendChild(ul);
+        }
+    }
+    if(!hayDatos) container.innerHTML = "<p style='text-align:center; opacity:0.5; margin:20px;'>No hay metas de años anteriores.</p>";
+}
 
 
 /* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
