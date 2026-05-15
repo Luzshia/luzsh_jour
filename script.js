@@ -345,38 +345,42 @@ renderizarSemana();
 
 
     /* --- ESCUCHADORES DEL CICLO LUNAR --- */
-    
-    // Abrir menú de tres puntos
-    const btnCicloMenu = document.getElementById('btn-ciclo-menu');
-    if(btnCicloMenu) {
-        btnCicloMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.getElementById('ciclo-dropdown').classList.toggle('hidden');
-        });
+const btnCicloMenu = document.getElementById('btn-ciclo-menu');
+const cicloDropdown = document.getElementById('ciclo-dropdown');
+const modalRegistro = document.getElementById('modal-registro');
+
+document.addEventListener('click', (e) => {
+    // 1. Cerrar Dropdown
+    if (cicloDropdown && !cicloDropdown.contains(e.target) && e.target !== btnCicloMenu) {
+        cicloDropdown.classList.add('hidden');
     }
 
-    // Opción Añadir Registro desde el menú
-    const optAddReg = document.getElementById('opt-add-registro');
-    if(optAddReg) {
-        optAddReg.addEventListener('click', () => {
-            abrirRegistro(new Date().toISOString().split('T')[0]);
-            document.getElementById('ciclo-dropdown').classList.add('hidden');
-        });
+    // 2. Cerrar Modal al presionar espacio en blanco (el overlay)
+    if (e.target === modalRegistro) {
+        modalRegistro.classList.add('hidden');
     }
+});
 
-    // Botones del Modal
-    const btnGuardar = document.getElementById('btn-guardar-reg');
-    if(btnGuardar) btnGuardar.addEventListener('click', guardarRegistro);
+if(btnCicloMenu) {
+    btnCicloMenu.onclick = (e) => {
+        e.stopPropagation();
+        cicloDropdown.classList.toggle('hidden');
+    };
+}
 
-    const btnCancelar = document.getElementById('btn-cancelar-reg');
-    if(btnCancelar) {
-        btnCancelar.addEventListener('click', () => {
-            document.getElementById('modal-registro').classList.add('hidden');
-        });
-    }
+// Opción Registrar hoy
+document.getElementById('opt-add-registro').onclick = () => {
+    abrirRegistro(new Date().toISOString().split('T')[0]);
+    cicloDropdown.classList.add('hidden');
+};
 
-    // Inicializar la rueda al cargar
-    dibujarRueda();
+// Botones del modal
+document.getElementById('btn-guardar-reg').onclick = guardarRegistro;
+document.getElementById('btn-cancelar-reg').onclick = () => modalRegistro.classList.add('hidden');
+
+// Inicializar
+dibujarRueda();
+
 });
 
 
@@ -1054,18 +1058,19 @@ function obtenerIconoLuna(f) {
 
 
 /* --- FUNCIONES DEL CICLO LUNAR --- */
+// Fecha de inicio del ciclo actual (esto debería guardarse en localStorage en el futuro)
 let inicioCiclo = new Date("2026-04-30T00:00:00");
 
 function dibujarRueda() {
     const contenedor = document.getElementById('canvas-rueda');
     if(!contenedor) return;
 
-    // Limpiar puntos previos
+    // Limpiar rueda
     contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
     const hoyStr = new Date().toISOString().split('T')[0];
-    const radio = 135;
+    const radio = 130;
 
     for (let i = 0; i < 28; i++) {
         let fechaActual = new Date(inicioCiclo);
@@ -1079,23 +1084,28 @@ function dibujarRueda() {
         let angulo = (i * (360/28) - 90) * (Math.PI/180);
         let x = radio * Math.cos(angulo);
         let y = radio * Math.sin(angulo);
-        div.style.left = `calc(50% + ${x}px - 20px)`;
-        div.style.top = `calc(50% + ${y}px - 20px)`;
+        div.style.left = `calc(50% + ${x}px - 21px)`;
+        div.style.top = `calc(50% + ${y}px - 21px)`;
 
         div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
         
-        if(reg) {
-            if(reg.sangrado) div.innerHTML += '<div class="indicador-sangre"></div>';
-            if(reg.sexo) div.innerHTML += '<div class="indicador-sexo"></div>';
+        // Si hay sangrado registrado, mostrar puntito rojo
+        if(reg && reg.sangrado && reg.sangrado !== "") {
+            div.innerHTML += '<div class="indicador-sangre"></div>';
         }
 
+        // Marcar el día de hoy en la rueda
         if(iso === hoyStr) {
-            div.classList.add('hoy-marcado');
+            div.style.border = "2px solid var(--accent-color)";
+            div.style.borderRadius = "50%";
             document.getElementById('txt-dia-ciclo').textContent = `Día ${i+1}`;
             document.getElementById('txt-fecha-ciclo').textContent = `${fechaActual.getDate()}/${fechaActual.getMonth()+1}`;
         }
 
-        div.onclick = () => abrirRegistro(iso);
+        div.onclick = (e) => {
+            e.stopPropagation();
+            abrirRegistro(iso);
+        };
         contenedor.appendChild(div);
     }
 }
@@ -1103,20 +1113,21 @@ function dibujarRueda() {
 function abrirRegistro(fecha) {
     const modal = document.getElementById('modal-registro');
     modal.classList.remove('hidden');
+    
+    // Formatear fecha para el título
+    const d = new Date(fecha + "T00:00:00");
+    document.getElementById('label-fecha-modal').textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('reg-fecha').value = fecha;
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
     const datos = registros[fecha] || {};
 
+    // Cargar datos guardados en el formulario
     document.getElementById('reg-sangrado').value = datos.sangrado || "";
     document.getElementById('reg-dolor').value = datos.dolor || "";
     document.getElementById('reg-energia').value = datos.energia || "media";
-    document.getElementById('reg-libido').value = datos.libido || "media";
-    document.getElementById('reg-social').value = datos.social || "media";
     document.getElementById('reg-animo').value = datos.animo || "calma";
-    document.getElementById('reg-sexo').checked = datos.sexo || false;
-    document.getElementById('reg-sueno-ini').value = datos.sueno_ini || "";
-    document.getElementById('reg-sueno-fin').value = datos.sueno_fin || "";
+    document.getElementById('reg-observaciones').value = datos.observaciones || "";
 }
 
 function guardarRegistro() {
@@ -1127,12 +1138,8 @@ function guardarRegistro() {
         sangrado: document.getElementById('reg-sangrado').value,
         dolor: document.getElementById('reg-dolor').value,
         energia: document.getElementById('reg-energia').value,
-        libido: document.getElementById('reg-libido').value,
-        social: document.getElementById('reg-social').value,
         animo: document.getElementById('reg-animo').value,
-        sexo: document.getElementById('reg-sexo').checked,
-        sueno_ini: document.getElementById('reg-sueno-ini').value,
-        sueno_fin: document.getElementById('reg-sueno-fin').value
+        observaciones: document.getElementById('reg-observaciones').value
     };
 
     localStorage.setItem('ciclo_logs', JSON.stringify(registros));
