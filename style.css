@@ -627,7 +627,7 @@ body.dark-mode {
 .nav-side-btn { pointer-events: auto; background: transparent; border: none; font-size: 2.5rem; opacity: 0.1; cursor: pointer; }
 
 
-/* --- ESTILOS CICLO MEJORADOS --- */
+/* --- ESTILOS CICLO ACTUALIZADOS --- */
 .rueda-wrapper {
     position: relative;
     width: 310px;
@@ -667,14 +667,28 @@ body.dark-mode {
 
 .punto-dia:hover { transform: scale(1.1); }
 
-/* Indicador de sangrado en la rueda */
+/* Indicadores sutiles (Puntitos) */
 .indicador-sangre { 
     width: 6px; 
     height: 6px; 
     background: #ff4d4d; 
     border-radius: 50%; 
-    margin-top: 2px;
     box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
+}
+
+.indicador-hoy {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--accent-color);
+}
+
+.dots-container {
+    display: flex;
+    gap: 3px;
+    margin-top: 2px;
+    height: 6px;
 }
 
 /* Modal Estilo Tarjeta */
@@ -689,41 +703,16 @@ body.dark-mode {
 }
 
 .modal-header { text-align: center; margin-bottom: 20px; }
-.modal-header h3 { font-size: 1.2rem; color: var(--text-color); }
+.modal-header h3 { font-size: 1.2rem; margin: 0; }
 #label-fecha-modal { font-size: 0.8rem; opacity: 0.5; margin-top: 5px; }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-item.full { grid-column: span 2; }
-
-.form-item label { 
-    display: block; 
-    font-size: 0.75rem; 
-    margin-bottom: 5px; 
-    font-weight: 600;
-    color: var(--accent-color);
-}
+.form-item label { display: block; font-size: 0.75rem; margin-bottom: 5px; font-weight: 600; color: var(--accent-color); }
 
 .form-item select, .form-item textarea { 
-    width: 100%; 
-    padding: 10px; 
-    border-radius: 12px; 
-    border: 1px solid var(--line-color);
-    background: var(--bg-color);
-    font-family: inherit;
-    font-size: 0.9rem;
+    width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--line-color);
+    background: var(--bg-color); font-family: inherit; font-size: 0.9rem;
 }
 
-.modal-btns { 
-    display: flex; 
-    gap: 10px; 
-    margin-top: 25px; 
-}
-
-.btn-secundario { 
-    flex: 1; 
-    padding: 12px; 
-    border-radius: 12px; 
-    border: none; 
-    background: #f0f0f0; 
-    cursor: pointer;
-}
+.modal-btns { display: flex; gap: 10px; margin-top: 25px; }

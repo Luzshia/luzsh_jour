@@ -344,18 +344,18 @@ document.getElementById('input-container-agenda').onkeydown = (e) => {
 renderizarSemana();
 
 
-    /* --- ESCUCHADORES DEL CICLO LUNAR --- */
+/* --- ESCUCHADORES DEL CICLO LUNAR --- */
 const btnCicloMenu = document.getElementById('btn-ciclo-menu');
 const cicloDropdown = document.getElementById('ciclo-dropdown');
 const modalRegistro = document.getElementById('modal-registro');
 
 document.addEventListener('click', (e) => {
-    // 1. Cerrar Dropdown
+    // 1. Cerrar Dropdown si clicas fuera
     if (cicloDropdown && !cicloDropdown.contains(e.target) && e.target !== btnCicloMenu) {
         cicloDropdown.classList.add('hidden');
     }
 
-    // 2. Cerrar Modal al presionar espacio en blanco (el overlay)
+    // 2. Cerrar Modal al presionar el fondo oscuro (el espacio en blanco)
     if (e.target === modalRegistro) {
         modalRegistro.classList.add('hidden');
     }
@@ -368,20 +368,26 @@ if(btnCicloMenu) {
     };
 }
 
-// Opción Registrar hoy
-document.getElementById('opt-add-registro').onclick = () => {
-    abrirRegistro(new Date().toISOString().split('T')[0]);
-    cicloDropdown.classList.add('hidden');
-};
+// Opción Registrar desde el menú
+const optAddReg = document.getElementById('opt-add-registro');
+if(optAddReg) {
+    optAddReg.onclick = () => {
+        abrirRegistro(new Date().toISOString().split('T')[0]);
+        cicloDropdown.classList.add('hidden');
+    };
+}
 
 // Botones del modal
-document.getElementById('btn-guardar-reg').onclick = guardarRegistro;
-document.getElementById('btn-cancelar-reg').onclick = () => modalRegistro.classList.add('hidden');
+const btnSaveReg = document.getElementById('btn-guardar-reg');
+if(btnSaveReg) btnSaveReg.onclick = guardarRegistro;
 
-// Inicializar
+const btnCancelReg = document.getElementById('btn-cancelar-reg');
+if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidden');
+
+// Carga inicial
 dibujarRueda();
 
-});
+})
 
 
 
@@ -1058,7 +1064,6 @@ function obtenerIconoLuna(f) {
 
 
 /* --- FUNCIONES DEL CICLO LUNAR --- */
-// Fecha de inicio del ciclo actual (esto debería guardarse en localStorage en el futuro)
 let inicioCiclo = new Date("2026-04-30T00:00:00");
 
 function dibujarRueda() {
@@ -1069,7 +1074,10 @@ function dibujarRueda() {
     contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
-    const hoyStr = new Date().toISOString().split('T')[0];
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    const hoyStr = hoy.toISOString().split('T')[0];
+    
     const radio = 130;
 
     for (let i = 0; i < 28; i++) {
@@ -1089,18 +1097,28 @@ function dibujarRueda() {
 
         div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
         
-        // Si hay sangrado registrado, mostrar puntito rojo
+        // Contenedor de puntos (indicadores)
+        const dotsContainer = document.createElement('div');
+        dotsContainer.className = 'dots-container';
+
+        // Puntito rojo si hay sangrado
         if(reg && reg.sangrado && reg.sangrado !== "") {
-            div.innerHTML += '<div class="indicador-sangre"></div>';
+            const dotSangre = document.createElement('div');
+            dotSangre.className = 'indicador-sangre';
+            dotsContainer.appendChild(dotSangre);
         }
 
-        // Marcar el día de hoy en la rueda
+        // Puntito de color acento si es HOY
         if(iso === hoyStr) {
-            div.style.border = "2px solid var(--accent-color)";
-            div.style.borderRadius = "50%";
+            const dotHoy = document.createElement('div');
+            dotHoy.className = 'indicador-hoy';
+            dotsContainer.appendChild(dotHoy);
+            
             document.getElementById('txt-dia-ciclo').textContent = `Día ${i+1}`;
             document.getElementById('txt-fecha-ciclo').textContent = `${fechaActual.getDate()}/${fechaActual.getMonth()+1}`;
         }
+
+        div.appendChild(dotsContainer);
 
         div.onclick = (e) => {
             e.stopPropagation();
@@ -1114,15 +1132,16 @@ function abrirRegistro(fecha) {
     const modal = document.getElementById('modal-registro');
     modal.classList.remove('hidden');
     
-    // Formatear fecha para el título
     const d = new Date(fecha + "T00:00:00");
-    document.getElementById('label-fecha-modal').textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    const labelFecha = document.getElementById('label-fecha-modal');
+    if(labelFecha) labelFecha.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+    
     document.getElementById('reg-fecha').value = fecha;
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
     const datos = registros[fecha] || {};
 
-    // Cargar datos guardados en el formulario
+    // Resetear y cargar
     document.getElementById('reg-sangrado').value = datos.sangrado || "";
     document.getElementById('reg-dolor').value = datos.dolor || "";
     document.getElementById('reg-energia').value = datos.energia || "media";
