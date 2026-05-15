@@ -61,14 +61,13 @@
             </section>
 
 
-            <!-- VISTA: METAS -->
             <section id="view-metas" class="view">
                 <header class="app-header">
                     <div class="header-top-nav">
                         <div class="menu-dots-container">
                             <button id="btn-metas-menu" class="dots-btn">···</button>
                             <div id="metas-dropdown" class="dropdown-content hidden">
-                                <button id="opt-add-meta">🖋️ Añadir Meta</button>
+                                <button id="opt-edit-metas">📝 Editar Metas</button>
                                 <button id="opt-historial-metas">📜 Ver Historial</button>
                             </div>
                         </div>
@@ -81,18 +80,19 @@
                     <div id="historial-metas-container" class="hidden"></div>
 
                     <ul id="lista-metas" class="metas-list">
-                        <!-- Solo lectura y tachado aquí -->
-                    </ul>
+                        </ul>
 
                     <div id="input-container-meta" class="hidden">
                         <div class="input-fake-row">
                             <span id="next-number-meta"></span>
                             <input type="text" id="input-nueva-meta" placeholder="Escribir meta...">
                         </div>
+                        <div class="save-btn-container">
+                            <button id="btn-save-meta" class="minimal-save-btn">Guardar cambios</button>
+                        </div>
                     </div>
                 </div>
-            </section> 
-            
+            </section>            
             
             <!-- VISTA: HÁBITOS -->
             <section id="view-habitos" class="view">
