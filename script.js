@@ -59,23 +59,53 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export').addEventListener('click', exportarDatos);
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
-    // --- Escuchadores de Metas ---
-    document.getElementById('opt-edit-metas').onclick = () => {
-        modoEdicionActivo = !modoEdicionActivo;
-        document.getElementById('opt-edit-metas').textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
-        if(!modoEdicionActivo) document.getElementById('input-container-meta').classList.add('hidden');
-        cargarMetas();
+    /* --- ESCUCHADORES DE METAS --- */
+
+// Referencias a elementos del menú
+const btnMetasMenu = document.getElementById('btn-metas-menu');
+const metasDropdown = document.getElementById('metas-dropdown');
+
+// 1. Abrir/Cerrar menú de tres puntos
+if (btnMetasMenu) {
+    btnMetasMenu.onclick = (e) => {
+        e.stopPropagation();
+        metasDropdown.classList.toggle('hidden');
     };
+}
 
-    document.getElementById('btn-save-meta').onclick = () => {
-        const val = document.getElementById('input-nueva-meta').value.trim();
-        guardarMeta(val);
-        document.getElementById('input-container-meta').classList.add('hidden');
-    };
+// 2. Cerrar menú al hacer clic fuera
+document.addEventListener('click', () => {
+    if (metasDropdown) metasDropdown.classList.add('hidden');
+});
 
-    document.getElementById('opt-historial-metas').onclick = () => toggleHistorialMetas();
-
+// 3. Botón "Editar Metas" (Cambia el modo de la app)
+document.getElementById('opt-edit-metas').onclick = () => {
+    modoEdicionActivo = !modoEdicionActivo;
+    document.getElementById('opt-edit-metas').textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
     cargarMetas();
+};
+
+// 4. Botón "Ver Historial"
+document.getElementById('opt-historial-metas').onclick = () => {
+    toggleHistorialMetas();
+};
+
+// 5. Botón "Guardar cambios" (Panel inferior)
+document.getElementById('btn-save-meta').onclick = () => {
+    const input = document.getElementById('input-nueva-meta');
+    guardarMeta(input.value.trim());
+};
+
+// 6. Atajo: Enter para guardar también
+document.getElementById('input-nueva-meta').onkeydown = (e) => {
+    if (e.key === 'Enter') {
+        guardarMeta(e.target.value.trim());
+    }
+};
+
+// Inicialización al entrar
+cargarMetas();
+
 
 
     // --- Escuchadores de Hábitos ---
@@ -360,7 +390,9 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
+/* --- LÓGICA DE METAS: EDICIÓN, BORRADO E HISTORIAL --- */
 let modoEdicionActivo = false;
+let metaEditandoIndex = null;
 
 function cargarMetas() {
     const anio = new Date().getFullYear();
@@ -376,13 +408,12 @@ function cargarMetas() {
         const li = document.createElement('li');
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
         
-        // Texto de la meta
         const span = document.createElement('span');
         span.textContent = m.texto;
         li.appendChild(span);
 
-        // Si estamos en modo edición, añadimos la X
         if (modoEdicionActivo) {
+            // Botón X para borrar
             const btnDel = document.createElement('button');
             btnDel.className = "btn-delete-meta";
             btnDel.textContent = "×";
@@ -392,10 +423,10 @@ function cargarMetas() {
             };
             li.appendChild(btnDel);
             
-            // Al hacer clic en el texto, editamos
+            // Clic en la meta para editarla
             li.onclick = () => prepararEdicion(index, m.texto);
         } else {
-            // Modo normal: Tachar
+            // Modo normal: Tachar meta
             li.onclick = () => {
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
@@ -405,7 +436,7 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    // Área para añadir nueva meta al final
+    // Área "+ Añadir nueva" al final de la lista si estamos editando
     if (modoEdicionActivo) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
@@ -416,6 +447,56 @@ function cargarMetas() {
 
     const nextNumLabel = document.getElementById('next-number-meta');
     if(nextNumLabel) nextNumLabel.textContent = (metas.length + 1) + ".";
+
+    // Si no estamos editando, nos aseguramos que el panel de escritura esté cerrado
+    if (!modoEdicionActivo) {
+        document.getElementById('input-container-meta').classList.add('hidden');
+    }
+}
+
+function prepararEdicion(index, textoActual) {
+    metaEditandoIndex = index;
+    const container = document.getElementById('input-container-meta');
+    const input = document.getElementById('input-nueva-meta');
+    const nextNumLabel = document.getElementById('next-number-meta');
+
+    container.classList.remove('hidden');
+    input.value = textoActual;
+    if(nextNumLabel) nextNumLabel.textContent = (index + 1) + ".";
+    input.focus();
+
+    // Resaltar visualmente qué meta estamos editando
+    document.querySelectorAll('.meta-item').forEach(item => item.classList.remove('editando'));
+    const items = document.querySelectorAll('.meta-item');
+    if(items[index]) items[index].classList.add('editando');
+}
+
+function activarEscrituraMeta() {
+    metaEditandoIndex = null;
+    document.getElementById('input-container-meta').classList.remove('hidden');
+    const input = document.getElementById('input-nueva-meta');
+    const metas = JSON.parse(localStorage.getItem(`journal_metas_${new Date().getFullYear()}`)) || [];
+    
+    input.value = "";
+    document.getElementById('next-number-meta').textContent = (metas.length + 1) + ".";
+    input.focus();
+}
+
+function guardarMeta(texto) {
+    if (!texto) return;
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+
+    if (metaEditandoIndex !== null) {
+        metas[metaEditandoIndex].texto = texto;
+    } else {
+        metas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    metaEditandoIndex = null;
+    document.getElementById('input-nueva-meta').value = "";
+    cargarMetas();
 }
 
 function borrarMetaDirecto(index) {
@@ -424,14 +505,6 @@ function borrarMetaDirecto(index) {
     metas.splice(index, 1);
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     cargarMetas();
-}
-
-function activarEscrituraMeta() {
-    metaEditandoIndex = null; // Es una nueva
-    document.getElementById('input-container-meta').classList.remove('hidden');
-    const input = document.getElementById('input-nueva-meta');
-    input.value = "";
-    input.focus();
 }
 
 function toggleHistorialMetas() {
@@ -445,32 +518,33 @@ function toggleHistorialMetas() {
         btnHistorial.textContent = "📜 Ocultar Historial";
         container.innerHTML = "";
         
-        // Simulación de historial organizado por años
-        for(let i = 1; i <= 3; i++) {
+        // Buscamos años anteriores (ej. últimos 5 años)
+        for(let i = 1; i <= 5; i++) {
             const anioPast = anioActual - i;
             const metasPast = JSON.parse(localStorage.getItem(`journal_metas_${anioPast}`)) || [];
             if(metasPast.length > 0) {
-                const h3 = document.createElement('h3');
-                h3.textContent = anioPast;
-                h3.style.fontSize = "0.9rem"; h3.style.marginTop = "15px";
-                container.appendChild(h3);
+                const h2 = document.createElement('h2');
+                h2.textContent = anioPast;
+                h2.className = "historial-anio-titulo"; // Puedes darle estilo en CSS
+                container.appendChild(h2);
                 
                 const ul = document.createElement('ul');
                 ul.className = "metas-list";
                 metasPast.forEach(m => {
                     const li = document.createElement('li');
-                    li.className = "meta-item"; li.style.fontSize = "1.1rem";
+                    li.className = "meta-item";
                     li.textContent = m.texto;
                     ul.appendChild(li);
                 });
                 container.appendChild(ul);
             }
         }
-        if(container.innerHTML === "") container.innerHTML = "<p class='hint-text'>No hay años anteriores guardados.</p>";
+        if(container.innerHTML === "") container.innerHTML = "<p class='hint-text'>No hay historial de años anteriores.</p>";
     } else {
         btnHistorial.textContent = "📜 Ver Historial";
     }
 }
+
 
 /* --- FUNCIONES DE HÁBITOS CORREGIDAS --- */
 
