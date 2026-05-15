@@ -210,10 +210,32 @@ cargarHabitos();
 
 
 /* --- ESCUCHADORES DE TO-DO LIST --- */
-let modoEdicionTodo = false; 
-
 const btnTodoMenu = document.getElementById('btn-todo-menu');
 const todoDropdown = document.getElementById('todo-dropdown');
+const optAddTodo = document.getElementById('opt-add-todo');
+
+document.addEventListener('click', (e) => {
+    const contenedorTareas = document.getElementById('lista-tareas');
+    const inputContainerTodo = document.getElementById('input-container-todo');
+
+    // Cerrar dropdown
+    if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
+        todoDropdown.classList.add('hidden');
+    }
+
+    // Salir del modo edición/añadir si clicas fuera
+    if (modoEdicionTodo) {
+        const clicFueraLista = contenedorTareas && !contenedorTareas.contains(e.target);
+        const clicFueraInput = inputContainerTodo && !inputContainerTodo.contains(e.target);
+        const clicFueraBotones = e.target !== btnTodoMenu && e.target !== optAddTodo;
+
+        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
+            modoEdicionTodo = false;
+            todoEditandoIndex = null;
+            cargarTareas();
+        }
+    }
+});
 
 if (btnTodoMenu) {
     btnTodoMenu.onclick = (e) => {
@@ -222,28 +244,6 @@ if (btnTodoMenu) {
     };
 }
 
-document.addEventListener('click', (e) => {
-    const contenedorTodo = document.getElementById('contenedor-tareas');
-    const inputTodo = document.getElementById('input-container-todo');
-
-    if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
-        todoDropdown.classList.add('hidden');
-    }
-
-    if (modoEdicionTodo) {
-        const clicFueraGrid = contenedorTodo && !contenedorTodo.contains(e.target);
-        const clicFueraInput = inputTodo && !inputTodo.contains(e.target);
-        const clicFueraBotonMenu = e.target !== btnTodoMenu;
-
-        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
-            modoEdicionTodo = false;
-            if(inputTodo) inputTodo.classList.add('hidden');
-            cargarTareas();
-        }
-    }
-});
-
-const optAddTodo = document.getElementById('opt-add-todo');
 if (optAddTodo) {
     optAddTodo.onclick = (e) => {
         e.stopPropagation();
@@ -251,9 +251,12 @@ if (optAddTodo) {
         todoDropdown.classList.add('hidden');
         const container = document.getElementById('input-container-todo');
         const input = document.getElementById('input-nueva-tarea');
-        container.classList.remove('hidden');
-        input.value = "";
-        input.focus();
+        if(container) container.classList.remove('hidden');
+        if(input) {
+            input.value = "";
+            input.placeholder = "Escribe y pulsa Enter...";
+            input.focus();
+        }
         cargarTareas();
     };
 }
@@ -270,19 +273,18 @@ const inputTarea = document.getElementById('input-nueva-tarea');
 if (inputTarea) {
     inputTarea.onkeydown = (e) => {
         if (e.key === 'Enter') {
-            guardarTarea(e.target.value.trim());
-            modoEdicionTodo = false;
+            // Enter guarda y permite seguir añadiendo
+            guardarTarea(e.target.value.trim(), false);
         }
         if (e.key === 'Escape') {
             modoEdicionTodo = false;
-            document.getElementById('input-container-todo').classList.add('hidden');
             cargarTareas();
         }
     };
 }
 
+// Carga inicial
 cargarTareas();
-
 
     /* --- ESCUCHADORES AGENDA --- */
 const btnAgendaMenu = document.getElementById('btn-agenda-menu');
@@ -791,8 +793,9 @@ function toggleHistorialHabitos() {
 }
 
 
-/* --- FUNCIONES TO-DO LIST CORREGIDAS --- */
+/* --- FUNCIONES TO-DO LIST --- */
 let todoEditandoIndex = null;
+let modoEdicionTodo = false; 
 
 function cargarTareas() {
     const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
@@ -811,21 +814,22 @@ function cargarTareas() {
         `;
 
         li.onclick = (e) => {
-            const containerInput = document.getElementById('input-container-todo');
-            // Si el modo añadir está abierto, editamos (al tocar el texto o el li)
-            if (!containerInput.classList.contains('hidden')) {
+            e.stopPropagation(); // Evita que el clic fuera cierre el modo
+            if (modoEdicionTodo) {
                 prepararEdicionTodo(index, tarea.texto);
             } else {
-                // Si está cerrado, marcamos como completada
                 alternarTarea(index);
             }
         };
-
         lista.appendChild(li);
     });
 
-    document.getElementById('input-container-todo').classList.add('hidden');
-    todoEditandoIndex = null;
+    // Solo ocultar si el modo edición está apagado
+    if (!modoEdicionTodo) {
+        const containerInput = document.getElementById('input-container-todo');
+        if(containerInput) containerInput.classList.add('hidden');
+        todoEditandoIndex = null;
+    }
 }
 
 function alternarTarea(index) {
@@ -838,20 +842,19 @@ function alternarTarea(index) {
 function prepararEdicionTodo(index, texto) {
     todoEditandoIndex = index;
     const input = document.getElementById('input-nueva-tarea');
-    input.value = texto;
-    input.placeholder = "Borra todo para eliminar...";
-    input.focus();
-    
-    const items = document.querySelectorAll('.todo-item');
-    items.forEach(item => item.classList.remove('editando'));
-    items[index].classList.add('editando');
+    const container = document.getElementById('input-container-todo');
+    if(container) container.classList.remove('hidden');
+    if(input) {
+        input.value = texto;
+        input.placeholder = "Borra todo para eliminar...";
+        input.focus();
+    }
 }
 
-function guardarTarea(texto) {
+function guardarTarea(texto, cerrarEditor = false) {
     let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
 
     if (todoEditandoIndex !== null) {
-        // MODO EDICIÓN O BORRADO
         if (texto === "") {
             if (confirm("¿Eliminar esta tarea?")) {
                 tareas.splice(todoEditandoIndex, 1);
@@ -860,31 +863,37 @@ function guardarTarea(texto) {
             tareas[todoEditandoIndex].texto = texto;
         }
     } else {
-        // MODO NUEVO
         if (!texto) return;
         tareas.push({ texto: texto, completada: false });
     }
 
     localStorage.setItem('journal_todo', JSON.stringify(tareas));
     document.getElementById('input-nueva-tarea').value = "";
+    
+    if (cerrarEditor) {
+        modoEdicionTodo = false;
+        todoEditandoIndex = null;
+    }
+    
     cargarTareas();
 }
 
 function limpiarTareasCompletadas() {
     let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
-    const inicial = tareas.length;
-    tareas = tareas.filter(t => !t.completada);
+    const terminadas = tareas.filter(t => t.completada);
 
-    if (tareas.length === inicial) {
+    if (terminadas.length === 0) {
         alert("No hay tareas terminadas para borrar.");
         return;
     }
 
-    if (confirm("¿Borrar todas las tareas marcadas con X?")) {
+    if (confirm(`¿Borrar ${terminadas.length} tareas completadas?`)) {
+        tareas = tareas.filter(t => !t.completada);
         localStorage.setItem('journal_todo', JSON.stringify(tareas));
         cargarTareas();
     }
 }
+
 
 /* --- LÓGICA DE LA AGENDA --- */
 let fechaReferenciaAgenda = new Date(); 
