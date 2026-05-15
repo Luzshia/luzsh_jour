@@ -158,50 +158,47 @@
             </section>
 
 
-            <!-- VISTA: AGENDA -->
             <section id="view-agenda" class="view">
-                <header class="app-header">
-                    <div class="header-top-nav">
-                        <div class="menu-dots-container">
-                            <button id="btn-agenda-menu" class="dots-btn">···</button>
-                            <div id="agenda-dropdown" class="dropdown-content hidden">
-                                <button id="opt-add-evento">📅 Añadir Actividad</button>
-                                <button id="opt-limpiar-completados-agenda">🗑️ Limpiar Terminados</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="agenda-title-group">
-                        <h1>Mi Agenda</h1>
-                        <span id="rango-semana-label"></span>
-                    </div>
-                    <div class="header-line"></div>
-                </header>
-                
-                <div class="content-body">
-                    <!-- Formulario Flotante de Eventos -->
-                    <div id="input-container-agenda" class="hidden">
-                        <div class="agenda-form-popup">
-                            <input type="text" id="agenda-tarea" placeholder="¿Qué harás?">
-                            <div class="input-row">
-                                <input type="date" id="agenda-fecha">
-                                <input type="time" id="agenda-hora">
-                            </div>
-                            <p class="hint-text">Enter para guardar • Esc para cerrar</p>
-                        </div>
-                    </div>
-
-                    <!-- Contenedor con soporte para gestos -->
-                    <div id="semana-container" class="semana-grid">
-                        <!-- Los 7 días se generarán aquí -->
-                    </div>
-
-                    <!-- Flechas casi invisibles pero funcionales -->
-                    <div class="agenda-nav-overlay">
-                        <button id="btn-semana-prev" class="nav-side-btn prev">‹</button>
-                        <button id="btn-semana-next" class="nav-side-btn next">›</button>
-                    </div>
+    <header class="app-header">
+        <div class="header-top-nav">
+            <div class="menu-dots-container">
+                <button id="btn-agenda-menu" class="dots-btn">···</button>
+                <div id="agenda-dropdown" class="dropdown-content hidden">
+                    <button id="opt-edit-agenda">📝 Editar Agenda</button>
+                    <button id="opt-limpiar-completados-agenda">🗑️ Limpiar Terminados</button>
                 </div>
-            </section>
+            </div>
+        </div>
+        <div class="agenda-title-group">
+            <h1>Mi Agenda</h1>
+            <span id="rango-semana-label"></span>
+        </div>
+        <div class="header-line"></div>
+    </header>
+    
+    <div class="content-body">
+        <div id="input-container-agenda" class="hidden">
+            <div class="agenda-form-popup">
+                <input type="text" id="agenda-tarea" placeholder="¿Qué harás?">
+                <div class="input-row">
+                    <input type="date" id="agenda-fecha">
+                    <input type="time" id="agenda-hora">
+                </div>
+                <div class="save-btn-container">
+                    <button id="btn-save-agenda" class="minimal-save-btn">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="semana-container" class="semana-grid">
+            </div>
+
+        <div class="agenda-nav-overlay">
+            <button id="btn-semana-prev" class="nav-side-btn prev">‹</button>
+            <button id="btn-semana-next" class="nav-side-btn next">›</button>
+        </div>
+    </div>
+</section>
 
 
             <section id="view-ciclo" class="view">

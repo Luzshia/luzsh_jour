@@ -529,7 +529,7 @@ body.dark-mode {
 }
 
 /* --- ESTRUCTURA DE FILAS DE LA AGENDA --- */
-
+/* --- ESTILOS AGENDA --- */
 .semana-grid {
     margin-top: 20px;
     display: flex;
@@ -539,108 +539,65 @@ body.dark-mode {
 
 .dia-fila {
     display: flex;
-    min-height: 70px;
+    min-height: 80px;
     border-bottom: 1px solid var(--line-color);
-    padding: 10px 0;
-    align-items: flex-start; /* Alinea el contenido arriba */
+    padding: 12px 0;
 }
 
 .dia-info {
-    width: 70px; /* Espacio fijo para el nombre del día y número */
+    width: 70px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     border-right: 1px solid var(--line-color);
-    padding-right: 10px;
     flex-shrink: 0;
 }
 
-.dia-nombre {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    font-weight: bold;
-    opacity: 0.6;
-}
-
-.dia-numero {
-    font-size: 1.4rem;
-    font-weight: bold;
-    line-height: 1;
-}
-
-.dia-luna {
-    font-size: 0.9rem;
-    margin-top: 4px;
-}
+.dia-nombre { font-size: 0.7rem; text-transform: uppercase; opacity: 0.6; font-weight: bold; }
+.dia-numero { font-size: 1.4rem; font-weight: bold; }
+.dia-luna { font-size: 0.9rem; margin-top: 4px; }
 
 .dia-eventos {
-    flex: 1; /* Esto hace que los eventos ocupen todo el resto de la fila */
+    flex: 1;
     padding-left: 15px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
-/* Domingo con color de acento */
-.dia-fila.domingo .dia-numero, 
-.dia-fila.domingo .dia-nombre { 
-    color: var(--accent-color);
-}
-
-.evento-texto {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.4rem; /* Un poco más grande para que se lea bien */
-    color: var(--text-color);
-}
-
-/* Estilo de los eventos */
 .evento-item {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
-    padding: 2px 0;
+    transition: 0.3s;
 }
 
-.evento-item.done {
-    opacity: 0.4;
-    text-decoration: line-through;
-}
+.evento-item.done { opacity: 0.4; text-decoration: line-through; }
 
-.evento-hora {
-    font-family: Arial, sans-serif;
-    font-size: 0.75rem;
-    font-weight: bold;
-    opacity: 0.6;
-    min-width: 45px;
-}
+.evento-hora { font-size: 0.75rem; font-weight: bold; opacity: 0.6; min-width: 45px; }
+.evento-texto { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--text-color); flex: 1; }
 
-/* Navegación sutil */
-.agenda-nav-overlay {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    pointer-events: none;
+/* Botones de edición en Agenda */
+.agenda-actions {
     display: flex;
-    justify-content: space-between;
-    padding: 0 5px;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
-.nav-side-btn {
-    pointer-events: auto;
+.modo-edicion-agenda .agenda-actions { opacity: 1; }
+
+.btn-reprogramar, .btn-borrar-evento {
     background: transparent;
     border: none;
-    font-size: 2rem;
-    color: var(--text-color);
-    opacity: 0.05; /* Casi invisible */
     cursor: pointer;
-    transition: opacity 0.3s;
+    font-size: 1rem;
+    padding: 5px;
 }
 
-.nav-side-btn:hover { opacity: 0.3; }
+.btn-borrar-evento { color: var(--accent-color); }
 
-/* Popup de entrada */
+/* Formulario */
 .agenda-form-popup {
     background: var(--card-bg);
     padding: 15px;
@@ -650,6 +607,7 @@ body.dark-mode {
     margin-bottom: 20px;
 }
 
+.input-row { display: flex; gap: 10px; margin-bottom: 10px; }
 .agenda-form-popup input {
     width: 100%;
     background: transparent;
@@ -657,11 +615,16 @@ body.dark-mode {
     border-bottom: 1px solid var(--line-color);
     color: var(--text-color);
     padding: 8px;
-    margin-bottom: 10px;
     outline: none;
 }
 
-.hint-text { font-size: 0.7rem; opacity: 0.5; text-align: center; margin: 0; }
+.agenda-nav-overlay {
+    position: absolute;
+    top: 50%; width: 100%;
+    pointer-events: none;
+    display: flex; justify-content: space-between;
+}
+.nav-side-btn { pointer-events: auto; background: transparent; border: none; font-size: 2.5rem; opacity: 0.1; cursor: pointer; }
 
 
 /*estilos ciclo*/

@@ -214,52 +214,62 @@ cargarHabitos();
     cargarTareas();
 
 
-    // --- Escuchadores Agenda ---
-    const btnAgendaMenu = document.getElementById('btn-agenda-menu');
-    const agendaDropdown = document.getElementById('agenda-dropdown');
+    /* --- ESCUCHADORES AGENDA --- */
+const btnAgendaMenu = document.getElementById('btn-agenda-menu');
+const agendaDropdown = document.getElementById('agenda-dropdown');
 
-    if (btnAgendaMenu) {
-        btnAgendaMenu.onclick = (e) => {
-            e.stopPropagation();
-            agendaDropdown.classList.toggle('hidden');
-        };
-    }
-
-    document.getElementById('opt-add-evento').onclick = () => {
-        document.getElementById('input-container-agenda').classList.remove('hidden');
-        document.getElementById('agenda-tarea').focus();
+if (btnAgendaMenu) {
+    btnAgendaMenu.onclick = (e) => {
+        e.stopPropagation();
+        agendaDropdown.classList.toggle('hidden');
     };
+}
 
-    document.getElementById('opt-limpiar-completados-agenda').onclick = limpiarAgendaCompletada;
-
-    // Navegación
-    document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
-    document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
-
-    // Guardar con Enter
-    document.getElementById('input-container-agenda').onkeydown = (e) => {
-        if (e.key === 'Enter') agregarEvento();
-        if (e.key === 'Escape') cerrarEditorAgenda();
-    };
-
-    // --- SOPORTE SWIPE (Deslizar página) ---
-    let touchstartX = 0;
-    let touchendX = 0;
-    const swipeArea = document.getElementById('semana-container');
-
-    swipeArea.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-    swipeArea.addEventListener('touchend', e => {
-        touchendX = e.changedTouches[0].screenX;
-        handleSwipe();
-    });
-
-    function handleSwipe() {
-        if (touchendX < touchstartX - 50) navegarSemana(7);  // Hacia la izquierda -> Siguiente
-        if (touchendX > touchstartX + 50) navegarSemana(-7); // Hacia la derecha -> Anterior
-    }
-
+// Opción Editar Agenda
+document.getElementById('opt-edit-agenda').onclick = () => {
+    modoEdicionAgenda = !modoEdicionAgenda;
+    agendaDropdown.classList.add('hidden');
     renderizarSemana();
+};
 
+document.getElementById('opt-limpiar-completados-agenda').onclick = () => {
+    limpiarAgendaCompletada();
+    agendaDropdown.classList.add('hidden');
+};
+
+// Guardar cambios con el botón
+document.getElementById('btn-save-agenda').onclick = guardarEventoAgenda;
+
+// Cerrar todo al hacer clic en cualquier espacio vacío
+document.addEventListener('click', (e) => {
+    // Cerrar menú dropdown
+    if (agendaDropdown && !agendaDropdown.contains(e.target) && e.target !== btnAgendaMenu) {
+        agendaDropdown.classList.add('hidden');
+    }
+    // Cerrar modo edición si se clica fuera de la cuadrícula o botones
+    const grid = document.getElementById('semana-container');
+    const form = document.getElementById('agenda-form-popup');
+    if (modoEdicionAgenda && !grid.contains(e.target) && !btnAgendaMenu.contains(e.target) && !agendaDropdown.contains(e.target)) {
+        // Solo cerramos si no estamos tocando el formulario de input
+        if (!document.getElementById('input-container-agenda').contains(e.target)) {
+            modoEdicionAgenda = false;
+            cerrarEditorAgenda();
+            renderizarSemana();
+        }
+    }
+});
+
+// Navegación
+document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
+document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
+
+// Teclas rápidas en el formulario
+document.getElementById('input-container-agenda').onkeydown = (e) => {
+    if (e.key === 'Escape') cerrarEditorAgenda();
+};
+
+// Carga inicial
+renderizarSemana();
 
 
     /* --- ESCUCHADORES DEL CICLO LUNAR --- */
@@ -854,25 +864,24 @@ function limpiarTareasCompletadas() {
     }
 }
 
-/* --- LÓGICA DE LA AGENDA (BLOQUE COMPLETO) --- */
-
-// Variables globales necesarias
+/* --- LÓGICA DE LA AGENDA --- */
 let fechaReferenciaAgenda = new Date(); 
 let eventoEditando = null; 
+let modoEdicionAgenda = false;
 
-// 1. Navegación entre semanas
 function navegarSemana(dias) {
     fechaReferenciaAgenda.setDate(fechaReferenciaAgenda.getDate() + dias);
     renderizarSemana();
 }
 
-// 2. Dibujar la semana en pantalla
 function renderizarSemana() {
     const cont = document.getElementById('semana-container');
     if (!cont) return;
     cont.innerHTML = "";
     
-    // Calcular el lunes de la semana actual
+    // Si estamos en modo edición, añadimos una clase al contenedor
+    cont.className = `semana-grid ${modoEdicionAgenda ? 'modo-edicion-agenda' : ''}`;
+
     let lunes = new Date(fechaReferenciaAgenda);
     const diaSemana = lunes.getDay();
     const diferencia = (diaSemana === 0 ? -6 : 1 - diaSemana);
@@ -880,7 +889,8 @@ function renderizarSemana() {
 
     const labelRango = document.getElementById('rango-semana-label');
     if (labelRango) {
-        labelRango.textContent = lunes.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+        const opciones = { month: 'long', year: 'numeric' };
+        labelRango.textContent = lunes.toLocaleDateString('es-ES', opciones).toUpperCase();
     }
 
     const nombresDias = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
@@ -902,71 +912,95 @@ function renderizarSemana() {
             </div>
             <div class="dia-eventos">
                 ${evs.sort((a, b) => a.hora.localeCompare(b.hora)).map((e, idx) => `
-                    <div class="evento-item ${e.done ? 'done' : ''}" onclick="clickEvento('${iso}', ${idx})">
-                        <span class="evento-hora">${e.hora || '--:--'}</span>
-                        <span class="evento-texto">${e.tarea}</span>
+                    <div class="evento-item ${e.done ? 'done' : ''}">
+                        <div class="evento-click-area" style="flex:1; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="clickTacharEvento('${iso}', ${idx})">
+                            <span class="evento-hora">${e.hora || '--:--'}</span>
+                            <span class="evento-texto">${e.tarea}</span>
+                        </div>
+                        ${modoEdicionAgenda ? `
+                        <div class="agenda-actions">
+                            <button class="btn-reprogramar" onclick="prepararReprogramar('${iso}', ${idx})">📅</button>
+                            <button class="btn-borrar-evento" onclick="borrarEventoDirecto('${iso}', ${idx})">🗑️</button>
+                        </div>` : ''}
                     </div>
                 `).join('')}
+                ${modoEdicionAgenda ? `<div class="add-evento-inline" onclick="abrirEditorNuevo('${iso}')" style="font-size:0.8rem; opacity:0.5; cursor:pointer;">+ Añadir...</div>` : ''}
             </div>
         `;
         cont.appendChild(fila);
     }
 }
 
-// 3. Manejo de clicks en eventos (Tachar o Preparar Edición)
-function clickEvento(fecha, index) {
-    const menuAbierto = !document.getElementById('input-container-agenda').classList.contains('hidden');
+function clickTacharEvento(fecha, index) {
+    if (modoEdicionAgenda) return;
     const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
-
-    if (menuAbierto) {
-        eventoEditando = { fecha, index };
-        document.getElementById('agenda-tarea').value = evs[index].tarea;
-        document.getElementById('agenda-fecha').value = fecha;
-        document.getElementById('agenda-hora').value = evs[index].hora;
-        document.getElementById('agenda-tarea').focus();
-    } else {
-        evs[index].done = !evs[index].done;
-        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
-        renderizarSemana();
-    }
+    evs[index].done = !evs[index].done;
+    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+    renderizarSemana();
 }
 
-// 4. Guardar, Editar o Borrar
-function agregarEvento() {
+function abrirEditorNuevo(fecha) {
+    eventoEditando = null;
+    document.getElementById('input-container-agenda').classList.remove('hidden');
+    document.getElementById('agenda-fecha').value = fecha;
+    document.getElementById('agenda-tarea').value = "";
+    document.getElementById('agenda-tarea').focus();
+}
+
+function prepararReprogramar(fecha, index) {
+    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
+    eventoEditando = { fecha, index };
+    document.getElementById('input-container-agenda').classList.remove('hidden');
+    document.getElementById('agenda-tarea').value = evs[index].tarea;
+    document.getElementById('agenda-fecha').value = fecha;
+    document.getElementById('agenda-hora').value = evs[index].hora;
+    document.getElementById('agenda-tarea').focus();
+}
+
+function borrarEventoDirecto(fecha, index) {
+    let evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
+    evs.splice(index, 1);
+    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+    renderizarSemana();
+}
+
+function guardarEventoAgenda() {
     const tarea = document.getElementById('agenda-tarea').value.trim();
     const fecha = document.getElementById('agenda-fecha').value;
     const hora = document.getElementById('agenda-hora').value;
 
-    if (!tarea && eventoEditando) {
-        let evs = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
-        evs.splice(eventoEditando.index, 1);
-        localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evs));
-    } else if (fecha && tarea) {
+    if (tarea && fecha) {
+        // Si estábamos editando uno existente, lo borramos de su posición vieja
         if (eventoEditando) {
             let evsViejos = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
             evsViejos.splice(eventoEditando.index, 1);
             localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evsViejos));
         }
-        const evsNuevos = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
-        evsNuevos.push({ tarea, hora, done: false });
-        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsNuevos));
+        
+        // Guardamos el nuevo o actualizado
+        const evsDestino = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+        evsDestino.push({ tarea, hora, done: false });
+        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsDestino));
+        
+        cerrarEditorAgenda();
+        renderizarSemana();
     }
-
-    cerrarEditorAgenda();
-    renderizarSemana();
 }
 
 function cerrarEditorAgenda() {
     document.getElementById('input-container-agenda').classList.add('hidden');
-    document.getElementById('agenda-tarea').value = "";
     eventoEditando = null;
 }
 
 function limpiarAgendaCompletada() {
-    if (!confirm("¿Borrar actividades tachadas?")) return;
-    for (let i = 0; i < 21; i++) { 
-        let d = new Date(fechaReferenciaAgenda);
-        d.setDate(d.getDate() - 7 + i);
+    if (!confirm("¿Borrar actividades tachadas de esta semana?")) return;
+    let lunes = new Date(fechaReferenciaAgenda);
+    const diaSemana = lunes.getDay();
+    lunes.setDate(lunes.getDate() + (diaSemana === 0 ? -6 : 1 - diaSemana));
+
+    for (let i = 0; i < 7; i++) {
+        let d = new Date(lunes);
+        d.setDate(lunes.getDate() + i);
         const iso = d.toISOString().split('T')[0];
         let evs = JSON.parse(localStorage.getItem(`agenda_${iso}`));
         if (evs) {
@@ -977,16 +1011,13 @@ function limpiarAgendaCompletada() {
     renderizarSemana();
 }
 
-// 5. El toque astronómico
 function obtenerIconoLuna(f) {
     const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
-    const cicloSinergico = 29.53059;
-    const fechaBase = new Date("2024-01-11"); 
-    const msPorDia = 86400000;
-    const diasTranscurridos = (f - fechaBase) / msPorDia;
-    const posicionCiclo = (diasTranscurridos % cicloSinergico + cicloSinergico) % cicloSinergico;
-    const index = Math.floor((posicionCiclo / cicloSinergico) * 8);
-    return lunas[index] || "🌙";
+    const ciclo = 29.53;
+    const base = new Date("2024-01-11");
+    const diff = (f - base) / 86400000;
+    const pos = (diff % ciclo + ciclo) % ciclo;
+    return lunas[Math.floor((pos / ciclo) * 8)] || "🌙";
 }
 
 
