@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
     /* --- ESCUCHADORES DE METAS --- */
+/* --- ESCUCHADORES DE METAS (MODIFICADO) --- */
 const btnMetasMenu = document.getElementById('btn-metas-menu');
 const metasDropdown = document.getElementById('metas-dropdown');
 
@@ -75,9 +76,26 @@ if (btnMetasMenu) {
     };
 }
 
-// Cerrar menú al hacer clic fuera
-document.addEventListener('click', () => {
-    if (metasDropdown) metasDropdown.classList.add('hidden');
+document.addEventListener('click', (e) => {
+    const contenedorMetas = document.getElementById('contenedor-metas');
+    const inputMetas = document.getElementById('input-container-metas');
+
+    // Cerrar dropdown
+    if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
+        metasDropdown.classList.add('hidden');
+    }
+
+    // Salir de modo edición metas
+    if (typeof modoEdicionMetas !== 'undefined' && modoEdicionMetas) {
+        const clicFueraGrid = contenedorMetas && !contenedorMetas.contains(e.target);
+        const clicFueraInput = inputMetas && !inputMetas.contains(e.target);
+        
+        if (clicFueraGrid && clicFueraInput && e.target !== btnMetasMenu) {
+            modoEdicionMetas = false;
+            if(inputMetas) inputMetas.classList.add('hidden');
+            if(typeof cargarMetas === 'function') cargarMetas();
+        }
+    }
 });
 
 // Botón Editar desde el menú
@@ -119,6 +137,7 @@ cargarMetas();
 
 
     /* --- ESCUCHADORES DE HÁBITOS --- */
+/* --- ESCUCHADORES DE HÁBITOS (MODIFICADO) --- */
 const btnHabitosMenu = document.getElementById('btn-habitos-menu');
 const habitosDropdown = document.getElementById('habitos-dropdown');
 
@@ -129,11 +148,32 @@ if (btnHabitosMenu) {
     };
 }
 
+// CERRAR TODO AL CLICAR FUERA
 document.addEventListener('click', (e) => {
+    const contenedorHabitos = document.getElementById('contenedor-habitos');
+    const inputContainer = document.getElementById('input-container-habito');
+    
+    // 1. Cerrar dropdown de hábitos
     if (habitosDropdown && !habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
         habitosDropdown.classList.add('hidden');
     }
+
+    // 2. Salir de modo edición si clicas en el "blanco" (fuera del grid y del input)
+    if (modoEdicionHabitos) {
+        const clicFueraGrid = contenedorHabitos && !contenedorHabitos.contains(e.target);
+        const clicFueraInput = inputContainer && !inputContainer.contains(e.target);
+        const clicFueraBotonMenu = e.target !== btnHabitosMenu;
+
+        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
+            modoEdicionHabitos = false;
+            habitoEditandoId = null;
+            if(inputContainer) inputContainer.classList.add('hidden');
+            cargarHabitos();
+        }
+    }
 });
+
+// Los demás escuchadores (optEditHab, btnSaveHabito, etc.) se mantienen igual
 
 const optEditHab = document.getElementById('opt-edit-habitos');
 if (optEditHab) {
