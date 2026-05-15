@@ -1,3 +1,8 @@
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('Service Worker Registrado'));
+}
+
 /* --- CONFIGURACIÓN INICIAL --- */
 let pinIngresado = "";
 // El PIN es 1707 por defecto. Se guarda en el motor del navegador.
