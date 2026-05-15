@@ -68,23 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
 const btnMetasMenu = document.getElementById('btn-metas-menu');
 const metasDropdown = document.getElementById('metas-dropdown');
 
-// 1. Manejo de clics globales (Cerrar dropdown y modo edición)
 document.addEventListener('click', (e) => {
     const listaMetas = document.getElementById('lista-metas');
     const inputContainerMeta = document.getElementById('input-container-meta');
+    const optEditMetas = document.getElementById('opt-edit-metas');
 
-    // Cerrar menú de 3 puntitos si clicas fuera
+    // Cerrar dropdown si se clica fuera
     if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
         metasDropdown.classList.add('hidden');
     }
 
-    // Salir del modo edición si clicas fuera de la lista y del input
+    // Cerrar modo edición si se clica en el "blanco"
     if (modoEdicionActivo) {
         const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
         const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
-        const clicFueraBotonMenu = e.target !== btnMetasMenu;
+        // Evitar que el clic en el botón de menú o de editar desactive el modo
+        const clicFueraBotones = e.target !== btnMetasMenu && e.target !== optEditMetas;
 
-        if (clicFueraLista && clicFueraInput && clicFueraBotonMenu) {
+        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
             modoEdicionActivo = false;
             metaEditandoIndex = null;
             cargarMetas();
@@ -92,7 +93,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 2. Abrir menú de metas
 if (btnMetasMenu) {
     btnMetasMenu.onclick = (e) => {
         e.stopPropagation();
@@ -100,42 +100,30 @@ if (btnMetasMenu) {
     };
 }
 
-// 3. Activar/Desactivar modo edición desde el menú
 const optEditMetas = document.getElementById('opt-edit-metas');
 if(optEditMetas) {
     optEditMetas.onclick = (e) => {
         e.stopPropagation();
         modoEdicionActivo = !modoEdicionActivo;
-        metasDropdown.classList.add('hidden');
+        if (metasDropdown) metasDropdown.classList.add('hidden');
         cargarMetas();
     };
 }
 
-// 4. Botón Historial
-const optHistMetas = document.getElementById('opt-historial-metas');
-if(optHistMetas) {
-    optHistMetas.onclick = () => {
-        toggleHistorialMetas();
-        metasDropdown.classList.add('hidden');
-    };
-}
-
-// 5. Botón Guardar (Cierra el editor)
 const btnSaveMeta = document.getElementById('btn-save-meta');
 if(btnSaveMeta) {
     btnSaveMeta.onclick = (e) => {
         e.stopPropagation();
         const val = document.getElementById('input-nueva-meta').value.trim();
-        guardarMeta(val, true); // true = cerrar
+        guardarMeta(val, true); 
     };
 }
 
-// 6. Teclado: Enter (Guarda y sigue) / Esc (Cancela)
 const inputNuevaMeta = document.getElementById('input-nueva-meta');
 if(inputNuevaMeta) {
     inputNuevaMeta.onkeydown = (e) => {
         if (e.key === 'Enter') {
-            guardarMeta(e.target.value.trim(), false); // false = no cerrar, para añadir varias
+            guardarMeta(e.target.value.trim(), false); 
         }
         if (e.key === 'Escape') {
             modoEdicionActivo = false;
@@ -144,9 +132,8 @@ if(inputNuevaMeta) {
     };
 }
 
-// Carga inicial
+// Inicializar
 cargarMetas();
-
 
 /* --- ESCUCHADORES DE HÁBITOS --- */
 const btnHabitosMenu = document.getElementById('btn-habitos-menu');
@@ -520,6 +507,7 @@ function importarDatos(e) {
 }
 
 /* --- LÓGICA DE METAS: FUNCIONES --- */
+// Definir al inicio para que sea accesible globalmente
 let modoEdicionActivo = false;
 let metaEditandoIndex = null;
 
@@ -534,7 +522,6 @@ function cargarMetas() {
     if(labelAnio) labelAnio.textContent = anio;
     if(!lista) return;
 
-    // Actualizar texto del botón en el menú
     if(btnEditarMenu) {
         btnEditarMenu.textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
     }
@@ -549,7 +536,6 @@ function cargarMetas() {
         li.appendChild(span);
 
         if (modoEdicionActivo) {
-            // Botón X para borrar
             const btnDel = document.createElement('button');
             btnDel.className = "btn-delete-meta";
             btnDel.textContent = "×";
@@ -559,13 +545,11 @@ function cargarMetas() {
             };
             li.appendChild(btnDel);
             
-            // Clic en el item para editarlo
             li.onclick = (e) => {
                 e.stopPropagation();
                 prepararEdicion(index, m.texto);
             };
         } else {
-            // Modo normal: Tachar/Completar
             li.onclick = () => {
                 m.completada = !m.completada;
                 localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
@@ -575,7 +559,6 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    // Opción añadir nueva (solo en edición)
     if (modoEdicionActivo) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
@@ -587,7 +570,6 @@ function cargarMetas() {
         lista.appendChild(liNueva);
     }
 
-    // Control visual del contenedor de input
     if (!modoEdicionActivo && inputContainer) {
         inputContainer.classList.add('hidden');
     }
@@ -644,11 +626,6 @@ function borrarMetaDirecto(index) {
     metas.splice(index, 1);
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     cargarMetas();
-}
-
-function toggleHistorialMetas() {
-    const container = document.getElementById('historial-metas-container');
-    if(container) container.classList.toggle('hidden');
 }
 
 /* --- FUNCIONES DE HÁBITOS --- */
