@@ -684,7 +684,7 @@ body.dark-mode {
     box-shadow: 0 0 5px var(--accent-color);
 }
 
-.dots-container {
+.dot-container {
     display: flex;
     gap: 3px;
     margin-top: 2px;
