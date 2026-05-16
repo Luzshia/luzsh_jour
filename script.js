@@ -1098,27 +1098,27 @@ function dibujarRueda() {
         div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
         
         // Contenedor de puntos (indicadores)
-        const dotsContainer = document.createElement('div');
-        dotsContainer.className = 'dots-container';
+        const dotContainer = document.createElement('div');
+        dotContainer.className = 'dot-container';
 
         // Puntito rojo si hay sangrado
         if(reg && reg.sangrado && reg.sangrado !== "") {
             const dotSangre = document.createElement('div');
             dotSangre.className = 'indicador-sangre';
-            dotsContainer.appendChild(dotSangre);
+            dotContainer.appendChild(dotSangre);
         }
 
         // Puntito de color acento si es HOY
         if(iso === hoyStr) {
             const dotHoy = document.createElement('div');
             dotHoy.className = 'indicador-hoy';
-            dotsContainer.appendChild(dotHoy);
+            dotContainer.appendChild(dotHoy);
             
             document.getElementById('txt-dia-ciclo').textContent = `Día ${i+1}`;
             document.getElementById('txt-fecha-ciclo').textContent = `${fechaActual.getDate()}/${fechaActual.getMonth()+1}`;
         }
 
-        div.appendChild(dotsContainer);
+        div.appendChild(dotContainer);
 
         div.onclick = (e) => {
             e.stopPropagation();
