@@ -1,6 +1,6 @@
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('Service Worker Registrado'));
+    navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service Worker Registrado'));
 }
 
 /* --- CONFIGURACIÓN INICIAL --- */
@@ -10,33 +10,56 @@ const PIN_CORRECTO = localStorage.getItem('journalPin') || "1707";
 
 /* --- AL CARGAR EL DOCUMENTO --- */
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inyectar el año dinámico (Solo si el elemento existe en la vista actual)
+
+    /* --- 1. CONFIGURACIÓN DE VISTA Y TEMA --- */
     const labelAnio = document.getElementById('year-label');
     if (labelAnio) {
         labelAnio.textContent = new Date().getFullYear();
     }
 
-    // 2. Configurar el Teclado Numérico
+    // Estado inicial en el historial para que el gesto "atrás" funcione
+    history.replaceState({ page: 'menu' }, "", "");
+
+    // Escuchadores para Configuración
+    const btnToggleDark = document.getElementById('btn-toggle-dark');
+    if (btnToggleDark) btnToggleDark.addEventListener('click', cambiarTema);
+
+    const colorPicker = document.getElementById('color-picker');
+    if (colorPicker) colorPicker.addEventListener('input', cambiarColorAcento);
+
+    const btnChangePin = document.getElementById('btn-change-pin');
+    if (btnChangePin) btnChangePin.addEventListener('click', cambiarPinAction);
+
+    const btnExport = document.getElementById('btn-export');
+    if (btnExport) btnExport.addEventListener('click', exportarDatos);
+
+    const importFile = document.getElementById('import-file');
+    if (importFile) importFile.addEventListener('change', importarDatos);
+
+
+    /* --- 2. CONFIGURACIÓN DEL TECLADO NUMÉRICO --- */
     document.querySelectorAll('.num-btn[data-val]').forEach(boton => {
         boton.addEventListener('click', () => {
             if (pinIngresado.length < 4) {
                 pinIngresado += boton.getAttribute('data-val');
                 actualizarInterfazPin();
-                // Verificación automática al llegar a 4 dígitos opcional:
-                // if (pinIngresado.length === 4) { setTimeout(validarPin, 200); }
             }
         });
     });
 
-    // 3. Botones de control del PIN
-    document.getElementById('btn-clear').addEventListener('click', () => {
-        pinIngresado = "";
-        actualizarInterfazPin();
-    });
+    const btnClear = document.getElementById('btn-clear');
+    if (btnClear) {
+        btnClear.addEventListener('click', () => {
+            pinIngresado = "";
+            actualizarInterfazPin();
+        });
+    }
 
-    document.getElementById('btn-enter').addEventListener('click', validarPin);
+    const btnEnter = document.getElementById('btn-enter');
+    if (btnEnter) btnEnter.addEventListener('click', validarPin);
 
-    // 4. Configurar Navegación del Menú (Escuchadores)
+
+    /* --- 3. NAVEGACIÓN DEL MENÚ --- */
     const botonesMenu = {
         'go-metas': 'metas',
         'go-habitos': 'habitos',
@@ -53,340 +76,326 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 5. Estado inicial en el historial para que el gesto "atrás" funcione
-    // Esto marca el "Menú" como el punto de partida real.
-    history.replaceState({ page: 'menu' }, "", "");
 
-    // Escuchadores para Configuración
-    document.getElementById('btn-toggle-dark').addEventListener('click', cambiarTema);
-    document.getElementById('color-picker').addEventListener('input', cambiarColorAcento);
-    document.getElementById('btn-change-pin').addEventListener('click', cambiarPinAction);
-    document.getElementById('btn-export').addEventListener('click', exportarDatos);
-    document.getElementById('import-file').addEventListener('change', importarDatos);
+    /* --- 4. ESCUCHADORES DE METAS --- */
+    const btnMetasMenu = document.getElementById('btn-metas-menu');
+    const metasDropdown = document.getElementById('metas-dropdown');
 
-/* --- ESCUCHADORES DE METAS --- */
-const btnMetasMenu = document.getElementById('btn-metas-menu');
-const metasDropdown = document.getElementById('metas-dropdown');
+    if (btnMetasMenu) {
+        btnMetasMenu.onclick = (e) => {
+            e.stopPropagation();
+            if (metasDropdown) metasDropdown.classList.toggle('hidden');
+        };
+    }
 
-document.addEventListener('click', (e) => {
-    const listaMetas = document.getElementById('lista-metas');
-    const inputContainerMeta = document.getElementById('input-container-meta');
     const optEditMetas = document.getElementById('opt-edit-metas');
-
-    // Cerrar dropdown si se clica fuera
-    if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
-        metasDropdown.classList.add('hidden');
-    }
-
-    // Cerrar modo edición si se clica en el "blanco"
-    if (modoEdicionActivo) {
-        const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
-        const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
-        // Evitar que el clic en el botón de menú o de editar desactive el modo
-        const clicFueraBotones = e.target !== btnMetasMenu && e.target !== optEditMetas;
-
-        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
-            modoEdicionActivo = false;
-            metaEditandoIndex = null;
+    if (optEditMetas) {
+        optEditMetas.onclick = (e) => {
+            e.stopPropagation();
+            modoEdicionActivo = !modoEdicionActivo;
+            if (metasDropdown) metasDropdown.classList.add('hidden');
             cargarMetas();
-        }
-    }
-});
-
-if (btnMetasMenu) {
-    btnMetasMenu.onclick = (e) => {
-        e.stopPropagation();
-        metasDropdown.classList.toggle('hidden');
-    };
-}
-
-const optEditMetas = document.getElementById('opt-edit-metas');
-if(optEditMetas) {
-    optEditMetas.onclick = (e) => {
-        e.stopPropagation();
-        modoEdicionActivo = !modoEdicionActivo;
-        if (metasDropdown) metasDropdown.classList.add('hidden');
-        cargarMetas();
-    };
-}
-
-const btnSaveMeta = document.getElementById('btn-save-meta');
-if(btnSaveMeta) {
-    btnSaveMeta.onclick = (e) => {
-        e.stopPropagation();
-        const val = document.getElementById('input-nueva-meta').value.trim();
-        guardarMeta(val, true); 
-    };
-}
-
-const inputNuevaMeta = document.getElementById('input-nueva-meta');
-if(inputNuevaMeta) {
-    inputNuevaMeta.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            guardarMeta(e.target.value.trim(), false); 
-        }
-        if (e.key === 'Escape') {
-            modoEdicionActivo = false;
-            cargarMetas();
-        }
-    };
-}
-
-// Inicializar
-cargarMetas();
-
-/* --- ESCUCHADORES DE HÁBITOS --- */
-const btnHabitosMenu = document.getElementById('btn-habitos-menu');
-const habitosDropdown = document.getElementById('habitos-dropdown');
-
-if (btnHabitosMenu) {
-    btnHabitosMenu.onclick = (e) => {
-        e.stopPropagation();
-        habitosDropdown.classList.toggle('hidden');
-    };
-}
-
-document.addEventListener('click', (e) => {
-    const contenedorHabitos = document.getElementById('contenedor-habitos');
-    const inputContainer = document.getElementById('input-container-habito');
-    
-    if (habitosDropdown && !habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
-        habitosDropdown.classList.add('hidden');
+        };
     }
 
-    if (modoEdicionHabitos) {
-        const clicFueraGrid = contenedorHabitos && !contenedorHabitos.contains(e.target);
-        const clicFueraInput = inputContainer && !inputContainer.contains(e.target);
-        const clicFueraBotonMenu = e.target !== btnHabitosMenu;
+    const btnSaveMeta = document.getElementById('btn-save-meta');
+    if (btnSaveMeta) {
+        btnSaveMeta.onclick = (e) => {
+            e.stopPropagation();
+            const val = document.getElementById('input-nueva-meta').value.trim();
+            guardarMeta(val, true); 
+        };
+    }
 
-        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
-            modoEdicionHabitos = false;
-            habitoEditandoId = null;
-            if(inputContainer) inputContainer.classList.add('hidden');
+    const inputNuevaMeta = document.getElementById('input-nueva-meta');
+    if (inputNuevaMeta) {
+        inputNuevaMeta.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                guardarMeta(e.target.value.trim(), false); 
+            }
+            if (e.key === 'Escape') {
+                modoEdicionActivo = false;
+                cargarMetas();
+            }
+        };
+    }
+
+    // Inicializar Metas
+    cargarMetas();
+
+
+    /* --- 5. ESCUCHADORES DE HÁBITOS --- */
+    const btnHabitosMenu = document.getElementById('btn-habitos-menu');
+    const habitosDropdown = document.getElementById('habitos-dropdown');
+
+    if (btnHabitosMenu) {
+        btnHabitosMenu.onclick = (e) => {
+            e.stopPropagation();
+            if (habitosDropdown) habitosDropdown.classList.toggle('hidden');
+        };
+    }
+
+    const optEditHab = document.getElementById('opt-edit-habitos');
+    if (optEditHab) {
+        optEditHab.onclick = (e) => {
+            e.stopPropagation();
+            modoEdicionHabitos = !modoEdicionHabitos;
+            if (habitosDropdown) habitosDropdown.classList.add('hidden');
             cargarHabitos();
-        }
-    }
-});
-
-const optEditHab = document.getElementById('opt-edit-habitos');
-if (optEditHab) {
-    optEditHab.onclick = (e) => {
-        e.stopPropagation();
-        modoEdicionHabitos = !modoEdicionHabitos;
-        habitosDropdown.classList.add('hidden');
-        cargarHabitos();
-    };
-}
-
-const optHistHab = document.getElementById('opt-historial-habitos');
-if (optHistHab) {
-    optHistHab.onclick = () => {
-        toggleHistorialHabitos();
-        habitosDropdown.classList.add('hidden');
-    };
-}
-
-const btnSaveHabito = document.getElementById('btn-save-habito');
-if (btnSaveHabito) {
-    btnSaveHabito.onclick = () => guardarHabito();
-}
-
-const inputNuevoHabito = document.getElementById('input-nuevo-habito');
-if (inputNuevoHabito) {
-    inputNuevoHabito.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            guardarHabito();
-        }
-        if (e.key === 'Escape') {
-            modoEdicionHabitos = false;
-            document.getElementById('input-container-habito').classList.add('hidden');
-            cargarHabitos();
-        }
-    };
-}
-
-cargarHabitos();
-
-
-/* --- ESCUCHADORES DE TO-DO LIST --- */
-const btnTodoMenu = document.getElementById('btn-todo-menu');
-const todoDropdown = document.getElementById('todo-dropdown');
-const optAddTodo = document.getElementById('opt-add-todo');
-
-document.addEventListener('click', (e) => {
-    const contenedorTareas = document.getElementById('lista-tareas');
-    const inputContainerTodo = document.getElementById('input-container-todo');
-
-    // Cerrar dropdown
-    if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
-        todoDropdown.classList.add('hidden');
+        };
     }
 
-    // Salir del modo edición/añadir si clicas fuera
-    if (modoEdicionTodo) {
-        const clicFueraLista = contenedorTareas && !contenedorTareas.contains(e.target);
-        const clicFueraInput = inputContainerTodo && !inputContainerTodo.contains(e.target);
-        const clicFueraBotones = e.target !== btnTodoMenu && e.target !== optAddTodo;
+    const optHistHab = document.getElementById('opt-historial-habitos');
+    if (optHistHab) {
+        optHistHab.onclick = () => {
+            toggleHistorialHabitos();
+            if (habitosDropdown) habitosDropdown.classList.add('hidden');
+        };
+    }
 
-        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
-            modoEdicionTodo = false;
-            todoEditandoIndex = null;
+    const btnSaveHabito = document.getElementById('btn-save-habito');
+    if (btnSaveHabito) {
+        btnSaveHabito.onclick = () => guardarHabito();
+    }
+
+    const inputNuevoHabito = document.getElementById('input-nuevo-habito');
+    if (inputNuevoHabito) {
+        inputNuevoHabito.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                guardarHabito();
+            }
+            if (e.key === 'Escape') {
+                modoEdicionHabitos = false;
+                const inputContHabito = document.getElementById('input-container-habito');
+                if (inputContHabito) inputContHabito.classList.add('hidden');
+                cargarHabitos();
+            }
+        };
+    }
+
+    // Inicializar Hábitos
+    cargarHabitos();
+
+
+    /* --- 6. ESCUCHADORES DE TO-DO LIST --- */
+    const btnTodoMenu = document.getElementById('btn-todo-menu');
+    const todoDropdown = document.getElementById('todo-dropdown');
+    const optAddTodo = document.getElementById('opt-add-todo');
+
+    if (btnTodoMenu) {
+        btnTodoMenu.onclick = (e) => {
+            e.stopPropagation();
+            if (todoDropdown) todoDropdown.classList.toggle('hidden');
+        };
+    }
+
+    if (optAddTodo) {
+        optAddTodo.onclick = (e) => {
+            e.stopPropagation();
+            modoEdicionTodo = true;
+            if (todoDropdown) todoDropdown.classList.add('hidden');
+            const container = document.getElementById('input-container-todo');
+            const input = document.getElementById('input-nueva-tarea');
+            if (container) container.classList.remove('hidden');
+            if (input) {
+                input.value = "";
+                input.placeholder = "Escribe y pulsa Enter...";
+                input.focus();
+            }
             cargarTareas();
-        }
+        };
     }
-});
 
-if (btnTodoMenu) {
-    btnTodoMenu.onclick = (e) => {
-        e.stopPropagation();
-        todoDropdown.classList.toggle('hidden');
-    };
-}
-
-if (optAddTodo) {
-    optAddTodo.onclick = (e) => {
-        e.stopPropagation();
-        modoEdicionTodo = true;
-        todoDropdown.classList.add('hidden');
-        const container = document.getElementById('input-container-todo');
-        const input = document.getElementById('input-nueva-tarea');
-        if(container) container.classList.remove('hidden');
-        if(input) {
-            input.value = "";
-            input.placeholder = "Escribe y pulsa Enter...";
-            input.focus();
-        }
-        cargarTareas();
-    };
-}
-
-const optClearTodo = document.getElementById('opt-clear-todo');
-if (optClearTodo) {
-    optClearTodo.onclick = () => {
-        limpiarTareasCompletadas();
-        todoDropdown.classList.add('hidden');
-    };
-}
-
-const inputTarea = document.getElementById('input-nueva-tarea');
-if (inputTarea) {
-    inputTarea.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            // Enter guarda y permite seguir añadiendo
-            guardarTarea(e.target.value.trim(), false);
-        }
-        if (e.key === 'Escape') {
-            modoEdicionTodo = false;
-            cargarTareas();
-        }
-    };
-}
-
-// Carga inicial
-cargarTareas();
-
-    /* --- ESCUCHADORES AGENDA --- */
-const btnAgendaMenu = document.getElementById('btn-agenda-menu');
-const agendaDropdown = document.getElementById('agenda-dropdown');
-
-if (btnAgendaMenu) {
-    btnAgendaMenu.onclick = (e) => {
-        e.stopPropagation();
-        agendaDropdown.classList.toggle('hidden');
-    };
-}
-
-// Opción Editar Agenda
-document.getElementById('opt-edit-agenda').onclick = () => {
-    modoEdicionAgenda = !modoEdicionAgenda;
-    agendaDropdown.classList.add('hidden');
-    renderizarSemana();
-};
-
-document.getElementById('opt-limpiar-completados-agenda').onclick = () => {
-    limpiarAgendaCompletada();
-    agendaDropdown.classList.add('hidden');
-};
-
-// Guardar cambios con el botón
-document.getElementById('btn-save-agenda').onclick = guardarEventoAgenda;
-
-// Cerrar todo al hacer clic en cualquier espacio vacío
-document.addEventListener('click', (e) => {
-    // Cerrar menú dropdown
-    if (agendaDropdown && !agendaDropdown.contains(e.target) && e.target !== btnAgendaMenu) {
-        agendaDropdown.classList.add('hidden');
+    const optClearTodo = document.getElementById('opt-clear-todo');
+    if (optClearTodo) {
+        optClearTodo.onclick = () => {
+            limpiarTareasCompletadas();
+            if (todoDropdown) todoDropdown.classList.add('hidden');
+        };
     }
-    // Cerrar modo edición si se clica fuera de la cuadrícula o botones
-    const grid = document.getElementById('semana-container');
-    const form = document.getElementById('agenda-form-popup');
-    if (modoEdicionAgenda && !grid.contains(e.target) && !btnAgendaMenu.contains(e.target) && !agendaDropdown.contains(e.target)) {
-        // Solo cerramos si no estamos tocando el formulario de input
-        if (!document.getElementById('input-container-agenda').contains(e.target)) {
-            modoEdicionAgenda = false;
-            cerrarEditorAgenda();
+
+    const inputTarea = document.getElementById('input-nueva-tarea');
+    if (inputTarea) {
+        inputTarea.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                guardarTarea(e.target.value.trim(), false);
+            }
+            if (e.key === 'Escape') {
+                modoEdicionTodo = false;
+                cargarTareas();
+            }
+        };
+    }
+
+    // Inicializar Tareas
+    cargarTareas();
+
+
+    /* --- 7. ESCUCHADORES AGENDA --- */
+    const btnAgendaMenu = document.getElementById('btn-agenda-menu');
+    const agendaDropdown = document.getElementById('agenda-dropdown');
+
+    if (btnAgendaMenu) {
+        btnAgendaMenu.onclick = (e) => {
+            e.stopPropagation();
+            if (agendaDropdown) agendaDropdown.classList.toggle('hidden');
+        };
+    }
+
+    const optEditAgenda = document.getElementById('opt-edit-agenda');
+    if (optEditAgenda) {
+        optEditAgenda.onclick = () => {
+            modoEdicionAgenda = !modoEdicionAgenda;
+            if (agendaDropdown) agendaDropdown.classList.add('hidden');
             renderizarSemana();
+        };
+    }
+
+    const optLimpiarAgenda = document.getElementById('opt-limpiar-completados-agenda');
+    if (optLimpiarAgenda) {
+        optLimpiarAgenda.onclick = () => {
+            limpiarAgendaCompletada();
+            if (agendaDropdown) agendaDropdown.classList.add('hidden');
+        };
+    }
+
+    const btnSaveAgenda = document.getElementById('btn-save-agenda');
+    if (btnSaveAgenda) btnSaveAgenda.onclick = guardarEventoAgenda;
+
+    const btnSemanaPrev = document.getElementById('btn-semana-prev');
+    if (btnSemanaPrev) btnSemanaPrev.onclick = () => navegarSemana(-7);
+
+    const btnSemanaNext = document.getElementById('btn-semana-next');
+    if (btnSemanaNext) btnSemanaNext.onclick = () => navegarSemana(7);
+
+    const inputContainerAgenda = document.getElementById('input-container-agenda');
+    if (inputContainerAgenda) {
+        inputContainerAgenda.onkeydown = (e) => {
+            if (e.key === 'Escape') cerrarEditorAgenda();
+        };
+    }
+
+    // Inicializar Agenda
+    renderizarSemana();
+
+
+    /* --- 8. ESCUCHADORES DEL CICLO LUNAR --- */
+    const btnCicloMenu = document.getElementById('btn-ciclo-menu');
+    const cicloDropdown = document.getElementById('ciclo-dropdown');
+    const modalRegistro = document.getElementById('modal-registro');
+
+    if (btnCicloMenu) {
+        btnCicloMenu.onclick = (e) => {
+            e.stopPropagation();
+            if (cicloDropdown) cicloDropdown.classList.toggle('hidden');
+        };
+    }
+
+    const optAddReg = document.getElementById('opt-add-registro');
+    if (optAddReg) {
+        optAddReg.onclick = () => {
+            abrirRegistro(new Date().toISOString().split('T')[0]);
+            if (cicloDropdown) cicloDropdown.classList.add('hidden');
+        };
+    }
+
+    const btnSaveReg = document.getElementById('btn-guardar-reg');
+    if (btnSaveReg) btnSaveReg.onclick = guardarRegistro;
+
+    const btnCancelReg = document.getElementById('btn-cancelar-reg');
+    if (btnCancelReg) btnCancelReg.onclick = () => { if (modalRegistro) modalRegistro.classList.add('hidden'); };
+
+    // Inicializar Ciclo
+    dibujarRueda();
+
+
+    /* --- 9. ESCUCHADOR DE CLICS GLOBALES (Cierre de modales y clics fuera) --- */
+    document.addEventListener('click', (e) => {
+        
+        // --- Cierre de Dropdowns ---
+        if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
+            metasDropdown.classList.add('hidden');
         }
-    }
-});
+        if (habitosDropdown && !habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
+            habitosDropdown.classList.add('hidden');
+        }
+        if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
+            todoDropdown.classList.add('hidden');
+        }
+        if (agendaDropdown && !agendaDropdown.contains(e.target) && e.target !== btnAgendaMenu) {
+            agendaDropdown.classList.add('hidden');
+        }
+        if (cicloDropdown && !cicloDropdown.contains(e.target) && e.target !== btnCicloMenu) {
+            cicloDropdown.classList.add('hidden');
+        }
 
-// Navegación
-document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
-document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
+        // --- Cierre de Modales ---
+        if (e.target === modalRegistro && modalRegistro) {
+            modalRegistro.classList.add('hidden');
+        }
 
-// Teclas rápidas en el formulario
-document.getElementById('input-container-agenda').onkeydown = (e) => {
-    if (e.key === 'Escape') cerrarEditorAgenda();
-};
+        // --- Salida de Modos Edición por Clic Fuera ---
+        // Metas
+        if (typeof modoEdicionActivo !== 'undefined' && modoEdicionActivo) {
+            const listaMetas = document.getElementById('lista-metas');
+            const inputContainerMeta = document.getElementById('input-container-meta');
+            const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
+            const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
+            const clicFueraBotones = e.target !== btnMetasMenu && e.target !== optEditMetas;
 
-// Carga inicial
-renderizarSemana();
+            if (clicFueraLista && clicFueraInput && clicFueraBotones) {
+                modoEdicionActivo = false;
+                metaEditandoIndex = null;
+                cargarMetas();
+            }
+        }
 
+        // Hábitos
+        if (typeof modoEdicionHabitos !== 'undefined' && modoEdicionHabitos) {
+            const contenedorHabitos = document.getElementById('contenedor-habitos');
+            const inputContainerHabito = document.getElementById('input-container-habito');
+            const clicFueraGrid = contenedorHabitos && !contenedorHabitos.contains(e.target);
+            const clicFueraInput = inputContainerHabito && !inputContainerHabito.contains(e.target);
+            const clicFueraBotonMenu = e.target !== btnHabitosMenu;
 
-/* --- ESCUCHADORES DEL CICLO LUNAR --- */
-const btnCicloMenu = document.getElementById('btn-ciclo-menu');
-const cicloDropdown = document.getElementById('ciclo-dropdown');
-const modalRegistro = document.getElementById('modal-registro');
+            if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
+                modoEdicionHabitos = false;
+                habitoEditandoId = null;
+                if (inputContainerHabito) inputContainerHabito.classList.add('hidden');
+                cargarHabitos();
+            }
+        }
 
-document.addEventListener('click', (e) => {
-    // 1. Cerrar Dropdown si clicas fuera
-    if (cicloDropdown && !cicloDropdown.contains(e.target) && e.target !== btnCicloMenu) {
-        cicloDropdown.classList.add('hidden');
-    }
+        // To-Do
+        if (typeof modoEdicionTodo !== 'undefined' && modoEdicionTodo) {
+            const contenedorTareas = document.getElementById('lista-tareas');
+            const inputContainerTodo = document.getElementById('input-container-todo');
+            const clicFueraLista = contenedorTareas && !contenedorTareas.contains(e.target);
+            const clicFueraInput = inputContainerTodo && !inputContainerTodo.contains(e.target);
+            const clicFueraBotones = e.target !== btnTodoMenu && e.target !== optAddTodo;
 
-    // 2. Cerrar Modal al presionar el fondo oscuro (el espacio en blanco)
-    if (e.target === modalRegistro) {
-        modalRegistro.classList.add('hidden');
-    }
-});
+            if (clicFueraLista && clicFueraInput && clicFueraBotones) {
+                modoEdicionTodo = false;
+                todoEditandoIndex = null;
+                cargarTareas();
+            }
+        }
 
-if(btnCicloMenu) {
-    btnCicloMenu.onclick = (e) => {
-        e.stopPropagation();
-        cicloDropdown.classList.toggle('hidden');
-    };
-}
+        // Agenda
+        if (typeof modoEdicionAgenda !== 'undefined' && modoEdicionAgenda) {
+            const grid = document.getElementById('semana-container');
+            if (grid && !grid.contains(e.target) && btnAgendaMenu && !btnAgendaMenu.contains(e.target) && agendaDropdown && !agendaDropdown.contains(e.target)) {
+                if (inputContainerAgenda && !inputContainerAgenda.contains(e.target)) {
+                    modoEdicionAgenda = false;
+                    cerrarEditorAgenda();
+                    renderizarSemana();
+                }
+            }
+        }
+    });
 
-// Opción Registrar desde el menú
-const optAddReg = document.getElementById('opt-add-registro');
-if(optAddReg) {
-    optAddReg.onclick = () => {
-        abrirRegistro(new Date().toISOString().split('T')[0]);
-        cicloDropdown.classList.add('hidden');
-    };
-}
-
-// Botones del modal
-const btnSaveReg = document.getElementById('btn-guardar-reg');
-if(btnSaveReg) btnSaveReg.onclick = guardarRegistro;
-
-const btnCancelReg = document.getElementById('btn-cancelar-reg');
-if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidden');
-
-// Carga inicial
-dibujarRueda();
-
+}); // <--- AQUÍ SE CIERRA BIEN EL DOMContentLoaded
 
 
 /* --- FUNCIONES DE SEGURIDAD --- */
@@ -1177,6 +1186,3 @@ function guardarRegistro() {
     document.getElementById('modal-registro').classList.add('hidden');
     dibujarRueda();
 }
-
-
-})
