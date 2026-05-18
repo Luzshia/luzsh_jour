@@ -320,10 +320,10 @@ document.addEventListener('click', (e) => {
     }
     // Cerrar modo edición si se clica fuera de la cuadrícula o botones
     const grid = document.getElementById('semana-container');
-    const form = document.getElementById('agenda-form-popup');
-    if (modoEdicionAgenda && !grid.contains(e.target) && !btnAgendaMenu.contains(e.target) && !agendaDropdown.contains(e.target)) {
+    if (modoEdicionAgenda && grid && !grid.contains(e.target) && !btnAgendaMenu.contains(e.target) && !agendaDropdown.contains(e.target)) {
         // Solo cerramos si no estamos tocando el formulario de input
-        if (!document.getElementById('input-container-agenda').contains(e.target)) {
+        const inputCont = document.getElementById('input-container-agenda');
+        if (!inputCont || !inputCont.contains(e.target)) {
             modoEdicionAgenda = false;
             cerrarEditorAgenda();
             renderizarSemana();
@@ -331,7 +331,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Navegación
+// Navegación con botones
 document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
 document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
 
@@ -339,6 +339,40 @@ document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
 document.getElementById('input-container-agenda').onkeydown = (e) => {
     if (e.key === 'Escape') cerrarEditorAgenda();
 };
+
+// --- NUEVO: GESTOS DESLIZAR (SWIPE) PARA PASAR LA AGENDA ---
+let touchStartX = 0;
+let touchEndX = 0;
+
+const agendaGrid = document.getElementById('semana-container');
+
+if (agendaGrid) {
+    agendaGrid.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    agendaGrid.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        manejarGestoAgenda();
+    }, { passive: true });
+}
+
+function manejarGestoAgenda() {
+    const umbral = 60; // Píxeles mínimos para que cuente como deslizamiento
+    
+    // Si estás editando texto, bloqueamos el deslizamiento para que puedas mover el cursor
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+    }
+
+    if (touchStartX - touchEndX > umbral) {
+        // Deslizar a la izquierda -> Siguiente semana
+        navegarSemana(7);
+    } else if (touchEndX - touchStartX > umbral) {
+        // Deslizar a la derecha -> Semana anterior
+        navegarSemana(-7);
+    }
+}
 
 // Carga inicial
 renderizarSemana();
