@@ -1064,22 +1064,77 @@ function obtenerIconoLuna(f) {
 
 
 /* --- FUNCIONES DEL CICLO LUNAR --- */
-let inicioCiclo = new Date("2026-04-30T00:00:00");
+
+// Función auxiliar para detectar dinámicamente cuándo empezó el ciclo actual
+function obtenerFechaInicioCiclo(registros, hoyStr) {
+    let fechasConSangrado = [];
+
+    // Buscar todos los días guardados que tengan algún tipo de sangrado
+    for (let fecha in registros) {
+        if (registros[fecha].sangrado && registros[fecha].sangrado !== "") {
+            fechasConSangrado.push(fecha);
+        }
+    }
+
+    // Ordenar cronológicamente (de más vieja a más reciente)
+    fechasConSangrado.sort();
+
+    // Si no hay registros de sangrado históricos, usamos HOY como respaldo
+    if (fechasConSangrado.length === 0) {
+        return new Date(hoyStr + "T00:00:00");
+    }
+
+    // Buscaremos cuál es el inicio del ciclo que corresponde al momento actual
+    // Un ciclo nuevo inicia si hay sangrado y pasaron varios días desde el anterior.
+    let ultimoInicio = fechasConSangrado[0];
+    
+    for (let i = 0; i < fechasConSangrado.length; i++) {
+        if (fechasConSangrado[i] <= hoyStr) {
+            // Si hay un salto de más de 15 días sin sangrado, se asume que ese es un nuevo inicio de ciclo
+            if (i === 0) {
+                ultimoInicio = fechasConSangrado[i];
+            } else {
+                let fActual = new Date(fechasConSangrado[i] + "T00:00:00");
+                let fPrevia = new Date(fechasConSangrado[i-1] + "T00:00:00");
+                let diferenciaDias = (fActual - fPrevia) / (1000 * 60 * 60 * 24);
+                
+                if (diferenciaDias > 15) {
+                    ultimoInicio = fechasConSangrado[i]; // Es un nuevo periodo/ciclo
+                }
+            }
+        }
+    }
+
+    return new Date(ultimoInicio + "T00:00:00");
+}
 
 function dibujarRueda() {
     const contenedor = document.getElementById('canvas-rueda');
-    if(!contenedor) return;
+    if (!contenedor) return;
 
-    // Limpiar rueda
+    // Limpiar rueda de renders anteriores
     contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
+    
+    // Obtener la fecha de hoy normalizada
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
     const hoyStr = hoy.toISOString().split('T')[0];
     
-    const radio = 130;
+    // CALCULO DINÁMICO: El inicio del ciclo ya no es fijo
+    const inicioCiclo = obtenerFechaInicioCiclo(registros, hoyStr);
+    
+    // Actualizar la etiqueta superior en el encabezado
+    const labelInicio = document.getElementById('txt-inicio-ciclo-label');
+    if (labelInicio) {
+        labelInicio.textContent = `Ciclo iniciado el: ${inicioCiclo.getDate()}/${inicioCiclo.getMonth() + 1}/${inicioCiclo.getFullYear()}`;
+    }
 
+    const radio = 130;
+    let hoyEncontradoEnRueda = false;
+
+    // Dibujar los 28 días a partir del día de inicio calculado
     for (let i = 0; i < 28; i++) {
         let fechaActual = new Date(inicioCiclo);
         fechaActual.setDate(inicioCiclo.getDate() + i);
@@ -1089,33 +1144,38 @@ function dibujarRueda() {
         const div = document.createElement('div');
         div.className = 'punto-dia';
         
-        let angulo = (i * (360/28) - 90) * (Math.PI/180);
+        let angulo = (i * (360 / 28) - 90) * (Math.PI / 180);
         let x = radio * Math.cos(angulo);
         let y = radio * Math.sin(angulo);
         div.style.left = `calc(50% + ${x}px - 21px)`;
         div.style.top = `calc(50% + ${y}px - 21px)`;
 
-        div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
+        // Nota: Asegúrate de tener implementada tu función obtenerIconoLuna en otra parte del código
+        let iconoLuna = typeof obtenerIconoLuna === 'function' ? obtenerIconoLuna(fechaActual) : "🌙";
+        div.innerHTML = `<span>${iconoLuna}</span><small>${fechaActual.getDate()}</small>`;
         
-        // Contenedor de puntos (indicadores)
+        // Contenedor de puntos indicadores
         const dotContainer = document.createElement('div');
         dotContainer.className = 'dot-container';
 
-        // Puntito rojo si hay sangrado
-        if(reg && reg.sangrado && reg.sangrado !== "") {
+        // Puntito rojo si hay sangrado registrado en este día específico
+        if (reg && reg.sangrado && reg.sangrado !== "") {
             const dotSangre = document.createElement('div');
             dotSangre.className = 'indicador-sangre';
             dotContainer.appendChild(dotSangre);
         }
 
-        // Puntito de color acento si es HOY
-        if(iso === hoyStr) {
+        // Puntito si el día procesado coincide con HOY
+        if (iso === hoyStr) {
+            hoyEncontradoEnRueda = true;
             const dotHoy = document.createElement('div');
             dotHoy.className = 'indicador-hoy';
             dotContainer.appendChild(dotHoy);
             
-            document.getElementById('txt-dia-ciclo').textContent = `Día ${i+1}`;
-            document.getElementById('txt-fecha-ciclo').textContent = `${fechaActual.getDate()}/${fechaActual.getMonth()+1}`;
+            const txtDia = document.getElementById('txt-dia-ciclo');
+            const txtFecha = document.getElementById('txt-fecha-ciclo');
+            if (txtDia) txtDia.textContent = `Día ${i + 1}`;
+            if (txtFecha) txtFecha.textContent = `${fechaActual.getDate()}/${fechaActual.getMonth() + 1}`;
         }
 
         div.appendChild(dotContainer);
@@ -1126,42 +1186,68 @@ function dibujarRueda() {
         };
         contenedor.appendChild(div);
     }
+
+    // Si el día de hoy cae fuera de los 28 días de este ciclo actual (ej. un ciclo largo de día 29+)
+    if (!hoyEncontradoEnRueda) {
+        const milisegundosEntre = hoy - inicioCiclo;
+        const diasTranscurridos = Math.floor(milisegundosEntre / (1000 * 60 * 60 * 24)) + 1;
+        
+        const txtDia = document.getElementById('txt-dia-ciclo');
+        const txtFecha = document.getElementById('txt-fecha-ciclo');
+        if (txtDia) txtDia.textContent = `Día ${diasTranscurridos}`;
+        if (txtFecha) txtFecha.textContent = `${hoy.getDate()}/${hoy.getMonth() + 1}`;
+    }
 }
 
 function abrirRegistro(fecha) {
     const modal = document.getElementById('modal-registro');
+    if (!modal) return;
+    
     modal.classList.remove('hidden');
     
     const d = new Date(fecha + "T00:00:00");
     const labelFecha = document.getElementById('label-fecha-modal');
-    if(labelFecha) labelFecha.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+    if (labelFecha) labelFecha.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
     
-    document.getElementById('reg-fecha').value = fecha;
+    const inputFecha = document.getElementById('reg-fecha');
+    if (inputFecha) inputFecha.value = fecha;
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
     const datos = registros[fecha] || {};
 
-    // Resetear y cargar
-    document.getElementById('reg-sangrado').value = datos.sangrado || "";
-    document.getElementById('reg-dolor').value = datos.dolor || "";
-    document.getElementById('reg-energia').value = datos.energia || "media";
-    document.getElementById('reg-animo').value = datos.animo || "calma";
-    document.getElementById('reg-observaciones').value = datos.observaciones || "";
+    // Resetear y cargar elementos del formulario de manera segura
+    const elSangrado = document.getElementById('reg-sangrado');
+    const elDolor = document.getElementById('reg-dolor');
+    const elEnergia = document.getElementById('reg-energia');
+    const elAnimo = document.getElementById('reg-animo');
+    const elObs = document.getElementById('reg-observaciones');
+
+    if (elSangrado) elSangrado.value = datos.sangrado || "";
+    if (elDolor) elDolor.value = datos.dolor || "";
+    if (elEnergia) elEnergia.value = datos.energia || "media";
+    if (elAnimo) elAnimo.value = datos.animo || "calma";
+    if (elObs) elObs.value = datos.observaciones || "";
 }
 
 function guardarRegistro() {
-    const fecha = document.getElementById('reg-fecha').value;
+    const elFecha = document.getElementById('reg-fecha');
+    if (!elFecha) return;
+    
+    const fecha = elFecha.value;
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
 
     registros[fecha] = {
-        sangrado: document.getElementById('reg-sangrado').value,
-        dolor: document.getElementById('reg-dolor').value,
-        energia: document.getElementById('reg-energia').value,
-        animo: document.getElementById('reg-animo').value,
-        observaciones: document.getElementById('reg-observaciones').value
+        sangrado: document.getElementById('reg-sangrado')?.value || "",
+        dolor: document.getElementById('reg-dolor')?.value || "",
+        energia: document.getElementById('reg-energia')?.value || "media",
+        animo: document.getElementById('reg-animo')?.value || "calma",
+        observaciones: document.getElementById('reg-observaciones')?.value || ""
     };
 
     localStorage.setItem('ciclo_logs', JSON.stringify(registros));
-    document.getElementById('modal-registro').classList.add('hidden');
+    
+    const modal = document.getElementById('modal-registro');
+    if (modal) modal.classList.add('hidden');
+    
     dibujarRueda();
 }
