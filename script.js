@@ -387,7 +387,7 @@ if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidde
 // Carga inicial
 dibujarRueda();
 
-});
+})
 
 
 
@@ -1064,7 +1064,7 @@ function obtenerIconoLuna(f) {
 
 
 /* --- FUNCIONES DEL CICLO LUNAR --- */
-let inicioCicloBase = new Date("2026-04-30T00:00:00");
+let inicioCiclo = new Date("2026-04-30T00:00:00");
 
 function dibujarRueda() {
     const contenedor = document.getElementById('canvas-rueda');
@@ -1074,29 +1074,15 @@ function dibujarRueda() {
     contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
-    
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
     const hoyStr = hoy.toISOString().split('T')[0];
-
-    // Calcular cuántos días han pasado en total desde el inicio de los tiempos
-    const diferenciaTiempo = hoy.getTime() - inicioCicloBase.getTime();
-    const diasTranscurridosTotales = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
     
-    // Calcular en qué día del ciclo de 28 días nos encontramos hoy (0 a 27)
-    // El operador residuo (%) asegura que al llegar a 28, vuelva a empezar en el día 1 de forma infinita
-    let diaDelCicloHoy = diasTranscurridosTotales % 28;
-    if (diaDelCicloHoy < 0) diaDelCicloHoy += 28; // Control por si acaso
-
-    // Calcular la fecha exacta del "Día 1" de este ciclo actual específico
-    let inicioCicloActual = new Date(hoy);
-    inicioCicloActual.setDate(hoy.getDate() - diaDelCicloHoy);
-
     const radio = 130;
 
     for (let i = 0; i < 28; i++) {
-        let fechaActual = new Date(inicioCicloActual);
-        fechaActual.setDate(inicioCicloActual.getDate() + i);
+        let fechaActual = new Date(inicioCiclo);
+        fechaActual.setDate(inicioCiclo.getDate() + i);
         let iso = fechaActual.toISOString().split('T')[0];
         let reg = registros[iso];
 
@@ -1111,9 +1097,9 @@ function dibujarRueda() {
 
         div.innerHTML = `<span>${obtenerIconoLuna(fechaActual)}</span><small>${fechaActual.getDate()}</small>`;
         
-        // Contenedor de puntos modificado para evitar conflictos de id/clase
+        // Contenedor de puntos (indicadores)
         const dotContainer = document.createElement('div');
-        dotContainer.className = 'ciclo-dot-container';
+        dotContainer.className = 'dot-container';
 
         // Puntito rojo si hay sangrado
         if(reg && reg.sangrado && reg.sangrado !== "") {
