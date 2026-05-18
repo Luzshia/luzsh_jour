@@ -386,7 +386,6 @@ if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidde
 
 // Carga inicial
 dibujarRueda();
-});
 
 
 
@@ -1178,3 +1177,6 @@ function guardarRegistro() {
     document.getElementById('modal-registro').classList.add('hidden');
     dibujarRueda();
 }
+
+
+})
