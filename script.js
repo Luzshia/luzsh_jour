@@ -392,6 +392,8 @@ if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidde
 // Carga inicial
 dibujarRueda();
 
+})
+
 
 
 /* --- FUNCIONES DE SEGURIDAD --- */
