@@ -212,7 +212,7 @@ body.dark-mode {
 .metas-list {
     list-style: none;
     padding: 0;
-    margin: 0 0 80px 0; /* Añadimos margen inferior para que el contenido no tape los botones */
+    margin: 0 0 80px 0;
     counter-reset: meta-idx; 
 }
 
@@ -285,7 +285,7 @@ body.dark-mode {
     cursor: text;
 }
 
-/* --- NUEVA BOTONERA INFERIOR TRANSPARENTE --- */
+/* --- BOTONERA INFERIOR TRANSPARENTE --- */
 .metas-bottom-nav {
     position: absolute;
     bottom: 20px;
@@ -294,25 +294,24 @@ body.dark-mode {
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: none; /* Evita que bloquee clics en el fondo */
+    pointer-events: none;
     z-index: 999;
 }
 
 .btn-bottom-center, .btn-bottom-float {
-    pointer-events: auto; /* Reactiva los clics sobre los botones individuales */
+    pointer-events: auto;
     background: transparent;
     border: none;
     color: var(--text-color);
-    opacity: 0.3; /* Transparente y sutil */
+    opacity: 0.3;
     cursor: pointer;
     transition: opacity 0.2s;
 }
 
 .btn-bottom-center:hover, .btn-bottom-float:hover {
-    opacity: 0.8; /* Se ilumina ligeramente al tocarlo */
+    opacity: 0.8;
 }
 
-/* Texto central "Ver Historial" */
 .btn-bottom-center {
     font-size: 0.9rem;
     font-weight: 500;
@@ -320,7 +319,6 @@ body.dark-mode {
     letter-spacing: 1px;
 }
 
-/* Botón flotante "+" abajo a la derecha */
 .btn-bottom-float {
     position: absolute;
     right: 25px;

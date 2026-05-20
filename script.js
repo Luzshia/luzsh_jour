@@ -68,12 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
 /* --- ESCUCHADORES DE METAS --- */
+
 document.addEventListener('click', (e) => {
     const listaMetas = document.getElementById('lista-metas');
     const inputContainerMeta = document.getElementById('input-container-meta');
     const optEditMetas = document.getElementById('opt-edit-metas');
 
-    // Al hacer clic fuera de la lista y el input, guardamos automáticamente
+    // Comportamiento inteligente al hacer clic fuera en un espacio vacío
     if (modoEdicionActivo) {
         const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
         const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
@@ -82,10 +83,11 @@ document.addEventListener('click', (e) => {
         if (clicFueraLista && clicFueraInput && clicFueraBotonEditar) {
             const val = document.getElementById('input-nueva-meta').value.trim();
             if (val !== "") {
-                guardarMeta(val, true); // Guarda los cambios automáticamente
+                guardarMeta(val, true); // Guarda la modificación o nueva meta y cierra
             } else {
                 modoEdicionActivo = false;
                 metaEditandoIndex = null;
+                if(inputContainerMeta) inputContainerMeta.classList.add('hidden');
                 cargarMetas();
             }
         }
@@ -97,21 +99,36 @@ const optEditMetas = document.getElementById('opt-edit-metas');
 if (optEditMetas) {
     optEditMetas.onclick = (e) => {
         e.stopPropagation();
+        
+        // Si ya estaba abierto escribiendo algo, guardamos antes de cambiar el modo
+        const val = document.getElementById('input-nueva-meta').value.trim();
+        if (modoEdicionActivo && val !== "") {
+            guardarMeta(val, true);
+            return;
+        }
+
         modoEdicionActivo = !modoEdicionActivo;
+        metaEditandoIndex = null;
+        
+        const inputContainerMeta = document.getElementById('input-container-meta');
+        if(!modoEdicionActivo && inputContainerMeta) {
+            inputContainerMeta.classList.add('hidden');
+        }
+        
         cargarMetas();
     };
 }
 
-// Historial (Mantiene su funcionamiento original)
+// Historial
 const optHistorialMetas = document.getElementById('opt-historial-metas');
 if (optHistorialMetas) {
     optHistorialMetas.onclick = (e) => {
         e.stopPropagation();
-        // Aquí puedes vincular la lógica existente que abre tu historial
         console.log("Abriendo historial...");
     };
 }
 
+// Manejo de teclado (Enter y Escape)
 const inputNuevaMeta = document.getElementById('input-nueva-meta');
 if (inputNuevaMeta) {
     inputNuevaMeta.onkeydown = (e) => {
@@ -120,13 +137,17 @@ if (inputNuevaMeta) {
         }
         if (e.key === 'Escape') {
             modoEdicionActivo = false;
+            metaEditandoIndex = null;
+            document.getElementById('input-container-meta').classList.add('hidden');
             cargarMetas();
         }
     };
 }
 
-// Inicializar
+// Inicialización de arranque
 cargarMetas();
+
+
 
 /* --- ESCUCHADORES DE HÁBITOS --- */
 document.addEventListener('click', (e) => {
@@ -523,6 +544,13 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
+
+
+/* --- FUNCIONES DE METAS --- */
+// SOLUCIÓN AL ERROR DE PÁGINA EN BLANCO: Declaración explícita de estados globales
+let modoEdicionActivo = false;
+let metaEditandoIndex = null;
+
 function cargarMetas() {
     const anio = new Date().getFullYear();
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
@@ -538,6 +566,11 @@ function cargarMetas() {
         const li = document.createElement('li');
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
         
+        // Si estamos editando este elemento concreto, le ponemos la clase visual
+        if (modoEdicionActivo && metaEditandoIndex === index) {
+            li.classList.add('editando');
+        }
+
         const span = document.createElement('span');
         span.textContent = m.texto;
         li.appendChild(span);
@@ -566,7 +599,8 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    if (modoEdicionActivo) {
+    // Añadir fila de disparo inline si estamos editando
+    if (modoEdicionActivo && metaEditandoIndex === null) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
         liNueva.textContent = "+ Añadir nueva meta...";
@@ -581,6 +615,71 @@ function cargarMetas() {
         inputContainer.classList.add('hidden');
     }
 }
+
+function activarEscrituraMeta() {
+    metaEditandoIndex = null;
+    const inputContainer = document.getElementById('input-container-meta');
+    const inputField = document.getElementById('input-nueva-meta');
+    
+    if(inputContainer) inputContainer.classList.remove('hidden');
+    if(inputField) {
+        inputField.value = "";
+        inputField.focus();
+    }
+}
+
+function prepararEdicion(index, textoActual) {
+    metaEditandoIndex = index;
+    const inputContainer = document.getElementById('input-container-meta');
+    const inputField = document.getElementById('input-nueva-meta');
+    
+    if(inputContainer) inputContainer.classList.remove('hidden');
+    if(inputField) {
+        inputField.value = textoActual;
+        inputField.focus();
+    }
+    cargarMetas(); // Refresca para aplicar la clase .editando al item
+}
+
+function guardarMeta(texto, forzarCierreModo = false) {
+    if (texto === "") return;
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+
+    if (metaEditandoIndex !== null) {
+        // Modificación de una meta existente
+        metas[metaEditandoIndex].texto = texto;
+    } else {
+        // Adición de una nueva meta al final
+        metas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    
+    // Resetear campos e inputs
+    document.getElementById('input-nueva-meta').value = "";
+    document.getElementById('input-container-meta').classList.add('hidden');
+    metaEditandoIndex = null;
+
+    if (forzarCierreModo) {
+        modoEdicionActivo = false;
+    }
+    
+    cargarMetas();
+}
+
+function borrarMetaDirecto(index) {
+    const anio = new Date().getFullYear();
+    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
+    metas.splice(index, 1);
+    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
+    
+    metaEditandoIndex = null;
+    document.getElementById('input-container-meta').classList.add('hidden');
+    cargarMetas();
+}
+
+
 
 /* --- FUNCIONES DE HÁBITOS --- */
 let modoEdicionHabitos = false;
