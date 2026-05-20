@@ -206,49 +206,13 @@ body.dark-mode {
 /* 1. Importar fuente cursiva al inicio del CSS */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 
+
+
 /* --- ESTILOS METAS --- */
-.header-top-nav { display: flex; justify-content: flex-end; position: relative; }
-
-.dots-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    opacity: 0.3;
-    font-size: 2rem;
-    cursor: pointer;
-    padding: 0 10px;
-}
-
-.dropdown-content {
-    position: absolute;
-    right: 0;
-    top: 45px;
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    z-index: 1000;
-    min-width: 150px;
-}
-
-.dropdown-content button {
-    width: 100%;
-    background: transparent;
-    border: none;
-    padding: 12px;
-    text-align: left;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-.dropdown-content button:hover { background: var(--accent-color); color: white; }
-
 .metas-list {
     list-style: none;
     padding: 0;
-    margin: 0;
-    /* Resetear el contador aquí asegura que empiece en cada carga */
+    margin: 0 0 80px 0; /* Añadimos margen inferior para que el contenido no tape los botones */
     counter-reset: meta-idx; 
 }
 
@@ -273,18 +237,15 @@ body.dark-mode {
     font-size: 0.9rem;
 }
 
-.meta-item:hover {
-    color: var(--accent-color);
-}
-
+.meta-item:hover { color: var(--accent-color); }
 .meta-item.completed { opacity: 0.4; text-decoration: line-through; }
 
-/* Input de escritura sutil */
 .input-fake-row {
     display: flex;
     align-items: center;
     padding: 12px 5px;
     margin-top: 10px;
+    margin-bottom: 80px;
 }
 
 #input-nueva-meta {
@@ -297,7 +258,6 @@ body.dark-mode {
     outline: none;
 }
 
-/* Indicador visual de que estás editando */
 .editando {
     color: var(--accent-color);
     border-bottom: 1px dashed var(--accent-color);
@@ -305,7 +265,6 @@ body.dark-mode {
 
 .hidden { display: none !important; }
 
-/* Botón eliminar (X) */
 .btn-delete-meta {
     margin-left: auto;
     background: transparent;
@@ -318,32 +277,6 @@ body.dark-mode {
     padding: 0 10px;
 }
 
-/* Botón guardar minimalista */
-.save-btn-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.minimal-save-btn {
-    background: transparent;
-    border: 1px solid var(--line-color);
-    color: var(--text-color);
-    border-radius: 20px;
-    padding: 5px 15px;
-    font-size: 0.8rem;
-    opacity: 0.5;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.minimal-save-btn:hover {
-    opacity: 1;
-    border-color: var(--accent-color);
-    color: var(--accent-color);
-}
-
-/* Estilo para el área de "añadir nueva" al final de la lista */
 .add-trigger-area {
     font-family: 'Dancing Script', cursive;
     font-size: 1.4rem;
@@ -352,10 +285,56 @@ body.dark-mode {
     cursor: text;
 }
 
+/* --- NUEVA BOTONERA INFERIOR TRANSPARENTE --- */
+.metas-bottom-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Evita que bloquee clics en el fondo */
+    z-index: 999;
+}
+
+.btn-bottom-center, .btn-bottom-float {
+    pointer-events: auto; /* Reactiva los clics sobre los botones individuales */
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3; /* Transparente y sutil */
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-bottom-center:hover, .btn-bottom-float:hover {
+    opacity: 0.8; /* Se ilumina ligeramente al tocarlo */
+}
+
+/* Texto central "Ver Historial" */
+.btn-bottom-center {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Botón flotante "+" abajo a la derecha */
+.btn-bottom-float {
+    position: absolute;
+    right: 25px;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: sans-serif;
+    padding: 0 10px;
+}
+
 
 /* --- HÁBITOS ESTILO CAJITA --- */
 .habitos-grid {
     margin-top: 20px;
+    margin-bottom: 80px; /* Margen inferior para que las tarjetas no tapen los botones flotantes */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -458,14 +437,61 @@ body.dark-mode {
     cursor: pointer;
 }
 
+/* --- NUEVA BOTONERA INFERIOR ACCESIBLE (Misma estética sutil y transparente) --- */
+.habitos-bottom-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Permite hacer clic en los elementos que queden detrás */
+    z-index: 999;
+}
+
+.habitos-bottom-nav .btn-bottom-center, 
+.habitos-bottom-nav .btn-bottom-float {
+    pointer-events: auto; /* Reactiva los clics propios del botón */
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3; /* Color clarito casi transparente */
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.habitos-bottom-nav .btn-bottom-center:hover, 
+.habitos-bottom-nav .btn-bottom-float:hover {
+    opacity: 0.8; /* Se ilumina levemente al pasar el dedo o cursor */
+}
+
+/* Texto central "Ver Historial" */
+.habitos-bottom-nav .btn-bottom-center {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Botón flotante "+" abajo a la derecha */
+.habitos-bottom-nav .btn-bottom-float {
+    position: absolute;
+    right: 25px;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: sans-serif;
+    padding: 0 10px;
+}
+
 
 
 /* --- TO-DO LIST ESTILO CUADERNO --- */
-
 .todo-list {
     list-style: none;
     padding: 0;
     margin-top: 20px;
+    margin-bottom: 80px; /* Margen inferior para no tapar los botones flotantes */
 }
 
 .todo-item {
@@ -493,7 +519,7 @@ body.dark-mode {
 .todo-check {
     width: 22px;
     height: 22px;
-    border: 1.5px solid var(--text-color); /* Color de la letra */
+    border: 1.5px solid var(--text-color);
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -528,13 +554,64 @@ body.dark-mode {
     outline: none;
 }
 
-/* --- ESTRUCTURA DE FILAS DE LA AGENDA --- */
-/* --- ESTILOS AGENDA --- */
+/* --- BOTONERA INFERIOR PARA TO-DO (Estética sutil y transparente) --- */
+.todo-bottom-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Permite hacer clic detrás */
+    z-index: 999;
+}
+
+.todo-bottom-nav .btn-bottom-center, 
+.todo-bottom-nav .btn-bottom-float {
+    pointer-events: auto; /* Reactiva los clics en los botones */
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3; /* Casi transparente */
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.todo-bottom-nav .btn-bottom-center:hover, 
+.todo-bottom-nav .btn-bottom-float:hover {
+    opacity: 0.8;
+}
+
+/* Texto central "Borrar Completadas" */
+.todo-bottom-nav .btn-bottom-center {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Botón flotante "+" abajo a la derecha */
+.todo-bottom-nav .btn-bottom-float {
+    position: absolute;
+    right: 25px;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: sans-serif;
+    padding: 0 10px;
+}
+
+
+
+/* --- ESTILOS AGENDA (ADAPTADOS AL ANCHO DE PANTALLA) --- */
 .semana-grid {
     margin-top: 20px;
+    margin-bottom: 80px; /* Evita que la última fila quede tapada por los botones */
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--line-color);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dia-fila {
@@ -542,6 +619,8 @@ body.dark-mode {
     min-height: 80px;
     border-bottom: 1px solid var(--line-color);
     padding: 12px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dia-info {
@@ -563,6 +642,7 @@ body.dark-mode {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-x: hidden; /* Evita el desborde del texto largo en pantallas pequeñas */
 }
 
 .evento-item {
@@ -570,6 +650,7 @@ body.dark-mode {
     align-items: center;
     gap: 10px;
     transition: 0.3s;
+    width: 100%;
 }
 
 .evento-item.done { opacity: 0.4; text-decoration: line-through; }
@@ -616,22 +697,76 @@ body.dark-mode {
     color: var(--text-color);
     padding: 8px;
     outline: none;
+    box-sizing: border-box;
 }
 
+/* Solución definitiva al desborde y movimiento lateral de la hoja */
 .agenda-nav-overlay {
     position: absolute;
-    top: 50%; width: 100%;
+    top: 50%; 
+    left: 0;
+    right: 0;
+    width: 100%;
     pointer-events: none;
-    display: flex; justify-content: space-between;
+    display: flex; 
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 0 5px;
 }
 .nav-side-btn { pointer-events: auto; background: transparent; border: none; font-size: 2.5rem; opacity: 0.1; cursor: pointer; }
 
+/* --- BOTONERA INFERIOR PARA AGENDA (Misma estetica transparente) --- */
+.agenda-bottom-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 999;
+}
 
-/* --- ESTILOS CICLO ACTUALIZADOS --- */
+.agenda-bottom-nav .btn-bottom-center, 
+.agenda-bottom-nav .btn-bottom-float {
+    pointer-events: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.agenda-bottom-nav .btn-bottom-center:hover, 
+.agenda-bottom-nav .btn-bottom-float:hover {
+    opacity: 0.8;
+}
+
+.agenda-bottom-nav .btn-bottom-center {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.agenda-bottom-nav .btn-bottom-float {
+    position: absolute;
+    right: 25px;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: sans-serif;
+    padding: 0 10px;
+}
+
+
+
+/* --- ESTILOS CICLO ACTUALIZADOS (MÁS ABIERTO Y ESPACIOSO) --- */
 .rueda-wrapper {
     position: relative;
-    width: 310px;
-    height: 310px;
+    width: 340px; /* Aumentado de 310px a 340px */
+    height: 340px; /* Aumentado de 310px a 340px */
     margin: 30px auto;
     border: 1px dashed var(--line-color);
     border-radius: 50%;
@@ -655,8 +790,8 @@ body.dark-mode {
 
 .punto-dia {
     position: absolute;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -692,6 +827,15 @@ body.dark-mode {
 }
 
 /* Modal Estilo Tarjeta */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000;
+}
+.modal-overlay.hidden { display: none !important; }
+
 .modal-card {
     background: var(--bg-color);
     padding: 25px;
@@ -704,7 +848,19 @@ body.dark-mode {
 
 .modal-header { text-align: center; margin-bottom: 20px; }
 .modal-header h3 { font-size: 1.2rem; margin: 0; }
-#label-fecha-modal { font-size: 0.8rem; opacity: 0.5; margin-top: 5px; }
+
+.modal-date-picker {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    opacity: 0.6;
+    text-align: center;
+    margin-top: 5px;
+    outline: none;
+    cursor: pointer;
+}
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-item.full { grid-column: span 2; }
@@ -713,6 +869,63 @@ body.dark-mode {
 .form-item select, .form-item textarea { 
     width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--line-color);
     background: var(--bg-color); font-family: inherit; font-size: 0.9rem;
+    color: var(--text-color);
+    transition: opacity 0.2s;
+}
+
+/* Estilo visual si está deshabilitado para modo lectura */
+.form-item select:disabled, .form-item textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(0,0,0,0.02);
 }
 
 .modal-btns { display: flex; gap: 10px; margin-top: 25px; }
+.btn-primario { background: var(--accent-color); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; flex: 1;}
+.btn-secundario { background: transparent; border: 1px solid var(--line-color); color: var(--text-color); padding: 10px 15px; border-radius: 10px; cursor: pointer; flex: 1;}
+.btn-primario.hidden, .btn-secundario.hidden { display: none !important; }
+
+/* --- BOTONERA INFERIOR TRANSPARENTE CICLO --- */
+.ciclo-bottom-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.ciclo-bottom-nav .btn-bottom-center, 
+.ciclo-bottom-nav .btn-bottom-float {
+    pointer-events: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.3;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.ciclo-bottom-nav .btn-bottom-center:hover, 
+.ciclo-bottom-nav .btn-bottom-float:hover {
+    opacity: 0.8;
+}
+
+.ciclo-bottom-nav .btn-bottom-center {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ciclo-bottom-nav .btn-bottom-float {
+    position: absolute;
+    right: 25px;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: sans-serif;
+    padding: 0 10px;
+}

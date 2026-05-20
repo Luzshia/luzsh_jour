@@ -1,7 +1,10 @@
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('Service Worker Registrado'));
-}
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker registrado con éxito', reg))
+                .catch(err => console.error('Error al registrar el Service Worker', err));
+        });
+    }
 
 /* --- CONFIGURACIÓN INICIAL --- */
 let pinIngresado = "";
@@ -65,62 +68,52 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
 /* --- ESCUCHADORES DE METAS --- */
-const btnMetasMenu = document.getElementById('btn-metas-menu');
-const metasDropdown = document.getElementById('metas-dropdown');
-
 document.addEventListener('click', (e) => {
     const listaMetas = document.getElementById('lista-metas');
     const inputContainerMeta = document.getElementById('input-container-meta');
     const optEditMetas = document.getElementById('opt-edit-metas');
 
-    // Cerrar dropdown si se clica fuera
-    if (metasDropdown && !metasDropdown.contains(e.target) && e.target !== btnMetasMenu) {
-        metasDropdown.classList.add('hidden');
-    }
-
-    // Cerrar modo edición si se clica en el "blanco"
+    // Al hacer clic fuera de la lista y el input, guardamos automáticamente
     if (modoEdicionActivo) {
         const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
         const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
-        // Evitar que el clic en el botón de menú o de editar desactive el modo
-        const clicFueraBotones = e.target !== btnMetasMenu && e.target !== optEditMetas;
+        const clicFueraBotonEditar = optEditMetas && !optEditMetas.contains(e.target);
 
-        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
-            modoEdicionActivo = false;
-            metaEditandoIndex = null;
-            cargarMetas();
+        if (clicFueraLista && clicFueraInput && clicFueraBotonEditar) {
+            const val = document.getElementById('input-nueva-meta').value.trim();
+            if (val !== "") {
+                guardarMeta(val, true); // Guarda los cambios automáticamente
+            } else {
+                modoEdicionActivo = false;
+                metaEditandoIndex = null;
+                cargarMetas();
+            }
         }
     }
 });
 
-if (btnMetasMenu) {
-    btnMetasMenu.onclick = (e) => {
-        e.stopPropagation();
-        metasDropdown.classList.toggle('hidden');
-    };
-}
-
+// Acción del botón flotante (+) para activar/desactivar edición
 const optEditMetas = document.getElementById('opt-edit-metas');
-if(optEditMetas) {
+if (optEditMetas) {
     optEditMetas.onclick = (e) => {
         e.stopPropagation();
         modoEdicionActivo = !modoEdicionActivo;
-        if (metasDropdown) metasDropdown.classList.add('hidden');
         cargarMetas();
     };
 }
 
-const btnSaveMeta = document.getElementById('btn-save-meta');
-if(btnSaveMeta) {
-    btnSaveMeta.onclick = (e) => {
+// Historial (Mantiene su funcionamiento original)
+const optHistorialMetas = document.getElementById('opt-historial-metas');
+if (optHistorialMetas) {
+    optHistorialMetas.onclick = (e) => {
         e.stopPropagation();
-        const val = document.getElementById('input-nueva-meta').value.trim();
-        guardarMeta(val, true); 
+        // Aquí puedes vincular la lógica existente que abre tu historial
+        console.log("Abriendo historial...");
     };
 }
 
 const inputNuevaMeta = document.getElementById('input-nueva-meta');
-if(inputNuevaMeta) {
+if (inputNuevaMeta) {
     inputNuevaMeta.onkeydown = (e) => {
         if (e.key === 'Enter') {
             guardarMeta(e.target.value.trim(), false); 
@@ -136,59 +129,48 @@ if(inputNuevaMeta) {
 cargarMetas();
 
 /* --- ESCUCHADORES DE HÁBITOS --- */
-const btnHabitosMenu = document.getElementById('btn-habitos-menu');
-const habitosDropdown = document.getElementById('habitos-dropdown');
-
-if (btnHabitosMenu) {
-    btnHabitosMenu.onclick = (e) => {
-        e.stopPropagation();
-        habitosDropdown.classList.toggle('hidden');
-    };
-}
-
 document.addEventListener('click', (e) => {
     const contenedorHabitos = document.getElementById('contenedor-habitos');
     const inputContainer = document.getElementById('input-container-habito');
-    
-    if (habitosDropdown && !habitosDropdown.contains(e.target) && e.target !== btnHabitosMenu) {
-        habitosDropdown.classList.add('hidden');
-    }
+    const optEditHab = document.getElementById('opt-edit-habitos');
 
     if (modoEdicionHabitos) {
         const clicFueraGrid = contenedorHabitos && !contenedorHabitos.contains(e.target);
         const clicFueraInput = inputContainer && !inputContainer.contains(e.target);
-        const clicFueraBotonMenu = e.target !== btnHabitosMenu;
+        const clicFueraBotonEditar = optEditHab && !optEditHab.contains(e.target);
 
-        if (clicFueraGrid && clicFueraInput && clicFueraBotonMenu) {
-            modoEdicionHabitos = false;
-            habitoEditandoId = null;
-            if(inputContainer) inputContainer.classList.add('hidden');
-            cargarHabitos();
+        // Si se clica fuera de las cajas de hábitos y del input de texto, se guarda de inmediato
+        if (clicFueraGrid && clicFueraInput && clicFueraBotonEditar) {
+            const val = document.getElementById('input-nuevo-habito').value.trim();
+            if (val !== "") {
+                guardarHabito(); // Guarda automáticamente el texto escrito
+            } else {
+                modoEdicionHabitos = false;
+                habitoEditandoId = null;
+                if(inputContainer) inputContainer.classList.add('hidden');
+                cargarHabitos();
+            }
         }
     }
 });
 
+// Acción del botón flotante (+) para activar/desactivar edición
 const optEditHab = document.getElementById('opt-edit-habitos');
 if (optEditHab) {
     optEditHab.onclick = (e) => {
         e.stopPropagation();
         modoEdicionHabitos = !modoEdicionHabitos;
-        habitosDropdown.classList.add('hidden');
         cargarHabitos();
     };
 }
 
+// Botón de Historial Central
 const optHistHab = document.getElementById('opt-historial-habitos');
 if (optHistHab) {
-    optHistHab.onclick = () => {
+    optHistHab.onclick = (e) => {
+        e.stopPropagation();
         toggleHistorialHabitos();
-        habitosDropdown.classList.add('hidden');
     };
-}
-
-const btnSaveHabito = document.getElementById('btn-save-habito');
-if (btnSaveHabito) {
-    btnSaveHabito.onclick = () => guardarHabito();
 }
 
 const inputNuevoHabito = document.getElementById('input-nuevo-habito');
@@ -206,144 +188,121 @@ if (inputNuevoHabito) {
     };
 }
 
+// Inicializar
 cargarHabitos();
 
 
-/* --- ESCUCHADORES DE TO-DO LIST --- */
-const btnTodoMenu = document.getElementById('btn-todo-menu');
-const todoDropdown = document.getElementById('todo-dropdown');
-const optAddTodo = document.getElementById('opt-add-todo');
+function cargarTareas() {
+    const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    const lista = document.getElementById('lista-tareas');
+    if(!lista) return;
 
-document.addEventListener('click', (e) => {
-    const contenedorTareas = document.getElementById('lista-tareas');
-    const inputContainerTodo = document.getElementById('input-container-todo');
+    lista.innerHTML = "";
 
-    // Cerrar dropdown
-    if (todoDropdown && !todoDropdown.contains(e.target) && e.target !== btnTodoMenu) {
-        todoDropdown.classList.add('hidden');
+    tareas.forEach((tarea, index) => {
+        const li = document.createElement('li');
+        li.className = `todo-item ${tarea.completada ? 'done' : ''}`;
+        
+        li.innerHTML = `
+            <div class="todo-check ${tarea.completada ? 'active' : ''}"></div>
+            <span>${tarea.texto}</span>
+        `;
+
+        li.onclick = (e) => {
+            e.stopPropagation(); 
+            if (modoEdicionTodo) {
+                prepararEdicionTodo(index, tarea.texto);
+            } else {
+                alternarTarea(index);
+            }
+        };
+        lista.appendChild(li);
+    });
+
+    // Ocultar la caja si el modo edición se ha apagado por completo
+    if (!modoEdicionTodo) {
+        const containerInput = document.getElementById('input-container-todo');
+        if(containerInput) containerInput.classList.add('hidden');
+        todoEditandoIndex = null;
     }
-
-    // Salir del modo edición/añadir si clicas fuera
-    if (modoEdicionTodo) {
-        const clicFueraLista = contenedorTareas && !contenedorTareas.contains(e.target);
-        const clicFueraInput = inputContainerTodo && !inputContainerTodo.contains(e.target);
-        const clicFueraBotones = e.target !== btnTodoMenu && e.target !== optAddTodo;
-
-        if (clicFueraLista && clicFueraInput && clicFueraBotones) {
-            modoEdicionTodo = false;
-            todoEditandoIndex = null;
-            cargarTareas();
-        }
-    }
-});
-
-if (btnTodoMenu) {
-    btnTodoMenu.onclick = (e) => {
-        e.stopPropagation();
-        todoDropdown.classList.toggle('hidden');
-    };
 }
 
-if (optAddTodo) {
-    optAddTodo.onclick = (e) => {
-        e.stopPropagation();
-        modoEdicionTodo = true;
-        todoDropdown.classList.add('hidden');
-        const container = document.getElementById('input-container-todo');
-        const input = document.getElementById('input-nueva-tarea');
-        if(container) container.classList.remove('hidden');
-        if(input) {
-            input.value = "";
-            input.placeholder = "Escribe y pulsa Enter...";
-            input.focus();
-        }
-        cargarTareas();
-    };
-}
 
-const optClearTodo = document.getElementById('opt-clear-todo');
-if (optClearTodo) {
-    optClearTodo.onclick = () => {
-        limpiarTareasCompletadas();
-        todoDropdown.classList.add('hidden');
-    };
-}
-
-const inputTarea = document.getElementById('input-nueva-tarea');
-if (inputTarea) {
-    inputTarea.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            // Enter guarda y permite seguir añadiendo
-            guardarTarea(e.target.value.trim(), false);
-        }
-        if (e.key === 'Escape') {
-            modoEdicionTodo = false;
-            cargarTareas();
-        }
-    };
-}
-
-// Carga inicial
-cargarTareas();
 
     /* --- ESCUCHADORES AGENDA --- */
-const btnAgendaMenu = document.getElementById('btn-agenda-menu');
-const agendaDropdown = document.getElementById('agenda-dropdown');
+const optEditAgenda = document.getElementById('opt-edit-agenda');
 
-if (btnAgendaMenu) {
-    btnAgendaMenu.onclick = (e) => {
-        e.stopPropagation();
-        agendaDropdown.classList.toggle('hidden');
-    };
-}
-
-// Opción Editar Agenda
-document.getElementById('opt-edit-agenda').onclick = () => {
-    modoEdicionAgenda = !modoEdicionAgenda;
-    agendaDropdown.classList.add('hidden');
-    renderizarSemana();
-};
-
-document.getElementById('opt-limpiar-completados-agenda').onclick = () => {
-    limpiarAgendaCompletada();
-    agendaDropdown.classList.add('hidden');
-};
-
-// Guardar cambios con el botón
-document.getElementById('btn-save-agenda').onclick = guardarEventoAgenda;
-
-// Cerrar todo al hacer clic en cualquier espacio vacío
 document.addEventListener('click', (e) => {
-    // Cerrar menú dropdown
-    if (agendaDropdown && !agendaDropdown.contains(e.target) && e.target !== btnAgendaMenu) {
-        agendaDropdown.classList.add('hidden');
-    }
-    // Cerrar modo edición si se clica fuera de la cuadrícula o botones
     const grid = document.getElementById('semana-container');
-    if (modoEdicionAgenda && grid && !grid.contains(e.target) && !btnAgendaMenu.contains(e.target) && !agendaDropdown.contains(e.target)) {
-        // Solo cerramos si no estamos tocando el formulario de input
-        const inputCont = document.getElementById('input-container-agenda');
-        if (!inputCont || !inputCont.contains(e.target)) {
-            modoEdicionAgenda = false;
-            cerrarEditorAgenda();
-            renderizarSemana();
+    const inputCont = document.getElementById('input-container-agenda');
+    const btnEditFloat = document.getElementById('opt-edit-agenda');
+
+    if (modoEdicionAgenda) {
+        const clicFueraGrid = grid && !grid.contains(e.target);
+        const clicFueraFormulario = inputCont && !inputCont.contains(e.target);
+        const clicFueraBotonEdit = btnEditFloat && !btnEditFloat.contains(e.target);
+
+        // Si se clica en cualquier espacio vacío exterior estando en modo edición
+        if (clicFueraGrid && clicFueraFormulario && clicFueraBotonEdit) {
+            const tareaTexto = document.getElementById('agenda-tarea').value.trim();
+            
+            if (tareaTexto !== "") {
+                guardarEventoAgenda(); // Guarda automáticamente lo escrito
+            } else {
+                modoEdicionAgenda = false;
+                cerrarEditorAgenda();
+                renderizarSemana();
+            }
         }
     }
 });
 
-// Navegación con botones
+// Acción del botón flotante (+) para activar/desactivar edición de agenda
+if (optEditAgenda) {
+    optEditAgenda.onclick = (e) => {
+        e.stopPropagation();
+        
+        // Si ya está abierto el editor con texto, guardamos antes de salir
+        const inputCont = document.getElementById('input-container-agenda');
+        if (modoEdicionAgenda && inputCont && !inputCont.classList.contains('hidden')) {
+            const tareaTexto = document.getElementById('agenda-tarea').value.trim();
+            if(tareaTexto !== "") {
+                guardarEventoAgenda();
+                return;
+            }
+        }
+        
+        modoEdicionAgenda = !modoEdicionAgenda;
+        if (!modoEdicionAgenda) cerrarEditorAgenda();
+        renderizarSemana();
+    };
+}
+
+// Botón Central: Limpiar Completados
+const optLimpiarAgenda = document.getElementById('opt-limpiar-completados-agenda');
+if (optLimpiarAgenda) {
+    optLimpiarAgenda.onclick = (e) => {
+        e.stopPropagation();
+        limpiarAgendaCompletada();
+    };
+}
+
+// Navegación con botones laterales
 document.getElementById('btn-semana-prev').onclick = () => navegarSemana(-7);
 document.getElementById('btn-semana-next').onclick = () => navegarSemana(7);
 
 // Teclas rápidas en el formulario
 document.getElementById('input-container-agenda').onkeydown = (e) => {
-    if (e.key === 'Escape') cerrarEditorAgenda();
+    if (e.key === 'Escape') {
+        modoEdicionAgenda = false;
+        cerrarEditorAgenda();
+        renderizarSemana();
+    }
 };
 
-// --- NUEVO: GESTOS DESLIZAR (SWIPE) PARA PASAR LA AGENDA ---
+// --- GESTOS DESLIZAR (SWIPE) SIN DESBORDAMIENTOS ---
 let touchStartX = 0;
 let touchEndX = 0;
-
 const agendaGrid = document.getElementById('semana-container');
 
 if (agendaGrid) {
@@ -358,18 +317,13 @@ if (agendaGrid) {
 }
 
 function manejarGestoAgenda() {
-    const umbral = 60; // Píxeles mínimos para que cuente como deslizamiento
-    
-    // Si estás editando texto, bloqueamos el deslizamiento para que puedas mover el cursor
+    const umbral = 60; 
     if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
         return;
     }
-
     if (touchStartX - touchEndX > umbral) {
-        // Deslizar a la izquierda -> Siguiente semana
         navegarSemana(7);
     } else if (touchEndX - touchStartX > umbral) {
-        // Deslizar a la derecha -> Semana anterior
         navegarSemana(-7);
     }
 }
@@ -378,40 +332,57 @@ function manejarGestoAgenda() {
 renderizarSemana();
 
 
+
 /* --- ESCUCHADORES DEL CICLO LUNAR --- */
-const btnCicloMenu = document.getElementById('btn-ciclo-menu');
-const cicloDropdown = document.getElementById('ciclo-dropdown');
 const modalRegistro = document.getElementById('modal-registro');
+const optAddReg = document.getElementById('opt-add-registro');
+const optVerCiclos = document.getElementById('opt-ver-ciclos');
+const btnModificarReg = document.getElementById('btn-modificar-reg');
+const regFechaInput = document.getElementById('reg-fecha');
 
 document.addEventListener('click', (e) => {
-    // 1. Cerrar Dropdown si clicas fuera
-    if (cicloDropdown && !cicloDropdown.contains(e.target) && e.target !== btnCicloMenu) {
-        cicloDropdown.classList.add('hidden');
-    }
-
-    // 2. Cerrar Modal al presionar el fondo oscuro (el espacio en blanco)
+    // Cerrar Tarjeta si se toca el fondo exterior vacío
     if (e.target === modalRegistro) {
         modalRegistro.classList.add('hidden');
     }
 });
 
-if(btnCicloMenu) {
-    btnCicloMenu.onclick = (e) => {
-        e.stopPropagation();
-        cicloDropdown.classList.toggle('hidden');
-    };
-}
-
-// Opción Registrar desde el menú
-const optAddReg = document.getElementById('opt-add-registro');
+// Botón Flotante (+) Abre buscador/registro para la fecha de hoy por defecto
 if(optAddReg) {
-    optAddReg.onclick = () => {
-        abrirRegistro(new Date().toISOString().split('T')[0]);
-        cicloDropdown.classList.add('hidden');
+    optAddReg.onclick = (e) => {
+        e.stopPropagation();
+        const hoyIso = new Date().toISOString().split('T')[0];
+        abrirRegistro(hoyIso);
     };
 }
 
-// Botones del modal
+// Botón central: Ciclos anteriores
+if (optVerCiclos) {
+    optVerCiclos.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof mostrarHistorialCiclos === 'function') {
+            mostrarHistorialCiclos();
+        } else {
+            alert("Función 'Ciclos Anteriores' en desarrollo.");
+        }
+    };
+}
+
+// Si cambias manualmente la fecha dentro de la tarjeta
+if (regFechaInput) {
+    regFechaInput.onchange = (e) => {
+        abrirRegistro(e.target.value);
+    };
+}
+
+// Activar edición sobre una tarjeta en modo lectura
+if (btnModificarReg) {
+    btnModificarReg.onclick = () => {
+        alternarModoEdicionTarjeta(true);
+    };
+}
+
+// Botones guardar/cancelar del modal
 const btnSaveReg = document.getElementById('btn-guardar-reg');
 if(btnSaveReg) btnSaveReg.onclick = guardarRegistro;
 
@@ -420,8 +391,6 @@ if(btnCancelReg) btnCancelReg.onclick = () => modalRegistro.classList.add('hidde
 
 // Carga inicial
 dibujarRueda();
-
-})
 
 
 
@@ -552,25 +521,15 @@ function importarDatos(e) {
     reader.readAsText(archivo);
 }
 
-/* --- LÓGICA DE METAS: FUNCIONES --- */
-// Definir al inicio para que sea accesible globalmente
-let modoEdicionActivo = false;
-let metaEditandoIndex = null;
-
 function cargarMetas() {
     const anio = new Date().getFullYear();
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     const lista = document.getElementById('lista-metas');
     const labelAnio = document.getElementById('meta-year-label');
-    const btnEditarMenu = document.getElementById('opt-edit-metas');
     const inputContainer = document.getElementById('input-container-meta');
     
     if(labelAnio) labelAnio.textContent = anio;
     if(!lista) return;
-
-    if(btnEditarMenu) {
-        btnEditarMenu.textContent = modoEdicionActivo ? "✅ Finalizar Edición" : "📝 Editar Metas";
-    }
 
     lista.innerHTML = "";
     metas.forEach((m, index) => {
@@ -619,59 +578,6 @@ function cargarMetas() {
     if (!modoEdicionActivo && inputContainer) {
         inputContainer.classList.add('hidden');
     }
-}
-
-function prepararEdicion(index, textoActual) {
-    metaEditandoIndex = index;
-    const container = document.getElementById('input-container-meta');
-    const input = document.getElementById('input-nueva-meta');
-    if(container) container.classList.remove('hidden');
-    if(input) {
-        input.value = textoActual;
-        input.focus();
-    }
-}
-
-function activarEscrituraMeta() {
-    metaEditandoIndex = null;
-    const container = document.getElementById('input-container-meta');
-    const input = document.getElementById('input-nueva-meta');
-    if(container) container.classList.remove('hidden');
-    if(input) {
-        input.value = "";
-        input.focus();
-    }
-}
-
-function guardarMeta(texto, cerrarEditor = false) {
-    if (texto === "") return;
-    const anio = new Date().getFullYear();
-    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
-
-    if (metaEditandoIndex !== null) {
-        metas[metaEditandoIndex].texto = texto;
-    } else {
-        metas.push({ texto: texto, completada: false });
-    }
-    
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    document.getElementById('input-nueva-meta').value = "";
-    metaEditandoIndex = null;
-
-    if (cerrarEditor) {
-        modoEdicionActivo = false;
-        document.getElementById('input-container-meta').classList.add('hidden');
-    }
-    
-    cargarMetas();
-}
-
-function borrarMetaDirecto(index) {
-    const anio = new Date().getFullYear();
-    let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
-    metas.splice(index, 1);
-    localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    cargarMetas();
 }
 
 /* --- FUNCIONES DE HÁBITOS --- */
@@ -760,86 +666,20 @@ function cargarHabitos() {
     }
 }
 
-function activarEscrituraHabito() {
-    habitoEditandoId = null;
-    document.getElementById('input-container-habito').classList.remove('hidden');
-    const input = document.getElementById('input-nuevo-habito');
-    input.value = "";
-    input.focus();
-}
-
-function prepararEdicionHabito(habito) {
-    habitoEditandoId = habito.id;
-    document.getElementById('input-container-habito').classList.remove('hidden');
-    const input = document.getElementById('input-nuevo-habito');
-    input.value = habito.nombre;
-    input.focus();
-    cargarHabitos();
-}
-
-function guardarHabito() {
-    const input = document.getElementById('input-nuevo-habito');
-    const nombre = input.value.trim();
-    const clave = obtenerClaveMes();
-    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
-
-    if (nombre !== "") {
-        if (habitoEditandoId) {
-            const index = habitos.findIndex(h => h.id === habitoEditandoId);
-            if (index !== -1) habitos[index].nombre = nombre;
-        } else {
-            habitos.push({ id: 'h-' + Date.now(), nombre: nombre, completados: [] });
-        }
-        localStorage.setItem(clave, JSON.stringify(habitos));
-    }
-
-    habitoEditandoId = null;
-    modoEdicionHabitos = false;
-    input.value = "";
-    document.getElementById('input-container-habito').classList.add('hidden');
-    cargarHabitos();
-}
-
-function borrarHabito(id) {
-    if(confirm("¿Eliminar este hábito?")) {
-        const clave = obtenerClaveMes();
-        let habitos = JSON.parse(localStorage.getItem(clave)) || [];
-        habitos = habitos.filter(h => h.id !== id);
-        localStorage.setItem(clave, JSON.stringify(habitos));
-        cargarHabitos();
-    }
-}
-
-function alternarDiaHabito(id, dia) {
-    if(modoEdicionHabitos) return;
-    const clave = obtenerClaveMes();
-    let habitos = JSON.parse(localStorage.getItem(clave));
-    const habito = habitos.find(h => h.id === id);
-    if (habito.completados.includes(dia)) {
-        habito.completados = habito.completados.filter(d => d !== dia);
-    } else {
-        habito.completados.push(dia);
-    }
-    localStorage.setItem(clave, JSON.stringify(habitos));
-    cargarHabitos();
-}
-
 function toggleHistorialHabitos() {
     const contenedor = document.getElementById('historial-habitos-container');
     const btn = document.getElementById('opt-historial-habitos');
+    if(!contenedor || !btn) return;
+
     contenedor.classList.toggle('hidden');
     if(!contenedor.classList.contains('hidden')) {
-        btn.textContent = "📜 Ocultar Historial";
+        btn.textContent = "Ocultar Historial";
         contenedor.innerHTML = "<p style='text-align:center; opacity:0.5; padding:10px;'>Historial de meses anteriores</p>";
     } else {
-        btn.textContent = "📜 Ver Historial";
+        btn.textContent = "Ver Historial";
     }
 }
 
-
-/* --- FUNCIONES TO-DO LIST --- */
-let todoEditandoIndex = null;
-let modoEdicionTodo = false; 
 
 function cargarTareas() {
     const tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
@@ -858,7 +698,7 @@ function cargarTareas() {
         `;
 
         li.onclick = (e) => {
-            e.stopPropagation(); // Evita que el clic fuera cierre el modo
+            e.stopPropagation(); 
             if (modoEdicionTodo) {
                 prepararEdicionTodo(index, tarea.texto);
             } else {
@@ -868,7 +708,7 @@ function cargarTareas() {
         lista.appendChild(li);
     });
 
-    // Solo ocultar si el modo edición está apagado
+    // Ocultar la caja si el modo edición se ha apagado por completo
     if (!modoEdicionTodo) {
         const containerInput = document.getElementById('input-container-todo');
         if(containerInput) containerInput.classList.add('hidden');
@@ -876,248 +716,45 @@ function cargarTareas() {
     }
 }
 
-function alternarTarea(index) {
-    const tareas = JSON.parse(localStorage.getItem('journal_todo'));
-    tareas[index].completada = !tareas[index].completada;
-    localStorage.setItem('journal_todo', JSON.stringify(tareas));
-    cargarTareas();
-}
 
-function prepararEdicionTodo(index, texto) {
-    todoEditandoIndex = index;
-    const input = document.getElementById('input-nueva-tarea');
-    const container = document.getElementById('input-container-todo');
-    if(container) container.classList.remove('hidden');
-    if(input) {
-        input.value = texto;
-        input.placeholder = "Borra todo para eliminar...";
-        input.focus();
-    }
-}
-
-function guardarTarea(texto, cerrarEditor = false) {
-    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
-
-    if (todoEditandoIndex !== null) {
-        if (texto === "") {
-            if (confirm("¿Eliminar esta tarea?")) {
-                tareas.splice(todoEditandoIndex, 1);
-            }
-        } else {
-            tareas[todoEditandoIndex].texto = texto;
-        }
-    } else {
-        if (!texto) return;
-        tareas.push({ texto: texto, completada: false });
-    }
-
-    localStorage.setItem('journal_todo', JSON.stringify(tareas));
-    document.getElementById('input-nueva-tarea').value = "";
-    
-    if (cerrarEditor) {
-        modoEdicionTodo = false;
-        todoEditandoIndex = null;
-    }
-    
-    cargarTareas();
-}
-
-function limpiarTareasCompletadas() {
-    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
-    const terminadas = tareas.filter(t => t.completada);
-
-    if (terminadas.length === 0) {
-        alert("No hay tareas terminadas para borrar.");
-        return;
-    }
-
-    if (confirm(`¿Borrar ${terminadas.length} tareas completadas?`)) {
-        tareas = tareas.filter(t => !t.completada);
-        localStorage.setItem('journal_todo', JSON.stringify(tareas));
-        cargarTareas();
-    }
-}
-
-
-/* --- LÓGICA DE LA AGENDA --- */
-let fechaReferenciaAgenda = new Date(); 
-let eventoEditando = null; 
-let modoEdicionAgenda = false;
-
-function navegarSemana(dias) {
-    fechaReferenciaAgenda.setDate(fechaReferenciaAgenda.getDate() + dias);
-    renderizarSemana();
-}
-
-function renderizarSemana() {
-    const cont = document.getElementById('semana-container');
-    if (!cont) return;
-    cont.innerHTML = "";
-    
-    // Si estamos en modo edición, añadimos una clase al contenedor
-    cont.className = `semana-grid ${modoEdicionAgenda ? 'modo-edicion-agenda' : ''}`;
-
-    let lunes = new Date(fechaReferenciaAgenda);
-    const diaSemana = lunes.getDay();
-    const diferencia = (diaSemana === 0 ? -6 : 1 - diaSemana);
-    lunes.setDate(lunes.getDate() + diferencia);
-
-    const labelRango = document.getElementById('rango-semana-label');
-    if (labelRango) {
-        const opciones = { month: 'long', year: 'numeric' };
-        labelRango.textContent = lunes.toLocaleDateString('es-ES', opciones).toUpperCase();
-    }
-
-    const nombresDias = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
-
-    for (let i = 0; i < 7; i++) {
-        let d = new Date(lunes);
-        d.setDate(lunes.getDate() + i);
-        const iso = d.toISOString().split('T')[0];
-        const evs = JSON.parse(localStorage.getItem(`agenda_${iso}`)) || [];
-        
-        const fila = document.createElement('div');
-        fila.className = `dia-fila ${i === 6 ? 'domingo' : ''}`;
-        
-        fila.innerHTML = `
-            <div class="dia-info">
-                <span class="dia-nombre">${nombresDias[i]}</span>
-                <span class="dia-numero">${d.getDate()}</span>
-                <span class="dia-luna">${obtenerIconoLuna(d)}</span>
-            </div>
-            <div class="dia-eventos">
-                ${evs.sort((a, b) => a.hora.localeCompare(b.hora)).map((e, idx) => `
-                    <div class="evento-item ${e.done ? 'done' : ''}">
-                        <div class="evento-click-area" style="flex:1; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="clickTacharEvento('${iso}', ${idx})">
-                            <span class="evento-hora">${e.hora || '--:--'}</span>
-                            <span class="evento-texto">${e.tarea}</span>
-                        </div>
-                        ${modoEdicionAgenda ? `
-                        <div class="agenda-actions">
-                            <button class="btn-reprogramar" onclick="prepararReprogramar('${iso}', ${idx})">📅</button>
-                            <button class="btn-borrar-evento" onclick="borrarEventoDirecto('${iso}', ${idx})">🗑️</button>
-                        </div>` : ''}
-                    </div>
-                `).join('')}
-                ${modoEdicionAgenda ? `<div class="add-evento-inline" onclick="abrirEditorNuevo('${iso}')" style="font-size:0.8rem; opacity:0.5; cursor:pointer;">+ Añadir...</div>` : ''}
-            </div>
-        `;
-        cont.appendChild(fila);
-    }
-}
-
-function clickTacharEvento(fecha, index) {
-    if (modoEdicionAgenda) return;
-    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
-    evs[index].done = !evs[index].done;
-    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
-    renderizarSemana();
-}
-
-function abrirEditorNuevo(fecha) {
-    eventoEditando = null;
-    document.getElementById('input-container-agenda').classList.remove('hidden');
-    document.getElementById('agenda-fecha').value = fecha;
-    document.getElementById('agenda-tarea').value = "";
-    document.getElementById('agenda-tarea').focus();
-}
-
-function prepararReprogramar(fecha, index) {
-    const evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
-    eventoEditando = { fecha, index };
-    document.getElementById('input-container-agenda').classList.remove('hidden');
-    document.getElementById('agenda-tarea').value = evs[index].tarea;
-    document.getElementById('agenda-fecha').value = fecha;
-    document.getElementById('agenda-hora').value = evs[index].hora;
-    document.getElementById('agenda-tarea').focus();
-}
-
-function borrarEventoDirecto(fecha, index) {
-    let evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`));
-    evs.splice(index, 1);
-    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
-    renderizarSemana();
-}
-
+/* Asegúrate de que tu función guardarEventoAgenda finalice llamando a estos métodos (ya incluidos en tu código original) */
 function guardarEventoAgenda() {
     const tarea = document.getElementById('agenda-tarea').value.trim();
     const fecha = document.getElementById('agenda-fecha').value;
     const hora = document.getElementById('agenda-hora').value;
 
     if (tarea && fecha) {
-        // Si estábamos editando uno existente, lo borramos de su posición vieja
         if (eventoEditando) {
             let evsViejos = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
             evsViejos.splice(eventoEditando.index, 1);
             localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evsViejos));
         }
         
-        // Guardamos el nuevo o actualizado
         const evsDestino = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
         evsDestino.push({ tarea, hora, done: false });
         localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsDestino));
         
+        // Apagamos el modo de edición tras guardar para refrescar limpiamente la vista
+        modoEdicionAgenda = false; 
         cerrarEditorAgenda();
         renderizarSemana();
     }
-}
-
-function cerrarEditorAgenda() {
-    document.getElementById('input-container-agenda').classList.add('hidden');
-    eventoEditando = null;
-}
-
-function limpiarAgendaCompletada() {
-    if (!confirm("¿Borrar actividades tachadas de esta semana?")) return;
-    let lunes = new Date(fechaReferenciaAgenda);
-    const diaSemana = lunes.getDay();
-    lunes.setDate(lunes.getDate() + (diaSemana === 0 ? -6 : 1 - diaSemana));
-
-    for (let i = 0; i < 7; i++) {
-        let d = new Date(lunes);
-        d.setDate(lunes.getDate() + i);
-        const iso = d.toISOString().split('T')[0];
-        let evs = JSON.parse(localStorage.getItem(`agenda_${iso}`));
-        if (evs) {
-            evs = evs.filter(e => !e.done);
-            localStorage.setItem(`agenda_${iso}`, JSON.stringify(evs));
-        }
-    }
-    renderizarSemana();
-}
-
-function obtenerIconoLuna(f) {
-    const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
-    const ciclo = 29.53;
-    const base = new Date("2024-01-11");
-    const diff = (f - base) / 86400000;
-    const pos = (diff % ciclo + ciclo) % ciclo;
-    return lunas[Math.floor((pos / ciclo) * 8)] || "🌙";
 }
 
 
 
 /* --- FUNCIONES DEL CICLO LUNAR --- */
 
-// Función matemática para calcular el inicio del bloque de 28 días actual
 function obtenerFechaInicioCiclo(registros, hoyStr) {
-    // FECHA BASE REAL: El punto de partida de tus ciclos de 28 días
     const fechaBase = new Date("2026-04-30T00:00:00");
     const hoy = new Date(hoyStr + "T00:00:00");
     
-    // Si por alguna razón la fecha actual es menor a la base, usamos la base
-    if (hoy < fechaBase) {
-        return fechaBase;
-    }
+    if (hoy < fechaBase) return fechaBase;
     
-    // Calcular cuántos días exactos han pasado desde el 30 de abril de 2026
     const diferenciaMilisegundos = hoy - fechaBase;
     const diasTranscurridos = Math.floor(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
-    
-    // Averiguar cuántos ciclos completos de 28 días han pasado
     const ciclosCompletos = Math.floor(diasTranscurridos / 28);
     
-    // El inicio del ciclo actual es: Fecha Base + (Ciclos Completos * 28 días)
     let inicioCicloActual = new Date(fechaBase);
     inicioCicloActual.setDate(fechaBase.getDate() + (ciclosCompletos * 28));
     
@@ -1128,28 +765,23 @@ function dibujarRueda() {
     const contenedor = document.getElementById('canvas-rueda');
     if (!contenedor) return;
 
-    // Limpiar rueda de renders anteriores
     contenedor.querySelectorAll('.punto-dia').forEach(p => p.remove());
-
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
     
-    // Obtener la fecha de hoy normalizada
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
     const hoyStr = hoy.toISOString().split('T')[0];
     
-    // El inicio se mueve estrictamente en bloques fijos de 28 días
     const inicioCiclo = obtenerFechaInicioCiclo(registros, hoyStr);
     
-    // Actualizar la etiqueta superior en el encabezado
     const labelInicio = document.getElementById('txt-inicio-ciclo-label');
     if (labelInicio) {
         labelInicio.textContent = `Ciclo iniciado el: ${inicioCiclo.getDate()}/${inicioCiclo.getMonth() + 1}/${inicioCiclo.getFullYear()}`;
     }
 
-    const radio = 130;
+    // RADIO AMPLIADO DE 130 A 145 PARA HACER EL CÍRCULO MÁS ABIERTO
+    const radio = 145; 
 
-    // Dibujar el bloque exacto de 28 días en círculo
     for (let i = 0; i < 28; i++) {
         let fechaActual = new Date(inicioCiclo);
         fechaActual.setDate(inicioCiclo.getDate() + i);
@@ -1159,28 +791,24 @@ function dibujarRueda() {
         const div = document.createElement('div');
         div.className = 'punto-dia';
         
-        // Distribución angular matemática perfecta para los 28 botones
         let angulo = (i * (360 / 28) - 90) * (Math.PI / 180);
         let x = radio * Math.cos(angulo);
         let y = radio * Math.sin(angulo);
-        div.style.left = `calc(50% + ${x}px - 21px)`;
-        div.style.top = `calc(50% + ${y}px - 21px)`;
+        div.style.left = `calc(50% + ${x}px - 22px)`;
+        div.style.top = `calc(50% + ${y}px - 22px)`;
 
         let iconoLuna = typeof obtenerIconoLuna === 'function' ? obtenerIconoLuna(fechaActual) : "🌙";
         div.innerHTML = `<span>${iconoLuna}</span><small>${fechaActual.getDate()}</small>`;
         
-        // Contenedor de puntos indicadores
         const dotContainer = document.createElement('div');
         dotContainer.className = 'dot-container';
 
-        // Puntito rojo si hay sangrado guardado
         if (reg && reg.sangrado && reg.sangrado !== "") {
             const dotSangre = document.createElement('div');
             dotSangre.className = 'indicador-sangre';
             dotContainer.appendChild(dotSangre);
         }
 
-        // Puntito de color acento si es el día de HOY
         if (iso === hoyStr) {
             const dotHoy = document.createElement('div');
             dotHoy.className = 'indicador-hoy';
@@ -1196,40 +824,67 @@ function dibujarRueda() {
 
         div.onclick = (e) => {
             e.stopPropagation();
-            abrirRegistro(iso);
+            
+            // Verificación inteligente antes de abrir la tarjeta
+            if (reg) {
+                // Si ya existe registro: se abre directo en modo LECTURA
+                abrirRegistro(iso, false);
+            } else {
+                // Si no existe: lanza la alerta sutil de confirmación
+                if (confirm("Aún no tienes registro de este día. ¿Deseas registrar?")) {
+                    abrirRegistro(iso, true); // Abre limpio en modo EDICIÓN
+                }
+            }
         };
         contenedor.appendChild(div);
     }
 }
 
-function abrirRegistro(fecha) {
+function abrirRegistro(fecha, forzarEdicion = false) {
     const modal = document.getElementById('modal-registro');
     if (!modal) return;
-    
-    modal.classList.remove('hidden');
-    
-    const d = new Date(fecha + "T00:00:00");
-    const labelFecha = document.getElementById('label-fecha-modal');
-    if (labelFecha) labelFecha.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
     
     const inputFecha = document.getElementById('reg-fecha');
     if (inputFecha) inputFecha.value = fecha;
 
     const registros = JSON.parse(localStorage.getItem('ciclo_logs')) || {};
-    const datos = registros[fecha] || {};
+    const datos = registros[fecha];
 
-    // Asignar valores de forma segura
-    const elSangrado = document.getElementById('reg-sangrado');
-    const elDolor = document.getElementById('reg-dolor');
-    const elEnergia = document.getElementById('reg-energia');
-    const elAnimo = document.getElementById('reg-animo');
-    const elObs = document.getElementById('reg-observaciones');
+    // Asignar los valores guardados (o por defecto si está vacío)
+    document.getElementById('reg-sangrado').value = datos?.sangrado || "";
+    document.getElementById('reg-dolor').value = datos?.dolor || "";
+    document.getElementById('reg-energia').value = datos?.energia || "media";
+    document.getElementById('reg-animo').value = datos?.animo || "calma";
+    document.getElementById('reg-observaciones').value = datos?.observaciones || "";
 
-    if (elSangrado) elSangrado.value = datos.sangrado || "";
-    if (elDolor) elDolor.value = datos.dolor || "";
-    if (elEnergia) elEnergia.value = datos.energia || "media";
-    if (elAnimo) elAnimo.value = datos.animo || "calma";
-    if (elObs) elObs.value = datos.observaciones || "";
+    modal.classList.remove('hidden');
+
+    // Controlar permisos de la tarjeta según si ya existían datos o es nuevo
+    if (datos && !forzarEdicion) {
+        alternarModoEdicionTarjeta(false); // Modo ver (campos bloqueados)
+    } else {
+        alternarModoEdicionTarjeta(true);  // Modo escribir (campos listos)
+    }
+}
+
+// Función auxiliar para bloquear/desbloquear campos de la tarjeta
+function alternarModoEdicionTarjeta(enModoEdicion) {
+    const campos = ['reg-sangrado', 'reg-dolor', 'reg-energia', 'reg-animo', 'reg-observaciones'];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !enModoEdicion;
+    });
+
+    const btnGuardar = document.getElementById('btn-guardar-reg');
+    const btnModificar = document.getElementById('btn-modificar-reg');
+
+    if (enModoEdicion) {
+        if(btnGuardar) btnGuardar.classList.remove('hidden');
+        if(btnModificar) btnModificar.classList.add('hidden');
+    } else {
+        if(btnGuardar) btnGuardar.classList.add('hidden');
+        if(btnModificar) btnModificar.classList.remove('hidden');
+    }
 }
 
 function guardarRegistro() {
@@ -1253,4 +908,13 @@ function guardarRegistro() {
     if (modal) modal.classList.add('hidden');
     
     dibujarRueda();
+}
+
+function obtenerIconoLuna(f) {
+    const lunas = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+    const ciclo = 29.53;
+    const base = new Date("2024-01-11");
+    const diff = (f - base) / 86400000;
+    const pos = (diff % ciclo + ciclo) % ciclo;
+    return lunas[Math.floor((pos / ciclo) * 8)] || "🌙";
 }
