@@ -10,15 +10,18 @@ if ('serviceWorker' in navigator) {
 let pinIngresado = "";
 const PIN_CORRECTO = localStorage.getItem('journalPin') || "1707"; 
 
-// Aseguramos estados definidos desde el arranque
+// Estados globales asegurados
 let modoEdicionActivo = false;
 let metaEditandoIndex = null;
 let modoEdicionHabitos = false;
 let habitoEditandoId = null;
 let modoEdicionAgenda = false;
-let eventoEditando = null; // Declarada por seguridad para Agenda
-let modoEdicionTodo = false; // Declarada por seguridad para TODO
+let eventoEditando = null; 
+let modoEdicionTodo = false; 
 let todoEditandoIndex = null;
+
+// Variable de control para la fecha de la Agenda
+let fechaActualAgenda = new Date();
 
 /* --- AL CARGAR EL DOCUMENTO (DOM) --- */
 document.addEventListener('DOMContentLoaded', () => {
@@ -84,12 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const importFile = document.getElementById('import-file');
     if(importFile) importFile.addEventListener('change', importarDatos);
 
-    // Inicializaciones de arranque al cargar el DOM
+    // Inicializaciones automáticas de arranque
     cargarMetas();
     cargarHabitos();
+    cargarTareas();
     renderizarSemana();
     dibujarRueda();
-}); // <--- ¡AQUÍ ESTÁ LA LLAVE CORRECTA QUE FALTABA PARA CERRAR EL DOMContentLoaded!
+});
 
 
 /* --- ESCUCHADORES DE METAS --- */
@@ -121,7 +125,8 @@ const optEditMetas = document.getElementById('opt-edit-metas');
 if (optEditMetas) {
     optEditMetas.onclick = (e) => {
         e.stopPropagation();
-        const val = document.getElementById('input-nueva-meta').value.trim();
+        const inputField = document.getElementById('input-nueva-meta');
+        const val = inputField ? inputField.value.trim() : "";
         if (modoEdicionActivo && val !== "") {
             guardarMeta(val, true);
             return;
@@ -133,14 +138,6 @@ if (optEditMetas) {
             inputContainerMeta.classList.add('hidden');
         }
         cargarMetas();
-    };
-}
-
-const optHistorialMetas = document.getElementById('opt-historial-metas');
-if (optHistorialMetas) {
-    optHistorialMetas.onclick = (e) => {
-        e.stopPropagation();
-        console.log("Abriendo historial...");
     };
 }
 
@@ -218,6 +215,31 @@ if (inputNuevoHabito) {
 }
 
 
+/* --- ESCUCHADORES TAREAS (TODO) --- */
+const optEditTodo = document.getElementById('opt-edit-todo');
+if (optEditTodo) {
+    optEditTodo.onclick = (e) => {
+        e.stopPropagation();
+        modoEdicionTodo = !modoEdicionTodo;
+        if(modoEdicionTodo) {
+            activarEscrituraTodo();
+        } else {
+            document.getElementById('input-container-todo').classList.add('hidden');
+            cargarTareas();
+        }
+    };
+}
+
+const inputNuevaTarea = document.getElementById('input-nueva-tarea');
+if (inputNuevaTarea) {
+    inputNuevaTarea.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarTarea(e.target.value.trim());
+        }
+    };
+}
+
+
 /* --- ESCUCHADORES AGENDA --- */
 const optEditAgenda = document.getElementById('opt-edit-agenda');
 document.addEventListener('click', (e) => {
@@ -260,58 +282,16 @@ if (optEditAgenda) {
     };
 }
 
-const optLimpiarAgenda = document.getElementById('opt-limpiar-completados-agenda');
-if (optLimpiarAgenda) {
-    optLimpiarAgenda.onclick = (e) => {
-        e.stopPropagation();
-        limpiarAgendaCompletada();
-    };
-}
-
 const btnSemanaPrev = document.getElementById('btn-semana-prev');
 if(btnSemanaPrev) btnSemanaPrev.onclick = () => navegarSemana(-7);
 
 const btnSemanaNext = document.getElementById('btn-semana-next');
 if(btnSemanaNext) btnSemanaNext.onclick = () => navegarSemana(7);
 
-const inputContAgenda = document.getElementById('input-container-agenda');
-if(inputContAgenda) {
-    inputContAgenda.onkeydown = (e) => {
-        if (e.key === 'Escape') {
-            modoEdicionAgenda = false;
-            cerrarEditorAgenda();
-            renderizarSemana();
-        }
-    };
-}
-
-// --- GESTOS DESLIZAR ---
-let touchStartX = 0;
-let touchEndX = 0;
-const agendaGrid = document.getElementById('semana-container');
-if (agendaGrid) {
-    agendaGrid.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    agendaGrid.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        manejarGestoAgenda();
-    }, { passive: true });
-}
-
-function manejarGestoAgenda() {
-    const umbral = 60; 
-    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-    if (touchStartX - touchEndX > umbral) navegarSemana(7);
-    else if (touchEndX - touchStartX > umbral) navegarSemana(-7);
-}
-
 
 /* --- ESCUCHADORES DEL CICLO LUNAR --- */
 const modalRegistro = document.getElementById('modal-registro');
 const optAddReg = document.getElementById('opt-add-registro');
-const optVerCiclos = document.getElementById('opt-ver-ciclos');
 const btnModificarReg = document.getElementById('btn-modificar-reg');
 const regFechaInput = document.getElementById('reg-fecha');
 
@@ -325,15 +305,7 @@ if(optAddReg) {
     optAddReg.onclick = (e) => {
         e.stopPropagation();
         const hoyIso = new Date().toISOString().split('T')[0];
-        abrirRegistro(hoyIso);
-    };
-}
-
-if (optVerCiclos) {
-    optVerCiclos.onclick = (e) => {
-        e.stopPropagation();
-        if (typeof mostrarHistorialCiclos === 'function') mostrarHistorialCiclos();
-        else alert("Función 'Ciclos Anteriores' en desarrollo.");
+        abrirRegistro(hoyIso, true);
     };
 }
 
@@ -378,7 +350,7 @@ function validarPin() {
 }
 
 
-/* --- NAVEGACIÓN POR GESTOS --- */
+/* --- NAVEGACIÓN --- */
 window.addEventListener('hashchange', () => {
     const pantalla = location.hash.replace('#', '') || 'menu';
     ejecutarCambioVisual(pantalla);
@@ -408,7 +380,7 @@ if (!location.hash) {
 }
 
 
-/* --- MODO OSCURO --- */
+/* --- TEMA Y CONFIGURACIÓN --- */
 function cambiarTema() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('journalDarkMode', document.body.classList.contains('dark-mode'));
@@ -417,8 +389,6 @@ if (localStorage.getItem('journalDarkMode') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-
-/* --- FUNCIONES DE CONFIGURACIÓN --- */
 function cambiarColorAcento(e) {
     const color = e.target.value;
     document.documentElement.style.setProperty('--accent-color', color);
@@ -428,7 +398,6 @@ function cambiarColorAcento(e) {
 const colorGuardado = localStorage.getItem('journalAccentColor');
 if (colorGuardado) {
     document.documentElement.style.setProperty('--accent-color', colorGuardado);
-    setTimeout(() => { if(document.getElementById('color-picker')) document.getElementById('color-picker').value = colorGuardado; }, 100);
 }
 
 function cambiarPinAction() {
@@ -451,6 +420,7 @@ function exportarDatos() {
     a.click();
 }
 
+// Inyección segura para evitar colapsos al importar
 function importarDatos(e) {
     const archivo = e.target.files[0];
     if (!archivo) return;
@@ -459,7 +429,7 @@ function importarDatos(e) {
         try {
             const datos = JSON.parse(e.target.result);
             Object.keys(datos).forEach(key => localStorage.setItem(key, datos[key]));
-            alert("Copia de seguridad cargada. La app se reiniciará.");
+            alert("Copia de seguridad cargada con éxito.");
             location.reload();
         } catch (err) {
             alert("Error al leer el archivo de copia.");
@@ -537,7 +507,6 @@ function activarEscrituraMeta() {
     metaEditandoIndex = null;
     const inputContainer = document.getElementById('input-container-meta');
     const inputField = document.getElementById('input-nueva-meta');
-    
     if(inputContainer) inputContainer.classList.remove('hidden');
     if(inputField) {
         inputField.value = "";
@@ -549,7 +518,6 @@ function prepararEdicion(index, textoActual) {
     metaEditandoIndex = index;
     const inputContainer = document.getElementById('input-container-meta');
     const inputField = document.getElementById('input-nueva-meta');
-    
     if(inputContainer) inputContainer.classList.remove('hidden');
     if(inputField) {
         inputField.value = textoActual;
@@ -570,14 +538,11 @@ function guardarMeta(texto, forzarCierreModo = false) {
     }
 
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    
     document.getElementById('input-nueva-meta').value = "";
     document.getElementById('input-container-meta').classList.add('hidden');
     metaEditandoIndex = null;
 
-    if (forzarCierreModo) {
-        modoEdicionActivo = false;
-    }
+    if (forzarCierreModo) modoEdicionActivo = false;
     cargarMetas();
 }
 
@@ -586,7 +551,6 @@ function borrarMetaDirecto(index) {
     let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
     metas.splice(index, 1);
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
-    
     metaEditandoIndex = null;
     document.getElementById('input-container-meta').classList.add('hidden');
     cargarMetas();
@@ -662,32 +626,94 @@ function cargarHabitos() {
         contenedor.appendChild(item);
     });
 
-    if (modoEdicionHabitos) {
+    if (modoEdicionHabitos && habitoEditandoId === null) {
         const divAdd = document.createElement('div');
         divAdd.className = "add-trigger-area";
-        divAdd.style.textAlign = "center";
-        divAdd.style.padding = "15px";
-        divAdd.style.border = "1px dashed rgba(0,0,0,0.2)";
-        divAdd.style.borderRadius = "12px";
-        divAdd.style.cursor = "pointer";
         divAdd.textContent = "+ Añadir nuevo hábito...";
         divAdd.onclick = () => activarEscrituraHabito();
         contenedor.appendChild(divAdd);
     }
 }
 
+function activarEscrituraHabito() {
+    habitoEditandoId = null;
+    const container = document.getElementById('input-container-habito');
+    const field = document.getElementById('input-nuevo-habito');
+    if(container) container.classList.remove('hidden');
+    if(field) {
+        field.value = "";
+        field.focus();
+    }
+}
+
+function prepararEdicionHabito(habito) {
+    habitoEditandoId = habito.id;
+    const container = document.getElementById('input-container-habito');
+    const field = document.getElementById('input-nuevo-habito');
+    if(container) container.classList.remove('hidden');
+    if(field) {
+        field.value = habito.nombre;
+        field.focus();
+    }
+}
+
+function guardarHabito() {
+    const field = document.getElementById('input-nuevo-habito');
+    if (!field) return;
+    const nombre = field.value.trim();
+    if (nombre === "") return;
+
+    const clave = obtenerClaveMes();
+    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
+
+    if (habitoEditandoId !== null) {
+        habitos = habitos.map(h => h.id === habitoEditandoId ? { ...h, nombre } : h);
+    } else {
+        habitos.push({ id: 'hab_' + Date.now(), nombre, completados: [] });
+    }
+
+    localStorage.setItem(clave, JSON.stringify(habitos));
+    field.value = "";
+    document.getElementById('input-container-habito').classList.add('hidden');
+    habitoEditandoId = null;
+    cargarHabitos();
+}
+
+function alternarDiaHabito(id, dia) {
+    const clave = obtenerClaveMes();
+    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
+    habitos = habitos.map(h => {
+        if (h.id === id) {
+            let comps = h.completados || [];
+            if (comps.includes(dia)) {
+                comps = comps.filter(d => d !== dia);
+            } else {
+                comps.push(dia);
+            }
+            return { ...h, completados: comps };
+        }
+        return h;
+    });
+    localStorage.setItem(clave, JSON.stringify(habitos));
+    cargarHabitos();
+}
+
+function borrarHabito(id) {
+    const clave = obtenerClaveMes();
+    let habitos = JSON.parse(localStorage.getItem(clave)) || [];
+    habitos = habitos.filter(h => h.id !== id);
+    localStorage.setItem(clave, JSON.stringify(habitos));
+    habitoEditandoId = null;
+    document.getElementById('input-container-habito').classList.add('hidden');
+    cargarHabitos();
+}
+
 function toggleHistorialHabitos() {
     const contenedor = document.getElementById('historial-habitos-container');
     const btn = document.getElementById('opt-historial-habitos');
     if(!contenedor || !btn) return;
-
     contenedor.classList.toggle('hidden');
-    if(!contenedor.classList.contains('hidden')) {
-        btn.textContent = "Ocultar Historial";
-        contenedor.innerHTML = "<p style='text-align:center; opacity:0.5; padding:10px;'>Historial de meses anteriores</p>";
-    } else {
-        btn.textContent = "Ver Historial";
-    }
+    btn.textContent = contenedor.classList.contains('hidden') ? "Ver Historial" : "Ocultar Historial";
 }
 
 
@@ -705,50 +731,205 @@ function cargarTareas() {
         li.innerHTML = `
             <div class="todo-check ${tarea.completada ? 'active' : ''}"></div>
             <span>${tarea.texto}</span>
+            ${modoEdicionTodo ? `<button class="btn-delete-meta" onclick="event.stopPropagation(); borrarTarea(${index})">×</button>` : ''}
         `;
 
         li.onclick = (e) => {
             e.stopPropagation(); 
             if (modoEdicionTodo) {
-                if (typeof prepararEdicionTodo === 'function') prepararEdicionTodo(index, tarea.texto);
+                prepararEdicionTodo(index, tarea.texto);
             } else {
-                if (typeof alternarTarea === 'function') alternarTarea(index);
+                alternarTarea(index);
             }
         };
         lista.appendChild(li);
     });
 
-    if (!modoEdicionTodo) {
-        const containerInput = document.getElementById('input-container-todo');
-        if(containerInput) containerInput.classList.add('hidden');
-        todoEditandoIndex = null;
+    if (modoEdicionTodo && todoEditandoIndex === null) {
+        const liNueva = document.createElement('li');
+        liNueva.className = "add-trigger-area";
+        liNueva.textContent = "+ Añadir nueva tarea...";
+        liNueva.onclick = (e) => {
+            e.stopPropagation();
+            activarEscrituraTodo();
+        };
+        lista.appendChild(liNueva);
     }
+}
+
+function activarEscrituraTodo() {
+    todoEditandoIndex = null;
+    const container = document.getElementById('input-container-todo');
+    const field = document.getElementById('input-nueva-tarea');
+    if(container) container.classList.remove('hidden');
+    if(field) {
+        field.value = "";
+        field.focus();
+    }
+}
+
+function prepararEdicionTodo(index, texto) {
+    todoEditandoIndex = index;
+    const container = document.getElementById('input-container-todo');
+    const field = document.getElementById('input-nueva-tarea');
+    if(container) container.classList.remove('hidden');
+    if(field) {
+        field.value = texto;
+        field.focus();
+    }
+}
+
+function guardarTarea(texto) {
+    if (texto === "") return;
+    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+
+    if (todoEditandoIndex !== null) {
+        tareas[todoEditandoIndex].texto = texto;
+    } else {
+        tareas.push({ texto: texto, completada: false });
+    }
+
+    localStorage.setItem('journal_todo', JSON.stringify(tareas));
+    document.getElementById('input-nueva-tarea').value = "";
+    document.getElementById('input-container-todo').classList.add('hidden');
+    todoEditandoIndex = null;
+    cargarTareas();
+}
+
+function alternarTarea(index) {
+    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    if(tareas[index]) {
+        tareas[index].completada = !tareas[index].completada;
+        localStorage.setItem('journal_todo', JSON.stringify(tareas));
+        cargarTareas();
+    }
+}
+
+function borrarTarea(index) {
+    let tareas = JSON.parse(localStorage.getItem('journal_todo')) || [];
+    tareas.splice(index, 1);
+    localStorage.setItem('journal_todo', JSON.stringify(tareas));
+    todoEditandoIndex = null;
+    document.getElementById('input-container-todo').classList.add('hidden');
+    cargarTareas();
 }
 
 
 /* --- AGENDA --- */
+function obtenerLunes(d) {
+    d = new Date(d);
+    let day = d.getDay(),
+        diff = d.getDate() - day + (day == 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+}
+
+function renderizarSemana() {
+    const contenedor = document.getElementById('semana-container');
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
+
+    let lunes = obtenerLunes(fechaActualAgenda);
+    const nombresDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+    for (let i = 0; i < 7; i++) {
+        let diaF = new Date(lunes);
+        diaF.setDate(lunes.getDate() + i);
+        let isoFecha = diaF.toISOString().split('T')[0];
+
+        let eventos = JSON.parse(localStorage.getItem(`agenda_${isoFecha}`)) || [];
+        let eventosHTML = "";
+
+        eventos.forEach((ev, idx) => {
+            eventosHTML += `
+                <div class="agenda-evento ${ev.done ? 'completado' : ''}" onclick="event.stopPropagation(); alternarEventoAgenda('${isoFecha}', ${idx})">
+                    <span>${ev.hora ? `<b>${ev.hora}</b> ` : ''}${ev.tarea}</span>
+                    ${modoEdicionAgenda ? `<button class="btn-delete-meta" onclick="event.stopPropagation(); borrarEventoAgenda('${isoFecha}', ${idx})">×</button>` : ''}
+                </div>
+            `;
+        });
+
+        const divDia = document.createElement('div');
+        divDia.className = "agenda-dia-col";
+        divDia.innerHTML = `
+            <div class="agenda-dia-header">
+                <span class="nombre-dia">${nombresDias[i]}</span>
+                <span class="numero-dia">${diaF.getDate()}</span>
+            </div>
+            <div class="agenda-eventos-lista">${eventosHTML}</div>
+        `;
+
+        divDia.onclick = () => {
+            if (modoEdicionAgenda) {
+                abrirEditorAgenda(isoFecha);
+            }
+        };
+
+        contenedor.appendChild(divDia);
+    }
+}
+
+function abrirEditorAgenda(fecha, index = null, hora = "", tarea = "") {
+    eventoEditando = { fecha, index };
+    const container = document.getElementById('input-container-agenda');
+    const txtTarea = document.getElementById('agenda-tarea');
+    const txtFecha = document.getElementById('agenda-fecha');
+    const txtHora = document.getElementById('agenda-hora');
+
+    if(container) container.classList.remove('hidden');
+    if(txtFecha) txtFecha.value = fecha;
+    if(txtHora) txtHora.value = hora;
+    if(txtTarea) {
+        txtTarea.value = tarea;
+        txtTarea.focus();
+    }
+}
+
+function cerrarEditorAgenda() {
+    const container = document.getElementById('input-container-agenda');
+    if(container) container.classList.add('hidden');
+    eventoEditando = null;
+    const txtTarea = document.getElementById('agenda-tarea');
+    if(txtTarea) txtTarea.value = "";
+}
+
 function guardarEventoAgenda() {
     const tarea = document.getElementById('agenda-tarea').value.trim();
     const fecha = document.getElementById('agenda-fecha').value;
     const hora = document.getElementById('agenda-hora').value;
 
     if (tarea && fecha) {
-        if (eventoEditando) {
-            let evsViejos = JSON.parse(localStorage.getItem(`agenda_${eventoEditando.fecha}`));
-            if(evsViejos) {
-                evsViejos.splice(eventoEditando.index, 1);
-                localStorage.setItem(`agenda_${eventoEditando.fecha}`, JSON.stringify(evsViejos));
-            }
+        let evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+        if (eventoEditando && eventoEditando.index !== null && eventoEditando.fecha === fecha) {
+            evs[eventoEditando.index] = { tarea, hora, done: false };
+        } else {
+            evs.push({ tarea, hora, done: false });
         }
-        
-        const evsDestino = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
-        evsDestino.push({ tarea, hora, done: false });
-        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evsDestino));
-        
+        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
         modoEdicionAgenda = false; 
-        if (typeof cerrarEditorAgenda === 'function') cerrarEditorAgenda();
-        if (typeof renderizarSemana === 'function') renderizarSemana();
+        cerrarEditorAgenda();
+        renderizarSemana();
     }
+}
+
+function alternarEventoAgenda(fecha, idx) {
+    let evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+    if(evs[idx]) {
+        evs[idx].done = !evs[idx].done;
+        localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+        renderizarSemana();
+    }
+}
+
+function borrarEventoAgenda(fecha, idx) {
+    let evs = JSON.parse(localStorage.getItem(`agenda_${fecha}`)) || [];
+    evs.splice(idx, 1);
+    localStorage.setItem(`agenda_${fecha}`, JSON.stringify(evs));
+    renderizarSemana();
+}
+
+function navegarSemana(dias) {
+    fechaActualAgenda.setDate(fechaActualAgenda.getDate() + dias);
+    renderizarSemana();
 }
 
 
@@ -756,16 +937,12 @@ function guardarEventoAgenda() {
 function obtenerFechaInicioCiclo(registros, hoyStr) {
     const fechaBase = new Date("2026-04-30T00:00:00");
     const hoy = new Date(hoyStr + "T00:00:00");
-    
     if (hoy < fechaBase) return fechaBase;
-    
     const diferenciaMilisegundos = hoy - fechaBase;
     const diasTranscurridos = Math.floor(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
     const ciclosCompletos = Math.floor(diasTranscurridos / 28);
-    
     let inicioCicloActual = new Date(fechaBase);
-    inicioCicloActual.setDate(fechaBase.getDate() + (ciclosCompletos * 28));
-    
+    inicioCicloActual.setDate(fechaBase.getDate() + (cyclesCompletos * 28));
     return inicioCicloActual;
 }
 
@@ -781,12 +958,6 @@ function dibujarRueda() {
     const hoyStr = hoy.toISOString().split('T')[0];
     
     const inicioCiclo = obtenerFechaInicioCiclo(registros, hoyStr);
-    
-    const labelInicio = document.getElementById('txt-inicio-ciclo-label');
-    if (labelInicio) {
-        labelInicio.textContent = `Ciclo iniciado el: ${inicioCiclo.getDate()}/${inicioCiclo.getMonth() + 1}/${inicioCiclo.getFullYear()}`;
-    }
-
     const radio = 145; 
 
     for (let i = 0; i < 28; i++) {
@@ -804,7 +975,7 @@ function dibujarRueda() {
         div.style.left = `calc(50% + ${x}px - 22px)`;
         div.style.top = `calc(50% + ${y}px - 22px)`;
 
-        let iconoLuna = typeof obtenerIconoLuna === 'function' ? obtenerIconoLuna(fechaActual) : "🌙";
+        let iconoLuna = obtenerIconoLuna(fechaActual);
         div.innerHTML = `<span>${iconoLuna}</span><small>${fechaActual.getDate()}</small>`;
         
         const dotContainer = document.createElement('div');
@@ -831,13 +1002,7 @@ function dibujarRueda() {
 
         div.onclick = (e) => {
             e.stopPropagation();
-            if (reg) {
-                abrirRegistro(iso, false);
-            } else {
-                if (confirm("Aún no tienes registro de este día. ¿Deseas registrar?")) {
-                    abrirRegistro(iso, true); 
-                }
-            }
+            abrirRegistro(iso, !reg);
         };
         contenedor.appendChild(div);
     }
@@ -866,12 +1031,7 @@ function abrirRegistro(fecha, forzarEdicion = false) {
     if(fObservaciones) fObservaciones.value = datos?.observaciones || "";
 
     modal.classList.remove('hidden');
-
-    if (datos && !forzarEdicion) {
-        alternarModoEdicionTarjeta(false); 
-    } else {
-        alternarModoEdicionTarjeta(true);  
-    }
+    alternarModoEdicionTarjeta(forzarEdicion);
 }
 
 function alternarModoEdicionTarjeta(enModoEdicion) {
@@ -909,10 +1069,8 @@ function guardarRegistro() {
     };
 
     localStorage.setItem('ciclo_logs', JSON.stringify(registros));
-    
     const modal = document.getElementById('modal-registro');
     if (modal) modal.classList.add('hidden');
-    
     dibujarRueda();
 }
 
