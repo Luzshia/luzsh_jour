@@ -74,7 +74,6 @@ document.addEventListener('click', (e) => {
     const inputContainerMeta = document.getElementById('input-container-meta');
     const optEditMetas = document.getElementById('opt-edit-metas');
 
-    // Comportamiento inteligente al hacer clic fuera en un espacio vacío
     if (modoEdicionActivo) {
         const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
         const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
@@ -83,7 +82,7 @@ document.addEventListener('click', (e) => {
         if (clicFueraLista && clicFueraInput && clicFueraBotonEditar) {
             const val = document.getElementById('input-nueva-meta').value.trim();
             if (val !== "") {
-                guardarMeta(val, true); // Guarda la modificación o nueva meta y cierra
+                guardarMeta(val, true); 
             } else {
                 modoEdicionActivo = false;
                 metaEditandoIndex = null;
@@ -94,13 +93,11 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Acción del botón flotante (+) para activar/desactivar edición
 const optEditMetas = document.getElementById('opt-edit-metas');
 if (optEditMetas) {
     optEditMetas.onclick = (e) => {
         e.stopPropagation();
         
-        // Si ya estaba abierto escribiendo algo, guardamos antes de cambiar el modo
         const val = document.getElementById('input-nueva-meta').value.trim();
         if (modoEdicionActivo && val !== "") {
             guardarMeta(val, true);
@@ -119,7 +116,6 @@ if (optEditMetas) {
     };
 }
 
-// Historial
 const optHistorialMetas = document.getElementById('opt-historial-metas');
 if (optHistorialMetas) {
     optHistorialMetas.onclick = (e) => {
@@ -128,7 +124,6 @@ if (optHistorialMetas) {
     };
 }
 
-// Manejo de teclado (Enter y Escape)
 const inputNuevaMeta = document.getElementById('input-nueva-meta');
 if (inputNuevaMeta) {
     inputNuevaMeta.onkeydown = (e) => {
@@ -144,7 +139,7 @@ if (inputNuevaMeta) {
     };
 }
 
-// Inicialización de arranque
+// INICIALIZACIÓN ABSOLUTA AL FINAL DE TODO
 cargarMetas();
 
 
@@ -546,11 +541,11 @@ function importarDatos(e) {
 
 
 
-/* --- FUNCIONES DE METAS --- */
-// SOLUCIÓN AL ERROR DE PÁGINA EN BLANCO: Declaración explícita de estados globales
+/* --- ESTADOS GLOBALES DE METAS --- */
 let modoEdicionActivo = false;
 let metaEditandoIndex = null;
 
+/* --- FUNCIONES DE METAS --- */
 function cargarMetas() {
     const anio = new Date().getFullYear();
     const metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
@@ -566,7 +561,6 @@ function cargarMetas() {
         const li = document.createElement('li');
         li.className = `meta-item ${m.completada ? 'completed' : ''}`;
         
-        // Si estamos editando este elemento concreto, le ponemos la clase visual
         if (modoEdicionActivo && metaEditandoIndex === index) {
             li.classList.add('editando');
         }
@@ -599,7 +593,6 @@ function cargarMetas() {
         lista.appendChild(li);
     });
 
-    // Añadir fila de disparo inline si estamos editando
     if (modoEdicionActivo && metaEditandoIndex === null) {
         const liNueva = document.createElement('li');
         liNueva.className = "add-trigger-area";
@@ -638,7 +631,7 @@ function prepararEdicion(index, textoActual) {
         inputField.value = textoActual;
         inputField.focus();
     }
-    cargarMetas(); // Refresca para aplicar la clase .editando al item
+    cargarMetas();
 }
 
 function guardarMeta(texto, forzarCierreModo = false) {
@@ -647,16 +640,13 @@ function guardarMeta(texto, forzarCierreModo = false) {
     let metas = JSON.parse(localStorage.getItem(`journal_metas_${anio}`)) || [];
 
     if (metaEditandoIndex !== null) {
-        // Modificación de una meta existente
         metas[metaEditandoIndex].texto = texto;
     } else {
-        // Adición de una nueva meta al final
         metas.push({ texto: texto, completada: false });
     }
 
     localStorage.setItem(`journal_metas_${anio}`, JSON.stringify(metas));
     
-    // Resetear campos e inputs
     document.getElementById('input-nueva-meta').value = "";
     document.getElementById('input-container-meta').classList.add('hidden');
     metaEditandoIndex = null;
