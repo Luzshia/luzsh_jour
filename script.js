@@ -67,80 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export').addEventListener('click', exportarDatos);
     document.getElementById('import-file').addEventListener('change', importarDatos);
 
-/* --- ESCUCHADORES DE METAS --- */
 
-document.addEventListener('click', (e) => {
-    const listaMetas = document.getElementById('lista-metas');
-    const inputContainerMeta = document.getElementById('input-container-meta');
-    const optEditMetas = document.getElementById('opt-edit-metas');
-
-    if (modoEdicionActivo) {
-        const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
-        const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
-        const clicFueraBotonEditar = optEditMetas && !optEditMetas.contains(e.target);
-
-        if (clicFueraLista && clicFueraInput && clicFueraBotonEditar) {
-            const val = document.getElementById('input-nueva-meta').value.trim();
-            if (val !== "") {
-                guardarMeta(val, true); 
-            } else {
-                modoEdicionActivo = false;
-                metaEditandoIndex = null;
-                if(inputContainerMeta) inputContainerMeta.classList.add('hidden');
-                cargarMetas();
-            }
-        }
-    }
-});
-
-const optEditMetas = document.getElementById('opt-edit-metas');
-if (optEditMetas) {
-    optEditMetas.onclick = (e) => {
-        e.stopPropagation();
-        
-        const val = document.getElementById('input-nueva-meta').value.trim();
-        if (modoEdicionActivo && val !== "") {
-            guardarMeta(val, true);
-            return;
-        }
-
-        modoEdicionActivo = !modoEdicionActivo;
-        metaEditandoIndex = null;
-        
-        const inputContainerMeta = document.getElementById('input-container-meta');
-        if(!modoEdicionActivo && inputContainerMeta) {
-            inputContainerMeta.classList.add('hidden');
-        }
-        
-        cargarMetas();
-    };
-}
-
-const optHistorialMetas = document.getElementById('opt-historial-metas');
-if (optHistorialMetas) {
-    optHistorialMetas.onclick = (e) => {
-        e.stopPropagation();
-        console.log("Abriendo historial...");
-    };
-}
-
-const inputNuevaMeta = document.getElementById('input-nueva-meta');
-if (inputNuevaMeta) {
-    inputNuevaMeta.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            guardarMeta(e.target.value.trim(), false); 
-        }
-        if (e.key === 'Escape') {
-            modoEdicionActivo = false;
-            metaEditandoIndex = null;
-            document.getElementById('input-container-meta').classList.add('hidden');
-            cargarMetas();
-        }
-    };
-}
-
-// INICIALIZACIÓN ABSOLUTA AL FINAL DE TODO
-cargarMetas();
 
 
 
@@ -668,6 +595,86 @@ function borrarMetaDirecto(index) {
     document.getElementById('input-container-meta').classList.add('hidden');
     cargarMetas();
 }
+
+/* --- ESCUCHADORES DE METAS --- */
+
+document.addEventListener('click', (e) => {
+    const listaMetas = document.getElementById('lista-metas');
+    const inputContainerMeta = document.getElementById('input-container-meta');
+    const optEditMetas = document.getElementById('opt-edit-metas');
+
+    if (modoEdicionActivo) {
+        const clicFueraLista = listaMetas && !listaMetas.contains(e.target);
+        const clicFueraInput = inputContainerMeta && !inputContainerMeta.contains(e.target);
+        const clicFueraBotonEditar = optEditMetas && !optEditMetas.contains(e.target);
+
+        if (clicFueraLista && clicFueraInput && clicFueraBotonEditar) {
+            const val = document.getElementById('input-nueva-meta').value.trim();
+            if (val !== "") {
+                guardarMeta(val, true); 
+            } else {
+                modoEdicionActivo = false;
+                metaEditandoIndex = null;
+                if(inputContainerMeta) inputContainerMeta.classList.add('hidden');
+                cargarMetas();
+            }
+        }
+    }
+});
+
+const optEditMetas = document.getElementById('opt-edit-metas');
+if (optEditMetas) {
+    optEditMetas.onclick = (e) => {
+        e.stopPropagation();
+        
+        const val = document.getElementById('input-nueva-meta').value.trim();
+        if (modoEdicionActivo && val !== "") {
+            guardarMeta(val, true);
+            return;
+        }
+
+        modoEdicionActivo = !modoEdicionActivo;
+        metaEditandoIndex = null;
+        
+        const inputContainerMeta = document.getElementById('input-container-meta');
+        if(!modoEdicionActivo && inputContainerMeta) {
+            inputContainerMeta.classList.add('hidden');
+        }
+        
+        cargarMetas();
+    };
+}
+
+const optHistorialMetas = document.getElementById('opt-historial-metas');
+if (optHistorialMetas) {
+    optHistorialMetas.onclick = (e) => {
+        e.stopPropagation();
+        console.log("Abriendo historial...");
+    };
+}
+
+const inputNuevaMeta = document.getElementById('input-nueva-meta');
+if (inputNuevaMeta) {
+    inputNuevaMeta.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            guardarMeta(e.target.value.trim(), false); 
+        }
+        if (e.key === 'Escape') {
+            modoEdicionActivo = false;
+            metaEditandoIndex = null;
+            document.getElementById('input-container-meta').classList.add('hidden');
+            cargarMetas();
+        }
+    };
+}
+
+// INICIALIZACIÓN ABSOLUTA AL FINAL DE TODO
+cargarMetas();
+
+
+
+
+
 
 
 
