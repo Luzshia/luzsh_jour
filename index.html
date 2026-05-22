@@ -6,13 +6,13 @@
     <title>Journal Personal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#fdfdfd">
 </head>
 <body class="dotted-bg">
 
-    <div id="lock-screen" class="overlay">
+    <div id="lock-screen" class="overlay-lock">
         <div class="lock-container">
-            <h2>🔒 Privacidad</h2>
+            <h2 class="lock-title">🔒</h2>
             <div class="pin-display">
                 <div class="pin-slot" id="slot-1"></div>
                 <div class="pin-slot" id="slot-2"></div>
@@ -36,173 +36,130 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <nav class="sidebar">
-            <div class="brand">📓</div>
-            <ul class="nav-links">
-                <li id="go-metas" title="Metas Anuales">🎯</li>
-                <li id="go-habitos" title="Tracker de Hábitos">💎</li>
-                <li id="go-todo" title="To-Do List">✅</li>
-                <li id="go-agenda" title="Agenda Hobonichi">📅</li>
-                <li id="go-ciclo" title="Calendario Lunar">🌙</li>
-                <li id="go-config" title="Configuración">⚙️</li>
-            </ul>
-        </nav>
+    <div class="app-container" id="main-app-zone">
+        
+        <section id="view-menu" class="view active">
+            <div class="menu-column">
+                <h1 class="journal-brand-title">Journal</h1>
+                <nav class="journal-nav-links">
+                    <button type="button" class="menu-link-btn" id="nav-metas">Metas Anuales</button>
+                    <button type="button" class="menu-link-btn" id="nav-habitos">Hábitos</button>
+                    <button type="button" class="menu-link-btn" id="nav-todo">To-Do List</button>
+                    <button type="button" class="menu-link-btn" id="nav-agenda">Agenda</button>
+                    <button type="button" class="menu-link-btn" id="nav-ciclo">Ciclo Menstrual</button>
+                    <button type="button" class="menu-link-btn" id="nav-config">Configuración</button>
+                </nav>
+            </div>
+        </section>
 
-        <main class="content">
-            
-            <section id="view-metas" class="view">
-                <header class="view-header">
-                    <h2>🎯 Metas Anuales <span id="meta-year-label"></span></h2>
-                    <button class="edit-section-btn" id="opt-edit-metas">✏️ Editar</button>
-                </header>
-                <div class="scroll-area project-area">
-                    <ul class="meta-list" id="lista-metas"></ul>
-                    <div id="input-container-meta" class="input-inline-container hidden">
-                        <input type="text" id="input-nueva-meta" placeholder="Escribe tu meta y presiona Enter...">
+        <section id="view-metas" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <h2 id="title-metas">Mis metas</h2>
+            </header>
+            <div class="notebook-body">
+                <ul class="notebook-list" id="lista-metas"></ul>
+            </div>
+            <button type="button" class="btn-history-left" id="btn-historial-metas">📋 Historial</button>
+        </section>
+
+        <section id="view-habitos" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <h2 id="title-habitos">Mis hábitos</h2>
+            </header>
+            <div class="notebook-body overflow-x-notebook">
+                <div class="habits-matrix-container" id="matrix-habitos"></div>
+            </div>
+            <button type="button" class="btn-history-left" id="btn-historial-habitos">📋 Historial</button>
+        </section>
+
+        <section id="view-todo" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <h2>To-Do List</h2>
+            </header>
+            <div class="notebook-body">
+                <ul class="notebook-list" id="lista-todo"></ul>
+            </div>
+            <button type="button" class="btn-action-center-bottom" id="btn-clear-completed-todo" title="Eliminar tareas completadas">🗑️</button>
+        </section>
+
+        <section id="view-agenda" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <div class="agenda-header-title-zone">
+                    <h2 id="agenda-week-label">Semana</h2>
+                </div>
+            </header>
+            <div class="notebook-body swipe-zone-agenda" id="swipe-area-agenda">
+                <div class="hobonichi-grid" id="grid-agenda-semana"></div>
+            </div>
+            <button type="button" class="btn-action-center-bottom" id="btn-clear-done-events" title="Eliminar eventos completados">🗑️</button>
+        </section>
+
+        <section id="view-ciclo" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <h2>Ciclo Menstrual</h2>
+            </header>
+            <div class="notebook-body alignment-center-box">
+                <div class="lunar-cycle-wrapper">
+                    <div class="lunar-ring" id="anillo-ciclo-28"></div>
+                    <div class="lunar-center-data">
+                        <div id="lunar-center-date" class="center-date">--/--</div>
+                        <div id="lunar-center-day" class="center-day-count">Día --</div>
                     </div>
                 </div>
-            </section>
-
-            <section id="view-habitos" class="view">
-                <header class="view-header">
-                    <h2>💎 Tracker de Hábitos <span id="habit-month-label"></span></h2>
-                    <button class="edit-section-btn" id="opt-edit-habitos">✏️ Editar</button>
-                </header>
-                <div class="scroll-area project-area">
-                    <div class="habits-grid" id="contenedor-habitos"></div>
-                </div>
-            </section>
-
-            <section id="view-todo" class="view">
-                <header class="view-header">
-                    <h2>✅ Lista de Tareas</h2>
-                    <button class="edit-section-btn" id="opt-edit-todo">✏️ Editar</button>
-                </header>
-                <div class="scroll-area project-area">
-                    <ul class="todo-list" id="lista-tareas"></ul>
-                    <div id="input-container-todo" class="input-inline-container hidden">
-                        <input type="text" id="todo-tarea" placeholder="Nueva tarea... (Enter para guardar)">
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-agenda" class="view">
-                <header class="view-header">
-                    <h2>📅 Agenda Semanal</h2>
-                    <div class="agenda-controls">
-                        <button id="btn-semana-prev" class="btn-nav-semana">◀</button>
-                        <button id="btn-semana-next" class="btn-nav-semana">▶</button>
-                        <button class="edit-section-btn" id="opt-edit-agenda" style="margin-left:10px;">✏️ Editar</button>
-                    </div>
-                </header>
-                <div class="scroll-area flex-scroll project-area">
-                    <div class="agenda-hobonichi-wrapper" id="semana-container"></div>
-                </div>
-            </section>
-
-            <section id="view-ciclo" class="view">
-                <header class="view-header">
-                    <h2>🌙 Sintomas y Ciclo Lunar</h2>
-                    <button class="edit-section-btn" id="opt-edit-ciclo">📝 Registrar Día</button>
-                </header>
-                <div class="scroll-area">
-                    <div class="ciclo-container">
-                        <div class="rueda-wrapper">
-                            <canvas id="rueda-ciclo" width="320" height="320"></canvas>
-                        </div>
-                        <div id="info-ciclo-detalle" class="info-detalles-notebook">
-                            <p class="placeholder-text">Selecciona un día de la rueda para ver los registros.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <div id="modal-registro" class="modal hidden">
-                <div class="modal-contenido">
-                    <h3>Registar Estado Diario</h3>
-                    <div class="form-group">
-                        <label>Fecha:</label>
-                        <input type="date" id="reg-fecha">
-                    </div>
-                    <div class="form-group">
-                        <label>Flujo / Sangrado:</label>
-                        <select id="reg-sangrado">
-                            <option value="">Ninguno</option>
-                            <option value="leve">Leve</option>
-                            <option value="moderado">Moderado</option>
-                            <option value="abundante">Abundante</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Dolor / Cólicos:</label>
-                        <select id="reg-dolor">
-                            <option value="">Ninguno</option>
-                            <option value="leve">Leve</option>
-                            <option value="moderado">Moderado</option>
-                            <option value="fuerte">Fuerte</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Nivel de Energía:</label>
-                        <select id="reg-energia">
-                            <option value="baja">Baja</option>
-                            <option value="media" selected>Media</option>
-                            <option value="alta">Alta</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado de Ánimo:</label>
-                        <select id="reg-animo">
-                            <option value="calma" selected>Calma</option>
-                            <option value="feliz">Feliz / Radiante</option>
-                            <option value="sensible">Sensible / Nostálgica</option>
-                            <option value="irritable">Irritable / Ansiosa</option>
-                            <option value="cansada">Cansada</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Observaciones / Diario:</label>
-                        <textarea id="reg-observaciones" rows="3" placeholder="¿Cómo te sientes hoy?..."></textarea>
-                    </div>
-                    <div class="modal-btns">
-                        <button type="button" class="btn-secundario" id="btn-cerrar-modal">Cancelar</button>
-                        <button type="button" class="btn-primario" id="btn-guardar-reg">Guardar</button>
-                    </div>
+                <div id="ciclo-day-details" class="day-details-notebook-text">
+                    <p class="notebook-placeholder-text">Selecciona un día del diagrama para ver los registros.</p>
                 </div>
             </div>
+            <button type="button" class="btn-history-left" id="btn-historial-ciclo">📋 Historial de Ciclos</button>
+        </section>
 
-            <section id="view-config" class="view">
-                <header class="view-header">
-                    <h2>⚙️ Configuración</h2>
-                </header>
-                <div class="scroll-area">
-                    <div class="config-group">
-                        <h3>🎨 Apariencia</h3>
-                        <button class="config-item-btn" id="btn-toggle-dark">🌓 Modo Oscuro (On/Off)</button>
-                        <div class="config-item">
-                            <span>Color de acento:</span>
-                            <input type="color" id="color-picker" value="#2ecc71">
-                        </div>
-                    </div>
-                    <div class="config-group">
-                        <h3>🔒 Seguridad</h3>
-                        <button class="config-item-btn" id="btn-change-pin">Cambiar PIN de acceso</button>
-                    </div>
-                    <div class="config-group">
-                        <h3>💾 Datos y Backup</h3>
-                        <button class="config-item-btn btn-save" id="btn-export">Guardar Copia de Seguridad</button>
-                        <label for="import-file" class="config-item-btn btn-load">
-                            Cargar Copia de Seguridad
-                            <input type="file" id="import-file" accept=".json" style="display:none">
+        <section id="view-config" class="view">
+            <header class="notebook-header">
+                <button type="button" class="back-menu-btn">← Volver</button>
+                <h2>Configuración</h2>
+            </header>
+            <div class="notebook-body max-width-config">
+                <div class="config-row-item">
+                    <span>Modo de color:</span>
+                    <button type="button" class="config-toggle-action" id="cfg-toggle-theme">Claro / Oscuro</button>
+                </div>
+                <div class="config-row-item">
+                    <span>Color de acento:</span>
+                    <input type="color" id="cfg-color-picker" value="#2ecc71" class="minimal-color-picker">
+                </div>
+                <div class="config-row-item">
+                    <span>Protección por PIN:</span>
+                    <button type="button" class="config-toggle-action" id="cfg-toggle-pin-status">Activo</button>
+                </div>
+                <div class="config-row-item">
+                    <span>Modificar PIN secreto:</span>
+                    <button type="button" class="config-toggle-action" id="cfg-change-pin">Cambiar</button>
+                </div>
+                <div class="config-backup-zone">
+                    <h3>Copia de Seguridad</h3>
+                    <div class="backup-btns-grid">
+                        <button type="button" class="backup-action-btn" id="cfg-export">Guardar Copia</button>
+                        <label for="cfg-import-file" class="backup-action-btn file-label-btn">
+                            Cargar Copia
+                            <input type="file" id="cfg-import-file" accept=".json" style="display:none">
                         </label>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-        </main>
+        <div id="notebook-global-modal" class="modal-clean hidden">
+            <div class="modal-clean-content" id="modal-fields-injector">
+                </div>
+        </div>
+
+        <button type="button" class="fab-minimal-btn" id="global-fab-add" title="Editar / Agregar">+</button>
     </div>
 
-    <script src="script.js"></script>
 </body>
 </html>

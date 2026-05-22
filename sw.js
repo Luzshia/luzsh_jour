@@ -1,36 +1,35 @@
-// sw.js - Service Worker para uso 100% Offline
-const CACHE_NAME = 'journal-cache-v1';
+// sw.js - Service Worker Optimizado para Journal de Puntos Offline
+const CACHE_NAME = 'journal-pure-cache-v1';
 
-// Lista de archivos que tu app necesita para arrancar. 
-// ⚠️ Asegúrate de cambiar "script.js" y "style.css" por los nombres reales de tus archivos.
+// Lista pulida de recursos estáticos obligatorios para el funcionamiento local
 const ASSETS = [
-    './',
-    './index.html',
-    './style.css',     // <-- Si tu CSS se llama diferente, cámbialo aquí
-    './script.js',    // <-- Si tu JS se llama diferente, cámbialo aquí
-    './manifest.json',
-    './icon-192.png',
-    './icon-512.png'
+    '/',
+    'index.html',
+    'style.css',
+    'script.js',
+    'manifest.json',
+    'icon-192.png',
+    'icon-512.png'
 ];
 
-// 1. Evento de Instalación: Guarda los archivos en la caché del dispositivo
+// 1. Evento de Instalación: Cacheo forzado de la estructura limpia del cuaderno
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('SW: Guardando archivos esenciales en caché...');
+            console.log('SW: Inicializando almacenamiento estático del cuaderno...');
             return cache.addAll(ASSETS);
         }).then(() => self.skipWaiting())
     );
 });
 
-// 2. Evento de Activación: Limpia cachés viejas si actualizas la app en el futuro
+// 2. Evento de Activación: Eliminación de residuos de caché previos
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
                 keys.map((key) => {
                     if (key !== CACHE_NAME) {
-                        console.log('SW: Borrando caché antigua', key);
+                        console.log('SW: Purgando estructura de caché antigua:', key);
                         return caches.delete(key);
                     }
                 })
@@ -39,15 +38,38 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// 3. Evento Fetch: Si no hay internet, sirve los archivos desde la caché
+// 3. Evento Fetch: Interceptor inteligente de red local
 self.addEventListener('fetch', (e) => {
+    // Filtrar para interceptar únicamente solicitudes de lectura estándar (GET)
+    if (e.request.method !== 'GET') return;
+
     e.respondWith(
         caches.match(e.request).then((cachedResponse) => {
-            // Si el archivo está en la caché, lo devuelve. Si no, va a buscarlo a internet.
-            return cachedResponse || fetch(e.request);
+            // Si el recurso vive en el almacenamiento del dispositivo, se sirve de inmediato
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+
+            // Si no está registrado en el ciclo local, se pide al servidor web
+            return fetch(e.request).then((networkResponse) => {
+                // Validación de respuesta correcta antes de intentar clonar
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
+                }
+
+                // Guardado dinámico en caché para nuevos recursos anexados en caliente
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(e.request, responseToCache);
+                });
+
+                return networkResponse;
+            });
         }).catch(() => {
-            // Estrategia de respaldo por si todo falla (ej. estás offline y pides algo nuevo)
-            return caches.match('./index.html');
+            // Plan de contingencia si no hay red ni recurso: Retorna a la página base
+            if (e.request.mode === 'navigate') {
+                return caches.match('index.html');
+            }
         })
     );
 });
