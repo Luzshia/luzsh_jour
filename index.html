@@ -4,27 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Journal Personal</title>
-    <!-- Enlace al CSS (Estética) -->
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000">
 </head>
 <body class="dotted-bg">
 
-    <!-- PANTALLA DE BLOQUEO -->
     <div id="lock-screen" class="overlay">
         <div class="lock-container">
             <h2>🔒 Privacidad</h2>
-            
-            <!-- Indicadores de PIN (puntos que se llenan) -->
             <div class="pin-display">
                 <div class="pin-slot" id="slot-1"></div>
                 <div class="pin-slot" id="slot-2"></div>
                 <div class="pin-slot" id="slot-3"></div>
                 <div class="pin-slot" id="slot-4"></div>
             </div>
-            
-            <!-- Teclado Numérico Propio -->
             <div class="numpad">
                 <button type="button" class="num-btn" data-val="1">1</button>
                 <button type="button" class="num-btn" data-val="2">2</button>
@@ -37,239 +31,175 @@
                 <button type="button" class="num-btn" data-val="9">9</button>
                 <button type="button" class="num-btn" id="btn-clear">C</button>
                 <button type="button" class="num-btn" data-val="0">0</button>
-                <button type="button" class="num-btn" id="btn-enter">✔</button>
+                <button type="button" class="num-btn" id="btn-enter">✓</button>
             </div>
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
-    <div class="app-wrapper">
-        
-        <main id="main-content">
-            <!-- VISTA: MENÚ PRINCIPAL (Aquí es el único sitio donde sale el año) -->
-            <section id="view-menu" class="view active">
-                <header class="app-header">
-                    <h1>Mi Journal <span id="year-label"></span></h1>
-                    <div class="header-line"></div>
-                </header>
-                <nav class="menu-nav">
-                    <button class="nav-item" id="go-metas">🎯 Mis Metas</button>
-                    <button class="nav-item" id="go-habitos">🌿 Mis Hábitos</button>
-                    <button class="nav-item" id="go-todo">✅ To-Do List</button>
-                    <button class="nav-item" id="go-agenda">📅 Mi Agenda</button>
-                    <button class="nav-item" id="go-ciclo">🌸 Ciclo Menstrual</button>
-                    <button class="nav-item" id="go-config">⚙️ Configuración</button>
-                </nav>
-            </section>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="brand">📓</div>
+            <ul class="nav-links">
+                <li id="go-metas" title="Metas Anuales">🎯</li>
+                <li id="go-habitos" title="Tracker de Hábitos">💎</li>
+                <li id="go-todo" title="To-Do List">✅</li>
+                <li id="go-agenda" title="Agenda Semanal">📅</li>
+                <li id="go-ciclo" title="Calendario Lunar">🌙</li>
+                <li id="go-config" title="Configuración">⚙️</li>
+            </ul>
+        </nav>
 
-
+        <main class="content">
+            
             <section id="view-metas" class="view">
-    <header class="app-header">
-        <h1>Mis Metas <span id="meta-year-label"></span></h1>
-        <div class="header-line"></div>
-    </header>
-    
-    <div class="content-body">
-        <div id="historial-metas-container" class="hidden"></div>
-
-        <ul id="lista-metas" class="metas-list"></ul>
-
-        <div id="input-container-meta" class="hidden">
-            <div class="input-fake-row">
-                <span id="next-number-meta"></span>
-                <input type="text" id="input-nueva-meta" placeholder="Escribir meta...">
-            </div>
-        </div>
-    </div>
-
-    <div class="metas-bottom-nav">
-        <button id="opt-historial-metas" class="btn-bottom-center">Ver Historial</button>
-        <button id="opt-edit-metas" class="btn-bottom-float">+</button>
-    </div>
-</section>
-
-
+                <header class="view-header">
+                    <h2>🎯 Metas Anuales <span id="meta-year-label"></span></h2>
+                </header>
+                <div class="scroll-area">
+                    <ul class="meta-list" id="lista-metas"></ul>
+                    <div id="input-container-meta" class="input-inline-container hidden">
+                        <input type="text" id="input-nueva-meta" placeholder="Escribe tu meta y presiona Enter...">
+                    </div>
+                </div>
+                <div class="fab-container">
+                    <button class="fab-btn" id="opt-edit-metas">+</button>
+                </div>
+            </section>
 
             <section id="view-habitos" class="view">
-                <header class="app-header">
-                    <h1>Mis Hábitos <span id="habit-month-label"></span></h1>
-                    <div class="header-line"></div>
+                <header class="view-header">
+                    <h2>💎 Hábitos <span id="habit-month-label"></span></h2>
                 </header>
-                
-                <div class="content-body">
-                    <div id="historial-habitos-container" class="hidden"></div>
-
-                    <div id="contenedor-habitos" class="habitos-grid"></div>
-
-                    <div id="input-container-habito" class="hidden">
-                        <div class="input-fake-row">
-                            <input type="text" id="input-nuevo-habito" placeholder="Escribir hábito...">
-                        </div>
-                    </div>
+                <div class="scroll-area">
+                    <div class="habits-grid" id="contenedor-habitos"></div>
                 </div>
-
-                <div class="habitos-bottom-nav">
-                    <button id="opt-historial-habitos" class="btn-bottom-center">Ver Historial</button>
-                    <button id="opt-edit-habitos" class="btn-bottom-float">+</button>
+                <div class="fab-container">
+                    <button class="fab-btn" id="opt-edit-habitos">+</button>
                 </div>
             </section>
 
-
             <section id="view-todo" class="view">
-                <header class="app-header">
-                    <h1>To-Do List</h1>
-                    <div class="header-line"></div>
+                <header class="view-header">
+                    <h2>✅ Lista de Tareas</h2>
                 </header>
-                
-                <div class="content-body">
-                    <div id="input-container-todo" class="hidden">
-                        <div class="input-fake-row">
-                            <input type="text" id="input-nueva-tarea" placeholder="¿Qué tienes pendiente?">
-                        </div>
+                <div class="scroll-area">
+                    <ul class="todo-list" id="lista-tareas"></ul>
+                    <div id="input-container-todo" class="input-inline-container hidden">
+                        <input type="text" id="todo-tarea" placeholder="Nueva tarea... (Enter para guardar)">
                     </div>
-
-                    <ul id="lista-tareas" class="todo-list">
-                        </ul>
                 </div>
-
-                <div class="todo-bottom-nav">
-                    <button id="opt-clear-todo" class="btn-bottom-center">Borrar Completadas</button>
-                    <button id="opt-add-todo" class="btn-bottom-float">+</button>
+                <div class="fab-container">
+                    <button class="fab-btn" id="opt-edit-todo">+</button>
                 </div>
             </section>
 
             <section id="view-agenda" class="view">
-                <header class="app-header">
-                    <div class="agenda-title-group">
-                        <h1>Mi Agenda</h1>
-                        <span id="rango-semana-label"></span>
+                <header class="view-header">
+                    <h2>📅 Agenda Semanal</h2>
+                    <div class="agenda-controls">
+                        <button id="btn-semana-prev" class="btn-nav-semana">◀</button>
+                        <button id="btn-semana-next" class="btn-nav-semana">▶</button>
                     </div>
-                    <div class="header-line"></div>
                 </header>
-                
-                <div class="content-body">
-                    <div id="input-container-agenda" class="hidden">
-                        <div class="agenda-form-popup">
-                            <input type="text" id="agenda-tarea" placeholder="¿Qué harás?">
-                            <div class="input-row">
-                                <input type="date" id="agenda-fecha">
-                                <input type="time" id="agenda-hora">
-                            </div>
+                <div class="scroll-area flex-scroll">
+                    <div class="agenda-semana-wrapper" id="semana-container"></div>
+                    <div id="input-container-agenda" class="input-inline-container hidden">
+                        <div class="agenda-editor-inline">
+                            <input type="text" id="agenda-tarea" placeholder="¿Qué tienes que hacer?">
+                            <input type="time" id="agenda-hora">
+                            <input type="date" id="agenda-fecha" style="display:none;">
                         </div>
-                    </div>
-
-                    <div id="semana-container" class="semana-grid">
-                        </div>
-
-                    <div class="agenda-nav-overlay">
-                        <button id="btn-semana-prev" class="nav-side-btn prev">‹</button>
-                        <button id="btn-semana-next" class="nav-side-btn next">›</button>
                     </div>
                 </div>
-
-                <div class="agenda-bottom-nav">
-                    <button id="opt-limpiar-completados-agenda" class="btn-bottom-center">Limpiar Terminados</button>
-                    <button id="opt-edit-agenda" class="btn-bottom-float">+</button>
+                <div class="fab-container">
+                    <button class="fab-btn" id="opt-edit-agenda">+</button>
                 </div>
             </section>
-
 
             <section id="view-ciclo" class="view">
-                <header class="app-header">
-                    <h1>Mi Ciclo Lunar</h1>
-                    <p id="txt-inicio-ciclo-label" style="font-size: 0.85rem; opacity: 0.7; text-align: center; margin: -5px 0 10px 0;">Ciclo iniciado el: --/--</p>
-                    <div class="header-line"></div>
+                <header class="view-header">
+                    <h2>🌙 Ciclo y Rueda Lunar</h2>
                 </header>
-
-                <div class="content-body">
-                    <div id="canvas-rueda" class="rueda-wrapper">
-                        <div class="info-central">
-                            <span id="txt-dia-ciclo">Día --</span>
-                            <span id="txt-fecha-ciclo">--/--</span>
+                <div class="scroll-area">
+                    <div class="ciclo-container">
+                        <div class="rueda-wrapper">
+                            <div class="rueda-canvas" id="canvas-rueda">
+                                <div class="rueda-centro">
+                                    <span id="txt-dia-ciclo">Día --</span>
+                                    <small id="txt-fecha-ciclo">--/--</small>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div id="modal-registro" class="modal-overlay hidden">
-                        <div class="modal-card">
-                            <div class="modal-header">
-                                <h3>Diario del Ciclo</h3>
-                                <input type="date" id="reg-fecha" class="modal-date-picker">
-                            </div>
-                            
-                            <div class="form-grid">
-                                <div class="form-item">
-                                    <label>Sangrado</label>
-                                    <select id="reg-sangrado">
-                                        <option value="">Ninguno</option>
-                                        <option value="rosa">Rosa (Inicio/Fin)</option>
-                                        <option value="rojo">Rojo (Normal)</option>
-                                        <option value="oscuro">Oscuro (Abundante)</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-item">
-                                    <label>Energía</label>
-                                    <select id="reg-energia">
-                                        <option value="baja">Baja</option>
-                                        <option value="media" selected>Media</option>
-                                        <option value="alta">Alta</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-item">
-                                    <label>Dolor</label>
-                                    <select id="reg-dolor">
-                                        <option value="">Sin dolor</option>
-                                        <option value="pelvico">Pélvico</option>
-                                        <option value="migraña">Migraña</option>
-                                        <option value="pecho">Pecho</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-item">
-                                    <label>Estado de Ánimo</label>
-                                    <select id="reg-animo">
-                                        <option value="calma">😌 Calma</option>
-                                        <option value="energia">🔥 Enérgica</option>
-                                        <option value="sensible">🥺 Sensible</option>
-                                        <option value="irritable">😤 Irritable</option>
-                                        <option value="creativa">🎨 Creativa</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-item full">
-                                    <label>Observaciones</label>
-                                    <textarea id="reg-observaciones" placeholder="¿Cómo te sientes hoy?..." rows="3"></textarea>
-                                </div>
-                            </div>
-
-                            <div class="modal-btns">
-                                <button id="btn-modificar-reg" class="btn-secundario hidden">Modificar</button>
-                                <button id="btn-cancelar-reg" class="btn-secundario">Cerrar</button>
-                                <button id="btn-guardar-reg" class="btn-primario">Guardar</button>
-                            </div>
+                        <div class="ciclo-info-card">
+                            <p id="txt-inicio-ciclo-label">Cargando ciclo...</p>
                         </div>
                     </div>
                 </div>
+                <div class="fab-container">
+                    <button class="fab-btn" id="opt-add-registro">+</button>
+                </div>
 
-                <div class="ciclo-bottom-nav">
-                    <button id="opt-ver-ciclos" class="btn-bottom-center">Ciclos Anteriores</button>
-                    <button id="opt-add-registro" class="btn-bottom-float">+</button>
+                <div id="modal-registro" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>📝 Registro del Día</h3>
+                        <div class="form-group">
+                            <label>Fecha:</label>
+                            <input type="date" id="reg-fecha">
+                        </div>
+                        <div class="form-group">
+                            <label>Sangrado:</label>
+                            <select id="reg-sangrado">
+                                <option value="">Ninguno</option>
+                                <option value="leve">Leve</option>
+                                <option value="moderado">Moderado</option>
+                                <option value="fuerte">Fuerte</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Dolor / Cólicos:</label>
+                            <select id="reg-dolor">
+                                <option value="">Ninguno</option>
+                                <option value="leve">Leve</option>
+                                <option value="moderado">Moderado</option>
+                                <option value="fuerte">Fuerte</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nivel de Energía:</label>
+                            <select id="reg-energia">
+                                <option value="baja">Baja</option>
+                                <option value="media" selected>Media</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado de Ánimo:</label>
+                            <select id="reg-animo">
+                                <option value="calma" selected>Calma / Estable</option>
+                                <option value="feliz">Feliz / Radiante</option>
+                                <option value="sensible">Sensible / Emocional</option>
+                                <option value="irritable">Irritable / Ansiosa</option>
+                                <option value="cansada">Cansada / Apática</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <textarea id="reg-observaciones" rows="3" placeholder="Síntomas, notas, emociones..."></textarea>
+                        </div>
+                        <div class="modal-btns">
+                            <button type="button" class="btn-secundario" id="btn-modificar-reg">✏️ Editar</button>
+                            <button type="button" class="btn-primario" id="btn-guardar-reg">Guardar</button>
+                            <button type="button" class="btn-secundario" id="btn-cancelar-reg">Cerrar</button>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-
-            
-            <!-- VISTA: CONFIGURACIÓN -->
             <section id="view-config" class="view">
-                <header class="app-header">
-                    <h1>Configuración</h1>
-                    <div class="header-line"></div>
+                <header class="view-header">
+                    <h2>⚙️ Configuración</h2>
                 </header>
-                
-                <div class="config-container">
-                    <!-- Tema y Apariencia -->
+                <div class="scroll-area">
                     <div class="config-group">
                         <h3>🎨 Apariencia</h3>
                         <button class="config-item-btn" id="btn-toggle-dark">🌓 Modo Oscuro (On/Off)</button>
@@ -278,14 +208,10 @@
                             <input type="color" id="color-picker" value="#2ecc71">
                         </div>
                     </div>
-
-                    <!-- Seguridad -->
                     <div class="config-group">
                         <h3>🔒 Seguridad</h3>
                         <button class="config-item-btn" id="btn-change-pin">Cambiar PIN de acceso</button>
                     </div>
-
-                    <!-- Datos -->
                     <div class="config-group">
                         <h3>💾 Datos y Backup</h3>
                         <button class="config-item-btn btn-save" id="btn-export">Guardar Copia de Seguridad</button>
@@ -297,10 +223,8 @@
                 </div>
             </section>
         </main>
-
     </div>
 
-    <!-- Enlace al Script (Lógica) -->
     <script src="script.js"></script>
 </body>
 </html>

@@ -16,11 +16,10 @@ body.dark-mode {
     --line-color: #444444;
 }
 
-/* --- ESTÉTICA DE CUADERNO DE PUNTOS --- */
 .dotted-bg {
     background-color: var(--bg-color);
     background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
-    background-size: 20px 20px; /* Tamaño de la cuadrícula de puntos */
+    background-size: 20px 20px;
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text-color);
@@ -32,898 +31,516 @@ body.dark-mode {
     position: fixed;
     inset: 0;
     background: var(--bg-color);
-    z-index: 9999;
+    z-index: 10000;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 .lock-container {
     text-align: center;
-    width: 280px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
-
 .pin-display {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 30px;
+    margin: 20px 0 30px;
 }
-
 .pin-slot {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     border: 2px solid var(--accent-color);
     border-radius: 50%;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
-
 .pin-slot.filled {
     background: var(--accent-color);
+    transform: scale(1.1);
 }
-
-/* Teclado Numérico */
 .numpad {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 70px);
     gap: 15px;
-}
-
-.num-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 1px solid var(--dot-color);
-    background: var(--card-bg);
-    color: var(--text-color);
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
     justify-content: center;
-    align-items: center;
-    transition: transform 0.1s;
 }
-
+.num-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 1px solid var(--line-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
 .num-btn:active {
-    transform: scale(0.9);
-    background: var(--accent-color);
-    color: white;
+    background: var(--line-color);
 }
 
-/* --- ESTRUCTURA APP --- */
-.app-wrapper {
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    box-sizing: border-box;
+/* --- ARQUITECTURA DE LA APP --- */
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
-.app-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.header-line {
-    height: 2px;
-    background: linear-gradient(to right, transparent, var(--accent-color), transparent);
-    margin-top: 10px;
-}
-
-/* --- MENÚ EN COLUMNA --- */
-.menu-nav {
+/* MENÚ NAVIGATION */
+.sidebar {
+    width: 70px;
+    background: var(--card-bg);
+    border-right: 1px solid var(--line-color);
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    align-items: center;
+    padding: 20px 0;
 }
-
-.nav-item {
-    padding: 18px;
-    border-radius: 15px;
-    border: 1px solid var(--line-color);
-    background: var(--card-bg);
-    color: var(--text-color);
-    font-size: 1.1rem;
-    text-align: left;
+.brand { font-size: 28px; margin-bottom: 40px; }
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+.nav-links li {
+    font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    transition: 0.2s;
+    padding: 10px;
+    border-radius: 12px;
+    transition: transform 0.2s, background 0.2s;
+}
+.nav-links li:hover {
+    background: var(--line-color);
+    transform: scale(1.05);
 }
 
-.nav-item:hover {
-    border-color: var(--accent-color);
-    transform: translateX(5px);
+/* CONTENEDOR VISTAS */
+.content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
 }
-
-/* --- VISTAS --- */
 .view {
-    display: none;
-}
-
-.view.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- ESTILOS DE CONFIGURACIÓN --- */
-.config-container {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding-bottom: 40px;
+    padding: 30px;
+    transition: opacity 0.25s ease;
 }
-
-.config-group {
-    background: var(--card-bg);
-    border: 1px solid var(--line-color);
-    border-radius: 15px;
-    padding: 15px;
+.view.active {
+    opacity: 1;
+    pointer-events: auto;
 }
-
-.config-group h3 {
-    margin-top: 0;
-    font-size: 0.9rem;
-    color: var(--accent-color);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.config-item-btn {
-    width: 100%;
-    padding: 12px;
-    margin: 5px 0;
-    border: 1px solid var(--line-color);
-    background: var(--bg-color);
-    color: var(--text-color);
-    border-radius: 10px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.config-item {
+.view-header {
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+}
+.view-header h2 { margin: 0; font-size: 26px; font-weight: 600; }
+
+.scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.flex-scroll {
+    display: flex;
+    flex-direction: column;
 }
 
-.btn-save { border-left: 5px solid #3498db; }
-.btn-load { border-left: 5px solid #f1c40f; display: block; box-sizing: border-box;}
-
-#color-picker {
-    border: none;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    background: none;
-}
-
-/* 1. Importar fuente cursiva al inicio del CSS */
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
-
-
-
-/* --- ESTILOS METAS --- */
-.metas-list {
+/* --- VISTA: METAS Y TODO LIST --- */
+.meta-list, .todo-list {
     list-style: none;
     padding: 0;
-    margin: 0 0 80px 0;
-    counter-reset: meta-idx; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
-
-.meta-item {
+.meta-item, .todo-item {
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    padding: 16px 20px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
-    padding: 10px 5px;
-    font-family: 'Dancing Script', cursive; 
-    font-size: 1.6rem; 
-    font-weight: 500;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
+    gap: 15px;
     cursor: pointer;
+    transition: background 0.2s;
 }
-
-.meta-item::before {
-    counter-increment: meta-idx;
-    content: counter(meta-idx) ". ";
-    font-family: 'Arial', sans-serif;
-    font-weight: bold;
-    margin-right: 12px;
-    color: var(--accent-color);
-    font-size: 0.9rem;
+.meta-item.completed span, .todo-item.done span {
+    text-decoration: line-through;
+    opacity: 0.5;
 }
-
-.meta-item:hover { color: var(--accent-color); }
-.meta-item.completed { opacity: 0.4; text-decoration: line-through; }
-
-.input-fake-row {
-    display: flex;
-    align-items: center;
-    padding: 12px 5px;
-    margin-top: 10px;
-    margin-bottom: 80px;
+.todo-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--dot-color);
+    border-radius: 6px;
+    transition: all 0.2s;
 }
-
-#input-nueva-meta {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--text-color);
-    outline: none;
+.todo-check.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
 }
-
-.editando {
-    color: var(--accent-color);
-    border-bottom: 1px dashed var(--accent-color);
-}
-
-.hidden { display: none !important; }
-
 .btn-delete-meta {
     margin-left: auto;
     background: transparent;
     border: none;
-    color: var(--accent-color);
-    font-family: sans-serif;
-    font-size: 1.2rem;
+    color: #ff4d4d;
+    font-size: 22px;
     cursor: pointer;
-    opacity: 0.6;
-    padding: 0 10px;
 }
 
-.add-trigger-area {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.4rem;
-    opacity: 0.3;
-    padding: 10px 5px;
-    cursor: text;
+/* INTERFAZ INLINE LIMPIA */
+.input-inline-container {
+    margin-top: 15px;
+    background: var(--card-bg);
+    border: 1px dashed var(--accent-color);
+    border-radius: 14px;
+    padding: 12px;
 }
-
-/* --- BOTONERA INFERIOR TRANSPARENTE --- */
-.metas-bottom-nav {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
+.input-inline-container input[type="text"] {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    z-index: 999;
-}
-
-.btn-bottom-center, .btn-bottom-float {
-    pointer-events: auto;
     background: transparent;
     border: none;
+    outline: none;
     color: var(--text-color);
-    opacity: 0.3;
+    font-size: 16px;
+}
+.add-trigger-area {
+    background: rgba(0,0,0,0.02);
+    border: 1px dashed var(--dot-color);
+    padding: 16px;
+    border-radius: 14px;
+    text-align: center;
     cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.btn-bottom-center:hover, .btn-bottom-float:hover {
-    opacity: 0.8;
-}
-
-.btn-bottom-center {
-    font-size: 0.9rem;
+    opacity: 0.7;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
-.btn-bottom-float {
-    position: absolute;
-    right: 25px;
-    font-size: 2.2rem;
-    line-height: 1;
-    font-family: sans-serif;
-    padding: 0 10px;
-}
-
-
-/* --- HÁBITOS ESTILO CAJITA --- */
-.habitos-grid {
-    margin-top: 20px;
-    margin-bottom: 80px; /* Margen inferior para que las tarjetas no tapen los botones flotantes */
+/* --- VISTA: HÁBITOS TRACKER --- */
+.habits-grid {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
 }
-
 .habit-item {
-    border: 1px solid rgba(0,0,0,0.1);
-    border-radius: 12px;
-    padding: 15px;
-    background: transparent;
-    position: relative;
-    transition: all 0.3s;
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.01);
 }
-
 .habit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
-
-.habit-name {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.5rem;
-    color: var(--text-color);
+.habit-name { font-weight: 600; font-size: 18px; }
+.btn-delete-habit {
+    background: transparent;
+    border: none;
+    color: #ff4d4d;
+    font-size: 22px;
+    cursor: pointer;
 }
-
 .dots-container {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
-    justify-items: center;
-    border-top: 1px solid rgba(0,0,0,0.05);
-    padding-top: 15px;
 }
-
-/* Cabecera de días L M M J V S D */
 .habit-day-header {
-    grid-column: 1 / span 7;
+    grid-column: span 7;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    opacity: 0.4;
+    font-size: 12px;
     margin-bottom: 5px;
 }
-
-.habit-day-label {
-    text-align: center;
-    font-size: 0.7rem;
-    opacity: 0.4;
-    font-family: sans-serif;
-    font-weight: bold;
-}
-
+.habit-dot-spacer { width: 100%; height: 35px; }
 .habit-dot-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-}
-
-.habit-dot {
-    width: 22px;
-    height: 22px;
-    border: 1.5px solid var(--text-color);
-    border-radius: 50%;
     cursor: pointer;
-    transition: 0.2s;
-    opacity: 0.3;
 }
-
+.habit-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.05);
+    transition: background 0.2s, transform 0.1s;
+}
+body.dark-mode .habit-dot { background: rgba(256,256,256,0.05); }
 .habit-dot.checked {
     background: var(--accent-color);
-    border-color: var(--accent-color);
-    opacity: 1;
+    transform: scale(1.05);
 }
+.dot-day { font-size: 10px; opacity: 0.5; }
 
-.habit-dot-spacer {
-    width: 22px;
-    height: 22px;
-}
-
-.dot-day {
-    font-size: 10px;
-    opacity: 0.5;
-    font-family: sans-serif;
-}
-
-.habit-item.editando {
-    border-color: var(--accent-color);
-    border-style: dashed;
-    background: rgba(var(--accent-rgb), 0.02);
-}
-
-.btn-delete-habit {
-    background: transparent;
-    border: none;
-    color: var(--accent-color);
-    font-size: 1.4rem;
-    line-height: 1;
-    cursor: pointer;
-}
-
-/* --- NUEVA BOTONERA INFERIOR ACCESIBLE (Misma estética sutil y transparente) --- */
-.habitos-bottom-nav {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none; /* Permite hacer clic en los elementos que queden detrás */
-    z-index: 999;
-}
-
-.habitos-bottom-nav .btn-bottom-center, 
-.habitos-bottom-nav .btn-bottom-float {
-    pointer-events: auto; /* Reactiva los clics propios del botón */
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    opacity: 0.3; /* Color clarito casi transparente */
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.habitos-bottom-nav .btn-bottom-center:hover, 
-.habitos-bottom-nav .btn-bottom-float:hover {
-    opacity: 0.8; /* Se ilumina levemente al pasar el dedo o cursor */
-}
-
-/* Texto central "Ver Historial" */
-.habitos-bottom-nav .btn-bottom-center {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Botón flotante "+" abajo a la derecha */
-.habitos-bottom-nav .btn-bottom-float {
-    position: absolute;
-    right: 25px;
-    font-size: 2.2rem;
-    line-height: 1;
-    font-family: sans-serif;
-    padding: 0 10px;
-}
-
-
-
-/* --- TO-DO LIST ESTILO CUADERNO --- */
-.todo-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-    margin-bottom: 80px; /* Margen inferior para no tapar los botones flotantes */
-}
-
-.todo-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 5px;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: opacity 0.3s;
-}
-
-.todo-item.done {
-    opacity: 0.4;
-}
-
-.todo-item.done span {
-    text-decoration: line-through;
-}
-
-/* Checkbox estilo "dibujado a mano" */
-.todo-check {
-    width: 22px;
-    height: 22px;
-    border: 1.5px solid var(--text-color);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-    background: transparent;
-}
-
-/* La "X" cuando está marcado */
-.todo-check.active::after {
-    content: "✕";
-    color: var(--text-color);
-    font-family: 'Arial', sans-serif;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-/* Input para To-Do */
-#input-container-todo {
-    margin-bottom: 15px;
-}
-
-#input-nueva-tarea {
-    width: 100%;
-    border: none;
-    border-bottom: 1px dashed var(--accent-color);
-    background: transparent;
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: var(--text-color);
-    outline: none;
-}
-
-/* --- BOTONERA INFERIOR PARA TO-DO (Estética sutil y transparente) --- */
-.todo-bottom-nav {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none; /* Permite hacer clic detrás */
-    z-index: 999;
-}
-
-.todo-bottom-nav .btn-bottom-center, 
-.todo-bottom-nav .btn-bottom-float {
-    pointer-events: auto; /* Reactiva los clics en los botones */
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    opacity: 0.3; /* Casi transparente */
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.todo-bottom-nav .btn-bottom-center:hover, 
-.todo-bottom-nav .btn-bottom-float:hover {
-    opacity: 0.8;
-}
-
-/* Texto central "Borrar Completadas" */
-.todo-bottom-nav .btn-bottom-center {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Botón flotante "+" abajo a la derecha */
-.todo-bottom-nav .btn-bottom-float {
-    position: absolute;
-    right: 25px;
-    font-size: 2.2rem;
-    line-height: 1;
-    font-family: sans-serif;
-    padding: 0 10px;
-}
-
-
-
-/* --- ESTILOS AGENDA (ADAPTADOS AL ANCHO DE PANTALLA) --- */
-.semana-grid {
-    margin-top: 20px;
-    margin-bottom: 80px; /* Evita que la última fila quede tapada por los botones */
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line-color);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.dia-fila {
-    display: flex;
-    min-height: 80px;
-    border-bottom: 1px solid var(--line-color);
-    padding: 12px 0;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.dia-info {
-    width: 70px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-right: 1px solid var(--line-color);
-    flex-shrink: 0;
-}
-
-.dia-nombre { font-size: 0.7rem; text-transform: uppercase; opacity: 0.6; font-weight: bold; }
-.dia-numero { font-size: 1.4rem; font-weight: bold; }
-.dia-luna { font-size: 0.9rem; margin-top: 4px; }
-
-.dia-eventos {
-    flex: 1;
-    padding-left: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-x: hidden; /* Evita el desborde del texto largo en pantallas pequeñas */
-}
-
-.evento-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.3s;
-    width: 100%;
-}
-
-.evento-item.done { opacity: 0.4; text-decoration: line-through; }
-
-.evento-hora { font-size: 0.75rem; font-weight: bold; opacity: 0.6; min-width: 45px; }
-.evento-texto { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--text-color); flex: 1; }
-
-/* Botones de edición en Agenda */
-.agenda-actions {
-    display: flex;
-    gap: 8px;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.modo-edicion-agenda .agenda-actions { opacity: 1; }
-
-.btn-reprogramar, .btn-borrar-evento {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 5px;
-}
-
-.btn-borrar-evento { color: var(--accent-color); }
-
-/* Formulario */
-.agenda-form-popup {
+/* --- VISTA: AGENDA SEMANAL --- */
+.agenda-controls { display: flex; gap: 10px; }
+.btn-nav-semana {
     background: var(--card-bg);
-    padding: 15px;
-    border-radius: 15px;
     border: 1px solid var(--line-color);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.input-row { display: flex; gap: 10px; margin-bottom: 10px; }
-.agenda-form-popup input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--line-color);
     color: var(--text-color);
-    padding: 8px;
-    outline: none;
-    box-sizing: border-box;
-}
-
-/* Solución definitiva al desborde y movimiento lateral de la hoja */
-.agenda-nav-overlay {
-    position: absolute;
-    top: 50%; 
-    left: 0;
-    right: 0;
-    width: 100%;
-    pointer-events: none;
-    display: flex; 
-    justify-content: space-between;
-    box-sizing: border-box;
-    padding: 0 5px;
-}
-.nav-side-btn { pointer-events: auto; background: transparent; border: none; font-size: 2.5rem; opacity: 0.1; cursor: pointer; }
-
-/* --- BOTONERA INFERIOR PARA AGENDA (Misma estetica transparente) --- */
-.agenda-bottom-nav {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    z-index: 999;
-}
-
-.agenda-bottom-nav .btn-bottom-center, 
-.agenda-bottom-nav .btn-bottom-float {
-    pointer-events: auto;
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    opacity: 0.3;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: opacity 0.2s;
+}
+.agenda-semana-wrapper {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    min-height: 350px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+.agenda-dia-col {
+    flex: 1;
+    min-width: 150px;
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.agenda-dia-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line-color);
+    padding-bottom: 8px;
+}
+.nombre-dia { font-weight: 500; opacity: 0.6; }
+.numero-dia { font-size: 20px; font-weight: 700; color: var(--accent-color); }
+.agenda-eventos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+.agenda-evento {
+    background: rgba(0,0,0,0.02);
+    border-left: 3px solid var(--accent-color);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+body.dark-mode .agenda-evento { background: rgba(256,256,256,0.03); }
+.agenda-evento.completado { opacity: 0.4; text-decoration: line-through; }
+
+.agenda-editor-inline {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.agenda-editor-inline input {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    outline: none;
+    font-size: 15px;
 }
 
-.agenda-bottom-nav .btn-bottom-center:hover, 
-.agenda-bottom-nav .btn-bottom-float:hover {
-    opacity: 0.8;
+/* --- VISTA: CICLO LUNAR --- */
+.ciclo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 20px 0;
 }
-
-.agenda-bottom-nav .btn-bottom-center {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.agenda-bottom-nav .btn-bottom-float {
-    position: absolute;
-    right: 25px;
-    font-size: 2.2rem;
-    line-height: 1;
-    font-family: sans-serif;
-    padding: 0 10px;
-}
-
-
-
-/* --- ESTILOS CICLO ACTUALIZADOS (MÁS ABIERTO Y ESPACIOSO) --- */
 .rueda-wrapper {
     position: relative;
-    width: 340px; /* Aumentado de 310px a 340px */
-    height: 340px; /* Aumentado de 310px a 340px */
-    margin: 30px auto;
-    border: 1px dashed var(--line-color);
+    width: 330px;
+    height: 330px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.rueda-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 2px dashed var(--line-color);
     border-radius: 50%;
 }
-
-.info-central {
+.rueda-centro {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+    inset: 65px;
+    background: var(--card-bg);
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
 }
-
-#txt-dia-ciclo { 
-    font-size: 1.6rem; 
-    font-weight: bold; 
-    color: var(--accent-color); 
-    display: block;
-}
-
-#txt-fecha-ciclo { opacity: 0.6; font-size: 0.9rem; }
+#txt-dia-ciclo { font-size: 22px; font-weight: 700; color: var(--text-color); }
+#txt-fecha-ciclo { font-size: 14px; opacity: 0.5; margin-top: 2px; }
 
 .punto-dia {
     position: absolute;
     width: 44px;
     height: 44px;
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 50%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     cursor: pointer;
-    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
-
-.punto-dia:hover { transform: scale(1.1); }
-
-/* Indicadores sutiles (Puntitos) */
-.indicador-sangre { 
-    width: 6px; 
-    height: 6px; 
-    background: #ff4d4d; 
-    border-radius: 50%; 
-    box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
-}
-
-.indicador-hoy {
-    width: 6px;
-    height: 6px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    box-shadow: 0 0 5px var(--accent-color);
-}
+.punto-dia span { font-size: 16px; line-height: 1; }
+.punto-dia small { font-size: 9px; opacity: 0.5; }
 
 .dot-container {
+    position: absolute;
+    bottom: -2px;
     display: flex;
     gap: 3px;
-    margin-top: 2px;
-    height: 6px;
 }
+.indicador-sangre { width: 6px; height: 6px; background: #ff4d4d; border-radius: 50%; }
+.indicador-hoy { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; }
 
-/* Modal Estilo Tarjeta */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 2000;
-}
-.modal-overlay.hidden { display: none !important; }
-
-.modal-card {
-    background: var(--bg-color);
-    padding: 25px;
-    border-radius: 25px;
-    width: 85%;
-    max-width: 350px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+.ciclo-info-card {
+    background: var(--card-bg);
     border: 1px solid var(--line-color);
-}
-
-.modal-header { text-align: center; margin-bottom: 20px; }
-.modal-header h3 { font-size: 1.2rem; margin: 0; }
-
-.modal-date-picker {
-    border: none;
-    background: transparent;
-    font-family: inherit;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    opacity: 0.6;
+    padding: 15px 25px;
+    border-radius: 14px;
     text-align: center;
-    margin-top: 5px;
-    outline: none;
-    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
 }
 
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.form-item.full { grid-column: span 2; }
-.form-item label { display: block; font-size: 0.75rem; margin-bottom: 5px; font-weight: 600; color: var(--accent-color); }
-
-.form-item select, .form-item textarea { 
-    width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--line-color);
-    background: var(--bg-color); font-family: inherit; font-size: 0.9rem;
-    color: var(--text-color);
-    transition: opacity 0.2s;
-}
-
-/* Estilo visual si está deshabilitado para modo lectura */
-.form-item select:disabled, .form-item textarea:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: rgba(0,0,0,0.02);
-}
-
-.modal-btns { display: flex; gap: 10px; margin-top: 25px; }
-.btn-primario { background: var(--accent-color); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; flex: 1;}
-.btn-secundario { background: transparent; border: 1px solid var(--line-color); color: var(--text-color); padding: 10px 15px; border-radius: 10px; cursor: pointer; flex: 1;}
-.btn-primario.hidden, .btn-secundario.hidden { display: none !important; }
-
-/* --- BOTONERA INFERIOR TRANSPARENTE CICLO --- */
-.ciclo-bottom-nav {
+/* --- INTERFAZ FLOTANTE (FAB) --- */
+.fab-container {
     position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99;
+}
+.fab-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: none;
-    z-index: 999;
+    transition: transform 0.2s;
 }
+.fab-btn:active { transform: scale(0.95); }
 
-.ciclo-bottom-nav .btn-bottom-center, 
-.ciclo-bottom-nav .btn-bottom-float {
-    pointer-events: auto;
-    background: transparent;
-    border: none;
+/* --- CONFIGURACIÓN --- */
+.config-group {
+    background: var(--card-bg);
+    border: 1px solid var(--line-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.config-group h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; opacity: 0.5; }
+.config-item-btn {
+    width: 100%;
+    background: rgba(0,0,0,0.02);
+    border: 1px solid var(--line-color);
     color: var(--text-color);
-    opacity: 0.3;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 15px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    margin-bottom: 10px;
+}
+body.dark-mode .config-item-btn { background: rgba(256,256,256,0.02); }
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5px;
 }
 
-.ciclo-bottom-nav .btn-bottom-center:hover, 
-.ciclo-bottom-nav .btn-bottom-float:hover {
-    opacity: 0.8;
+/* --- MODALES --- */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-
-.ciclo-bottom-nav .btn-bottom-center {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.modal-content {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
 }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.form-group label { font-size: 14px; font-weight: 500; opacity: 0.7; }
+.form-group select, .form-group textarea, .form-group input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.btn-primario { background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 10px; cursor: pointer; flex: 1;}
+.btn-secundario { background: transparent; border: 1px solid var(--line-color); color: var(--text-color); padding: 12px; border-radius: 10px; cursor: pointer; flex: 1;}
 
-.ciclo-bottom-nav .btn-bottom-float {
-    position: absolute;
-    right: 25px;
-    font-size: 2.2rem;
-    line-height: 1;
-    font-family: sans-serif;
-    padding: 0 10px;
+.hidden { display: none !important; }
+
+/* --- RESPONSIVO PARA MÓVILES --- */
+@media (max-width: 768px) {
+    .app-container { flex-direction: column-reverse; }
+    .sidebar {
+        width: 100vw;
+        height: 60px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 0;
+        border-right: none;
+        border-top: 1px solid var(--line-color);
+    }
+    .brand { display: none; }
+    .nav-links { flex-direction: row; width: 100%; justify-content: space-around; gap: 0; }
+    .view { padding: 20px 20px 80px; }
+    .fab-container { bottom: 80px; right: 20px; }
 }
