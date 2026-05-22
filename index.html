@@ -43,7 +43,7 @@
                 <li id="go-metas" title="Metas Anuales">🎯</li>
                 <li id="go-habitos" title="Tracker de Hábitos">💎</li>
                 <li id="go-todo" title="To-Do List">✅</li>
-                <li id="go-agenda" title="Agenda Semanal">📅</li>
+                <li id="go-agenda" title="Agenda Hobonichi">📅</li>
                 <li id="go-ciclo" title="Calendario Lunar">🌙</li>
                 <li id="go-config" title="Configuración">⚙️</li>
             </ul>
@@ -54,42 +54,36 @@
             <section id="view-metas" class="view">
                 <header class="view-header">
                     <h2>🎯 Metas Anuales <span id="meta-year-label"></span></h2>
+                    <button class="edit-section-btn" id="opt-edit-metas">✏️ Editar</button>
                 </header>
-                <div class="scroll-area">
+                <div class="scroll-area project-area">
                     <ul class="meta-list" id="lista-metas"></ul>
                     <div id="input-container-meta" class="input-inline-container hidden">
                         <input type="text" id="input-nueva-meta" placeholder="Escribe tu meta y presiona Enter...">
                     </div>
                 </div>
-                <div class="fab-container">
-                    <button class="fab-btn" id="opt-edit-metas">+</button>
-                </div>
             </section>
 
             <section id="view-habitos" class="view">
                 <header class="view-header">
-                    <h2>💎 Hábitos <span id="habit-month-label"></span></h2>
+                    <h2>💎 Tracker de Hábitos <span id="habit-month-label"></span></h2>
+                    <button class="edit-section-btn" id="opt-edit-habitos">✏️ Editar</button>
                 </header>
-                <div class="scroll-area">
+                <div class="scroll-area project-area">
                     <div class="habits-grid" id="contenedor-habitos"></div>
-                </div>
-                <div class="fab-container">
-                    <button class="fab-btn" id="opt-edit-habitos">+</button>
                 </div>
             </section>
 
             <section id="view-todo" class="view">
                 <header class="view-header">
                     <h2>✅ Lista de Tareas</h2>
+                    <button class="edit-section-btn" id="opt-edit-todo">✏️ Editar</button>
                 </header>
-                <div class="scroll-area">
+                <div class="scroll-area project-area">
                     <ul class="todo-list" id="lista-tareas"></ul>
                     <div id="input-container-todo" class="input-inline-container hidden">
                         <input type="text" id="todo-tarea" placeholder="Nueva tarea... (Enter para guardar)">
                     </div>
-                </div>
-                <div class="fab-container">
-                    <button class="fab-btn" id="opt-edit-todo">+</button>
                 </div>
             </section>
 
@@ -99,101 +93,84 @@
                     <div class="agenda-controls">
                         <button id="btn-semana-prev" class="btn-nav-semana">◀</button>
                         <button id="btn-semana-next" class="btn-nav-semana">▶</button>
+                        <button class="edit-section-btn" id="opt-edit-agenda" style="margin-left:10px;">✏️ Editar</button>
                     </div>
                 </header>
-                <div class="scroll-area flex-scroll">
-                    <div class="agenda-semana-wrapper" id="semana-container"></div>
-                    <div id="input-container-agenda" class="input-inline-container hidden">
-                        <div class="agenda-editor-inline">
-                            <input type="text" id="agenda-tarea" placeholder="¿Qué tienes que hacer?">
-                            <input type="time" id="agenda-hora">
-                            <input type="date" id="agenda-fecha" style="display:none;">
-                        </div>
-                    </div>
-                </div>
-                <div class="fab-container">
-                    <button class="fab-btn" id="opt-edit-agenda">+</button>
+                <div class="scroll-area flex-scroll project-area">
+                    <div class="agenda-hobonichi-wrapper" id="semana-container"></div>
                 </div>
             </section>
 
             <section id="view-ciclo" class="view">
                 <header class="view-header">
-                    <h2>🌙 Ciclo y Rueda Lunar</h2>
+                    <h2>🌙 Sintomas y Ciclo Lunar</h2>
+                    <button class="edit-section-btn" id="opt-edit-ciclo">📝 Registrar Día</button>
                 </header>
                 <div class="scroll-area">
                     <div class="ciclo-container">
                         <div class="rueda-wrapper">
-                            <div class="rueda-canvas" id="canvas-rueda">
-                                <div class="rueda-centro">
-                                    <span id="txt-dia-ciclo">Día --</span>
-                                    <small id="txt-fecha-ciclo">--/--</small>
-                                </div>
-                            </div>
+                            <canvas id="rueda-ciclo" width="320" height="320"></canvas>
                         </div>
-                        <div class="ciclo-info-card">
-                            <p id="txt-inicio-ciclo-label">Cargando ciclo...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="fab-container">
-                    <button class="fab-btn" id="opt-add-registro">+</button>
-                </div>
-
-                <div id="modal-registro" class="modal hidden">
-                    <div class="modal-content">
-                        <h3>📝 Registro del Día</h3>
-                        <div class="form-group">
-                            <label>Fecha:</label>
-                            <input type="date" id="reg-fecha">
-                        </div>
-                        <div class="form-group">
-                            <label>Sangrado:</label>
-                            <select id="reg-sangrado">
-                                <option value="">Ninguno</option>
-                                <option value="leve">Leve</option>
-                                <option value="moderado">Moderado</option>
-                                <option value="fuerte">Fuerte</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Dolor / Cólicos:</label>
-                            <select id="reg-dolor">
-                                <option value="">Ninguno</option>
-                                <option value="leve">Leve</option>
-                                <option value="moderado">Moderado</option>
-                                <option value="fuerte">Fuerte</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Nivel de Energía:</label>
-                            <select id="reg-energia">
-                                <option value="baja">Baja</option>
-                                <option value="media" selected>Media</option>
-                                <option value="alta">Alta</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Estado de Ánimo:</label>
-                            <select id="reg-animo">
-                                <option value="calma" selected>Calma / Estable</option>
-                                <option value="feliz">Feliz / Radiante</option>
-                                <option value="sensible">Sensible / Emocional</option>
-                                <option value="irritable">Irritable / Ansiosa</option>
-                                <option value="cansada">Cansada / Apática</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Observaciones:</label>
-                            <textarea id="reg-observaciones" rows="3" placeholder="Síntomas, notas, emociones..."></textarea>
-                        </div>
-                        <div class="modal-btns">
-                            <button type="button" class="btn-secundario" id="btn-modificar-reg">✏️ Editar</button>
-                            <button type="button" class="btn-primario" id="btn-guardar-reg">Guardar</button>
-                            <button type="button" class="btn-secundario" id="btn-cancelar-reg">Cerrar</button>
+                        <div id="info-ciclo-detalle" class="info-detalles-notebook">
+                            <p class="placeholder-text">Selecciona un día de la rueda para ver los registros.</p>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <div id="modal-registro" class="modal hidden">
+                <div class="modal-contenido">
+                    <h3>Registar Estado Diario</h3>
+                    <div class="form-group">
+                        <label>Fecha:</label>
+                        <input type="date" id="reg-fecha">
+                    </div>
+                    <div class="form-group">
+                        <label>Flujo / Sangrado:</label>
+                        <select id="reg-sangrado">
+                            <option value="">Ninguno</option>
+                            <option value="leve">Leve</option>
+                            <option value="moderado">Moderado</option>
+                            <option value="abundante">Abundante</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dolor / Cólicos:</label>
+                        <select id="reg-dolor">
+                            <option value="">Ninguno</option>
+                            <option value="leve">Leve</option>
+                            <option value="moderado">Moderado</option>
+                            <option value="fuerte">Fuerte</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nivel de Energía:</label>
+                        <select id="reg-energia">
+                            <option value="baja">Baja</option>
+                            <option value="media" selected>Media</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado de Ánimo:</label>
+                        <select id="reg-animo">
+                            <option value="calma" selected>Calma</option>
+                            <option value="feliz">Feliz / Radiante</option>
+                            <option value="sensible">Sensible / Nostálgica</option>
+                            <option value="irritable">Irritable / Ansiosa</option>
+                            <option value="cansada">Cansada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Observaciones / Diario:</label>
+                        <textarea id="reg-observaciones" rows="3" placeholder="¿Cómo te sientes hoy?..."></textarea>
+                    </div>
+                    <div class="modal-btns">
+                        <button type="button" class="btn-secundario" id="btn-cerrar-modal">Cancelar</button>
+                        <button type="button" class="btn-primario" id="btn-guardar-reg">Guardar</button>
+                    </div>
+                </div>
+            </div>
 
             <section id="view-config" class="view">
                 <header class="view-header">
@@ -222,6 +199,7 @@
                     </div>
                 </div>
             </section>
+
         </main>
     </div>
 
