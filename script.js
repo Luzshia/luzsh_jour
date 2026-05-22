@@ -4,10 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configuración Inicial y PIN
     let pinIngresado = "";
     const PIN_CORRECTO = localStorage.getItem('journalPin') || "1707";
-    let pinProteccionActiva = localStorage.getItem('journalPinActivo') !== "false";
+    
+    // CORRECCIÓN VITAL: Cambiado a "true" explícito para que por defecto arranque desactivado (false)
+    let pinProteccionActiva = localStorage.getItem('journalPinActivo') === "true";
 
     if (!pinProteccionActiva) {
-        document.getElementById('lock-screen').classList.add('hidden');
+        const lockScreen = document.getElementById('lock-screen');
+        if (lockScreen) lockScreen.classList.add('hidden');
     }
 
     // Estados de navegación y edición de vistas
@@ -25,757 +28,719 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar Fechas Dinámicas Automáticas
     const anioActual = new Date().getFullYear();
     const mesActualId = new Date().getMonth() + 1; // 1-12
-    const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
-    document.getElementById('title-metas').textContent = `Mis metas (${anioActual})`;
-    document.getElementById('title-habitos').textContent = `Mis hábitos de (${nombresMeses[mesActualId - 1]})`;
+    const nombresMeses = [Constants?.nombresMeses || "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    // Comprobación de cambio de ciclo temporal para archivado automático
-    verificarTraspasoTemporalHistorico();
-
-    /* --- NAVEGACIÓN --- */
-    function irA(vistaId) {
-        vistaActual = vistaId;
-        modoEdicionActivo = false;
-        globalFab.classList.remove('active-editing');
-        
-        // Controlar visibilidad del FAB flotante según pantalla
-        if (vistaId === "menu" || vistaId === "config") {
-            globalFab.classList.add('hidden');
-        } else {
-            globalFab.classList.remove('hidden');
-        }
-
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${vistaId}`).classList.add('active');
-
-        // Renderizadores específicos de carga
-        if (vistaId === "metas") cargarMetas();
-        if (vistaId === "habitos") cargarHabitos();
-        if (vistaId === "todo") cargarTareasTodo();
-        if (vistaId === "agenda") renderizarSemanaHobonichi();
-        if (vistaId === "ciclo") renderizarRuedaCiclo28();
-    }
-
-    // Eventos de Navegación del Menú Columna
-    document.getElementById('nav-metas').onclick = () => irA('metas');
-    document.getElementById('nav-habitos').onclick = () => irA('habitos');
-    document.getElementById('nav-todo').onclick = () => irA('todo');
-    document.getElementById('nav-agenda').onclick = () => irA('agenda');
-    document.getElementById('nav-ciclo').onclick = () => irA('ciclo');
-    document.getElementById('nav-config').onclick = () => irA('config');
-    
-    document.querySelectorAll('.back-menu-btn').forEach(btn => {
-        btn.onclick = () => irA('menu');
-    });
-
-    /* --- GESTIÓN INTERACTIVA DE TECLADO PIN --- */
-    document.querySelectorAll('.num-btn[data-val]').forEach(btn => {
-        btn.onclick = () => {
+    /* --- CORRECCIÓN: CAPTURA DE TECLADO NUMÉRICO DEL PIN --- */
+    document.querySelectorAll('.num-btn[data-val]').forEach(boton => {
+        boton.onclick = () => {
             if (pinIngresado.length < 4) {
-                pinIngresado += btn.getAttribute('data-val');
-                actualizarPuntosPin();
+                pinIngresado += boton.getAttribute('data-val');
+                actualizarInterfazPin();
+                
+                // Validación automática estricta al completar la longitud requerida
+                if (pinIngresado.length === 4) {
+                    setTimeout(() => {
+                        if (pinIngresado === PIN_CORRECTO) {
+                            const lock = document.getElementById('lock-screen');
+                            if (lock) lock.classList.add('hidden');
+                            pinIngresado = "";
+                            actualizarInterfazPin();
+                        } else {
+                            alert("PIN Incorrecto. Inténtalo de nuevo.");
+                            pinIngresado = "";
+                            actualizarInterfazPin();
+                        }
+                    }, 200);
+                }
             }
         };
     });
-    document.getElementById('btn-clear').onclick = () => { pinIngresado = ""; actualizarPuntosPin(); };
-    document.getElementById('btn-enter').onclick = comprobarCredencialesPin;
 
-    function actualizarPuntosPin() {
+    function actualizarInterfazPin() {
         for (let i = 1; i <= 4; i++) {
             const slot = document.getElementById(`slot-${i}`);
-            if (i <= pinIngresado.length) slot.classList.add('filled');
-            else slot.classList.remove('filled');
+            if (slot) {
+                if (i <= pinIngresado.length) {
+                    slot.classList.add('filled');
+                } else {
+                    slot.classList.remove('filled');
+                }
+            }
         }
     }
 
-    function comprobarCredencialesPin() {
-        if (pinIngresado === PIN_CORRECTO) {
-            document.getElementById('lock-screen').classList.add('hidden');
-        } else {
-            alert("Código de acceso incorrecto");
-            pinIngresado = "";
-            actualizarPuntosPin();
-        }
-    }
-
-    /* --- DETECTOR DE EVENTOS GLOBAL: CIERRE AL TOCAR ESPACIO VACÍO --- */
-    appZone.addEventListener('click', (e) => {
-        // Ignorar si el clic viene del propio botón flotante o de dentro del modal abierto
-        if (e.target.closest('#global-fab-add') || e.target.closest('#notebook-global-modal')) return;
-        
-        // Si hay menús en línea de la agenda abiertos, tampoco cerrar súbitamente
-        if (e.target.closest('.agenda-event-inline-actions')) return;
-
-        // Comprobación si se presionó en zona vacía o contenedores sin ítems activos
-        if (modoEdicionActivo) {
-            modoEdicionActivo = false;
-            globalFab.classList.remove('active-editing');
-            refrescarVistaActivaAislada();
-        }
+    /* --- GESTOR DE NAVEGACIÓN SINGLE PAGE (SPA) --- */
+    document.querySelectorAll('.menu-grid-card[data-target]').forEach(card => {
+        card.onclick = () => {
+            vistaActual = card.getAttribute('data-target');
+            if (appZone) appZone.setAttribute('data-current-view', vistaActual);
+            renderizarVistaActual();
+        };
     });
 
-    // Acción del botón flotante global (+ / Editar)
-    globalFab.onclick = (e) => {
-        e.stopPropagation();
-        modoEdicionActivo = !modoEdicionActivo;
-        
-        if (modoEdicionActivo) {
-            globalFab.classList.add('active-editing');
-            abrirFormularioModalInyectado();
-        } else {
-            globalFab.classList.remove('active-editing');
-            modalGlobal.classList.add('hidden');
+    document.querySelectorAll('.btn-back-menu').forEach(btn => {
+        btn.onclick = () => {
+            vistaActual = "menu";
+            if (appZone) appZone.setAttribute('data-current-view', "menu");
+            renderizarVistaActual();
+        };
+    });
+
+    function renderizarVistaActual() {
+        // Ocultar FAB por defecto, solo visible en módulos específicos
+        if (globalFab) globalFab.classList.add('hidden');
+
+        if (vistaActual === "ciclo") {
+            dibujarRueda();
+        } else if (vistaActual === "habitos") {
+            if (globalFab) globalFab.classList.remove('hidden');
+            renderizarHabitos();
+        } else if (vistaActual === "agenda") {
+            if (globalFab) globalFab.classList.remove('hidden');
+            renderizarAgendaSemanal();
+        } else if (vistaActual === "todo") {
+            if (globalFab) globalFab.classList.remove('hidden');
+            renderizarTodoList();
+        } else if (vistaActual === "notas") {
+            if (globalFab) globalFab.classList.remove('hidden');
+            renderizarNotasGrid();
+        } else if (vistaActual === "config") {
+            sincronizarControlesConfig();
         }
-        refrescarVistaActivaAislada();
-    };
-
-    function refrescarVistaActivaAislada() {
-        if (vistaActual === "metas") cargarMetas();
-        if (vistaActual === "habitos") cargarHabitos();
-        if (vistaActual === "todo") cargarTareasTodo();
-        if (vistaActual === "agenda") renderizarSemanaHobonichi();
     }
 
-    /* ==========================================
-       SECCIÓN: METAS ANUALES
-       ========================================== */
-    function cargarMetas() {
-        const metas = JSON.parse(localStorage.getItem(`j_metas_${anioActual}`)) || [];
-        const lista = document.getElementById('lista-metas');
-        lista.innerHTML = "";
-
-        if (metas.length === 0) {
-            lista.innerHTML = `<li class="notebook-placeholder-text">No hay metas para este año. Presiona +</li>`;
-            return;
-        }
-
-        metas.forEach((meta, idx) => {
-            const li = document.createElement('li');
-            li.className = `notebook-item ${meta.done ? 'completed' : ''}`;
-            li.innerHTML = `<div class="notebook-item-text">${meta.text}</div>`;
-            
-            if (modoEdicionActivo) {
-                const btnDel = document.createElement('button');
-                btnDel.className = "btn-delete-item-cross";
-                btnDel.textContent = "×";
-                btnDel.onclick = (e) => { e.stopPropagation(); borrarMetaIndex(idx); };
-                li.appendChild(btnDel);
-
-                // Modificar texto al presionar encima
-                li.onclick = (e) => {
-                    e.stopPropagation();
-                    const nuevoTexto = prompt("Modificar meta:", meta.text);
-                    if (nuevoTexto && nuevoTexto.trim() !== "") {
-                        metas[idx].text = nuevoTexto.trim();
-                        localStorage.setItem(`j_metas_${anioActual}`, JSON.stringify(metas));
-                        cargarMetas();
-                    }
-                };
-            } else {
-                li.onclick = () => {
-                    meta.done = !meta.done;
-                    localStorage.setItem(`j_metas_${anioActual}`, JSON.stringify(metas));
-                    cargarMetas();
-                };
-            }
-            lista.appendChild(li);
-        });
+    /* --- INTERFAZ DINÁMICA: MODAL GLOBAL UNIFICADO --- */
+    if (globalFab) {
+        globalFab.onclick = () => {
+            modoEdicionActivo = false;
+            abrirModalFormulario();
+        };
     }
 
-    function borrarMetaIndex(idx) {
-        let metas = JSON.parse(localStorage.getItem(`j_metas_${anioActual}`)) || [];
-        metas.splice(idx, 1);
-        localStorage.setItem(`j_metas_${anioActual}`, JSON.stringify(metas));
-        cargarMetas();
-    }
+    function abrirModalFormulario(datosEdicion = null) {
+        if (!modalGlobal || !injectorCampos) return;
+        injectorCampos.innerHTML = "";
+        modoEdicionActivo = !!datosEdicion;
 
-    /* ==========================================
-       SECCIÓN: TRACKER DE HÁBITOS
-       ========================================== */
-    function cargarHabitos() {
-        const llaveMes = `j_habits_${anioActual}_${mesActualId}`;
-        const habitos = JSON.parse(localStorage.getItem(llaveMes)) || [];
-        const matrix = document.getElementById('matrix-habitos');
-        matrix.innerHTML = "";
+        let contenidoHTML = "";
 
-        if (habitos.length === 0) {
-            matrix.innerHTML = `<p class="notebook-placeholder-text">Sin hábitos registrados. Presiona +</p>`;
-            return;
-        }
-
-        const diasEnMes = new Date(anioActual, mesActualId, 0).getDate();
-        const diasSemanaCorta = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"];
-
-        habitos.forEach((hab, habIdx) => {
-            const row = document.createElement('div');
-            row.className = "habit-row";
-            
-            const header = document.createElement('div');
-            header.className = "habit-row-header";
-            header.innerHTML = `<span>${hab.name}</span>`;
-
-            if (modoEdicionActivo) {
-                const btnDel = document.createElement('button');
-                btnDel.className = "btn-delete-item-cross";
-                btnDel.style.position = "static";
-                btnDel.textContent = "×";
-                btnDel.onclick = (e) => { e.stopPropagation(); borrarHabitoIndex(habIdx); };
-                header.appendChild(btnDel);
-
-                header.style.cursor = "pointer";
-                header.onclick = (e) => {
-                    e.stopPropagation();
-                    const nuevoNombre = prompt("Modificar hábito:", hab.name);
-                    if (nuevoNombre && nuevoNombre.trim() !== "") {
-                        habitos[habIdx].name = nuevoNombre.trim();
-                        localStorage.setItem(llaveMes, JSON.stringify(habitos));
-                        cargarHabitos();
-                    }
-                };
-            }
-
-            const gridDias = document.createElement('div');
-            gridDias.className = "habit-days-grid";
-
-            for (let d = 1; d <= diasEnMes; d++) {
-                const diaSemanaNombre = diasSemanaCorta[new Date(anioActual, mesActualId - 1, d).getDay()];
-                const celda = document.createElement('div');
-                celda.className = `habit-day-cell ${hab.history.includes(d) ? 'checked' : ''}`;
-                celda.innerHTML = `${d}<span class="day-name-sub">${diaSemanaNombre}</span>`;
-                
-                if (!modoEdicionActivo) {
-                    celda.onclick = (e) => {
-                        e.stopPropagation();
-                        if (hab.history.includes(d)) {
-                            hab.history = hab.history.filter(i => i !== d);
-                        } else {
-                            hab.history.push(d);
-                        }
-                        localStorage.setItem(llaveMes, JSON.stringify(habitos));
-                        cargarHabitos();
-                    };
-                }
-                gridDias.appendChild(celda);
-            }
-
-            row.appendChild(header);
-            row.appendChild(gridDias);
-            matrix.appendChild(row);
-        });
-    }
-
-    function borrarHabitoIndex(idx) {
-        const llaveMes = `j_habits_${anioActual}_${mesActualId}`;
-        let habitos = JSON.parse(localStorage.getItem(llaveMes)) || [];
-        habitos.splice(idx, 1);
-        localStorage.setItem(llaveMes, JSON.stringify(habitos));
-        cargarHabitos();
-    }
-
-    /* ==========================================
-       SECCIÓN: TO-DO LIST
-       ========================================== */
-    function cargarTareasTodo() {
-        const tareas = JSON.parse(localStorage.getItem('j_todo_list')) || [];
-        const lista = document.getElementById('lista-todo');
-        lista.innerHTML = "";
-
-        if (tareas.length === 0) {
-            lista.innerHTML = `<li class="notebook-placeholder-text">Lista vacía. Presiona +</li>`;
-            return;
-        }
-
-        tareas.forEach((tarea, idx) => {
-            const li = document.createElement('li');
-            li.className = `notebook-item ${tarea.done ? 'completed' : ''}`;
-            li.innerHTML = `
-                <div class="todo-bullet-box"></div>
-                <div class="notebook-item-text">${tarea.text}</div>
+        if (vistaActual === "habitos") {
+            contenidoHTML = `
+                <div class="modal-form-header">
+                    <h2>${modoEdicionActivo ? "📝 Editar Hábito" : "✨ Nuevo Hábito"}</h2>
+                </div>
+                <div class="modal-form-body">
+                    <div class="clean-input-group">
+                        <label>Nombre del hábito:</label>
+                        <input type="text" id="habito-nombre" placeholder="Ej: Beber 2L Agua" value="${datosEdicion ? datosEdicion.nombre : ""}">
+                    </div>
+                    <button type="button" class="modal-save-btn" id="modal-submit-action">Guardar</button>
+                    <button type="button" class="modal-save-btn" style="background:transparent; color:var(--text-color); margin-top:4px;" id="modal-cancel-action">Cancelar</button>
+                </div>
             `;
+        } else if (vistaActual === "agenda") {
+            contenidoHTML = `
+                <div class="modal-form-header">
+                    <h2>${modoEdicionActivo ? "📝 Editar Evento" : "📅 Nuevo Evento"}</h2>
+                </div>
+                <div class="modal-form-body">
+                    <div class="clean-input-group">
+                        <label>Fecha:</label>
+                        <input type="date" id="agenda-fecha" value="${datosEdicion ? datosEdicion.fecha : diaSeleccionadoCiclo}">
+                    </div>
+                    <div class="clean-input-group">
+                        <label>Hora:</label>
+                        <input type="time" id="agenda-hora" value="${datosEdicion ? datosEdicion.hora : "12:00"}">
+                    </div>
+                    <div class="clean-input-group">
+                        <label>Descripción del Evento:</label>
+                        <textarea id="agenda-texto" rows="3" placeholder="Escribe aquí...">${datosEdicion ? datosEdicion.texto : ""}</textarea>
+                    </div>
+                    <button type="button" class="modal-save-btn" id="modal-submit-action">Guardar</button>
+                    <button type="button" class="modal-save-btn" style="background:transparent; color:var(--text-color); margin-top:4px;" id="modal-cancel-action">Cancelar</button>
+                </div>
+            `;
+        } else if (vistaActual === "todo") {
+            contenidoHTML = `
+                <div class="modal-form-header">
+                    <h2>${modoEdicionActivo ? "📝 Editar Tarea" : "✅ Nueva Tarea"}</h2>
+                </div>
+                <div class="modal-form-body">
+                    <div class="clean-input-group">
+                        <label>Tarea pendiente:</label>
+                        <input type="text" id="todo-texto" placeholder="Ej: Comprar fruta" value="${datosEdicion ? datosEdicion.texto : ""}">
+                    </div>
+                    <div class="clean-input-group">
+                        <label>Prioridad:</label>
+                        <select id="todo-prioridad">
+                            <option value="baja" ${datosEdicion && datosEdicion.prioridad === "baja" ? "selected" : ""}>Baja</option>
+                            <option value="media" ${datosEdicion && datosEdicion.prioridad === "media" ? "selected" : (datosEdicion ? "" : "selected")}>Media</option>
+                            <option value="alta" ${datosEdicion && datosEdicion.prioridad === "alta" ? "selected" : ""}>Alta</option>
+                        </select>
+                    </div>
+                    <button type="button" class="modal-save-btn" id="modal-submit-action">Guardar</button>
+                    <button type="button" class="modal-save-btn" style="background:transparent; color:var(--text-color); margin-top:4px;" id="modal-cancel-action">Cancelar</button>
+                </div>
+            `;
+        } else if (vistaActual === "notas") {
+            contenidoHTML = `
+                <div class="modal-form-header">
+                    <h2>${modoEdicionActivo ? "📝 Editar Nota" : "📌 Nueva Nota"}</h2>
+                </div>
+                <div class="modal-form-body">
+                    <div class="clean-input-group">
+                        <label>Título:</label>
+                        <input type="text" id="nota-titulo" placeholder="Idea, pensamiento..." value="${datosEdicion ? datosEdicion.titulo : ""}">
+                    </div>
+                    <div class="clean-input-group">
+                        <label>Contenido:</label>
+                        <textarea id="nota-cuerpo" rows="6" placeholder="Desarrolla tu nota aquí...">${datosEdicion ? datosEdicion.cuerpo : ""}</textarea>
+                    </div>
+                    <button type="button" class="modal-save-btn" id="modal-submit-action">Guardar Nota</button>
+                    <button type="button" class="modal-save-btn" style="background:transparent; color:var(--text-color); margin-top:4px;" id="modal-cancel-action">Cancelar</button>
+                </div>
+            `;
+        }
 
-            if (modoEdicionActivo) {
-                const btnDel = document.createElement('button');
-                btnDel.className = "btn-delete-item-cross";
-                btnDel.textContent = "×";
-                btnDel.onclick = (e) => { e.stopPropagation(); borrarTareaTodoIndex(idx); };
-                li.appendChild(btnDel);
+        injectorCampos.innerHTML = contenidoHTML;
+        modalGlobal.classList.remove('hidden');
 
-                li.onclick = (e) => {
-                    e.stopPropagation();
-                    const nuevoTxt = prompt("Modificar tarea:", tarea.text);
-                    if (nuevoTxt && nuevoTxt.trim() !== "") {
-                        tareas[idx].text = nuevoTxt.trim();
-                        localStorage.setItem('j_todo_list', JSON.stringify(tareas));
-                        cargarTareasTodo();
-                    }
-                };
+        document.getElementById('modal-cancel-action').onclick = () => {
+            modalGlobal.classList.add('hidden');
+        };
+
+        document.getElementById('modal-submit-action').onclick = () => {
+            procesarGuardadoModalGlobal(datosEdicion?.index ?? datosEdicion?.id ?? null);
+        };
+    }
+
+    function procesarGuardadoModalGlobal(identificador = null) {
+        if (vistaActual === "habitos") {
+            const nombre = document.getElementById('habito-nombre').value.trim();
+            if (!nombre) return;
+            let lista = JSON.parse(localStorage.getItem('journal_habitos')) || [];
+            if (modoEdicionActivo && identificador !== null) {
+                lista = lista.map(h => h.id === identificador ? { ...h, nombre } : h);
             } else {
-                li.onclick = () => {
-                    tarea.done = !tarea.done;
-                    localStorage.setItem('j_todo_list', JSON.stringify(tareas));
-                    cargarTareasTodo();
-                };
+                lista.push({ id: Date.now().toString(), nombre, historial: {} });
             }
-            lista.appendChild(li);
-        });
+            localStorage.setItem('journal_habitos', JSON.stringify(lista));
+            renderizarHabitos();
+        } else if (vistaActual === "agenda") {
+            const fecha = document.getElementById('agenda-fecha').value;
+            const hora = document.getElementById('agenda-hora').value;
+            const texto = document.getElementById('agenda-texto').value.trim();
+            if (!texto) return;
+            let db = JSON.parse(localStorage.getItem('journal_agenda')) || {};
+            if (!db[fecha]) db[fecha] = [];
+            if (modoEdicionActivo && identificador !== null) {
+                // Para simplificar la edición en agenda estructurada por fechas
+                let viejos = JSON.parse(localStorage.getItem('journal_agenda')) || {};
+                Object.keys(viejos).forEach(f => {
+                    viejos[f] = viejos[f].filter(ev => ev.id !== identificador);
+                });
+                if (!viejos[fecha]) viejos[fecha] = [];
+                viejos[fecha].push({ id: identificador, hora, texto });
+                db = viejos;
+            } else {
+                db[fecha].push({ id: Date.now().toString(), hora, texto });
+            }
+            localStorage.setItem('journal_agenda', JSON.stringify(db));
+            renderizarAgendaSemanal();
+        } else if (vistaActual === "todo") {
+            const texto = document.getElementById('todo-texto').value.trim();
+            const prioridad = document.getElementById('todo-prioridad').value;
+            if (!texto) return;
+            let lista = JSON.parse(localStorage.getItem('journal_todo')) || [];
+            if (modoEdicionActivo && identificador !== null) {
+                lista[identificador] = { ...lista[identificador], texto, prioridad };
+            } else {
+                lista.push({ texto, prioridad, completado: false });
+            }
+            localStorage.setItem('journal_todo', JSON.stringify(lista));
+            renderizarTodoList();
+        } else if (vistaActual === "notas") {
+            const titulo = document.getElementById('nota-titulo').value.trim() || "Sin título";
+            const cuerpo = document.getElementById('nota-cuerpo').value.trim();
+            if (!cuerpo) return;
+            let lista = JSON.parse(localStorage.getItem('journal_notas')) || [];
+            if (modoEdicionActivo && identificador !== null) {
+                lista[identificador] = { titulo, cuerpo, fecha: lista[identificador].fecha };
+            } else {
+                lista.push({ titulo, cuerpo, fecha: new Date().toLocaleDateString() });
+            }
+            localStorage.setItem('journal_notas', JSON.stringify(lista));
+            renderizarNotasGrid();
+        }
+
+        modalGlobal.classList.add('hidden');
     }
 
-    function borrarTareaTodoIndex(idx) {
-        let tareas = JSON.parse(localStorage.getItem('j_todo_list')) || [];
-        tareas.splice(idx, 1);
-        localStorage.setItem('j_todo_list', JSON.stringify(tareas));
-        cargarTareasTodo();
-    }
-
-    document.getElementById('btn-clear-completed-todo').onclick = () => {
-        let tareas = JSON.parse(localStorage.getItem('j_todo_list')) || [];
-        tareas = tareas.filter(t => !t.done);
-        localStorage.setItem('j_todo_list', JSON.stringify(tareas));
-        cargarTareasTodo();
+    /* --- MÓDULO 1: RUEDA MENSTRUAL INTELIGENTE --- */
+    window.cambiarMesCiclo = (direccion) => {
+        let f = new Date(diaSeleccionadoCiclo);
+        f.setMonth(f.getMonth() + direccion);
+        diaSeleccionadoCiclo = f.toISOString().split('T')[0];
+        dibujarRueda();
     };
 
-    /* ==========================================
-       SECCIÓN: AGENDA HOBONICHI (CON SWIPE REAL)
-       ========================================== */
-    function obtenerLunesDeSemana(d) {
-        d = new Date(d);
-        let day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        return new Date(d.setDate(diff));
+    function dibujarRueda() {
+        const ruedaContainer = document.getElementById('rueda-render-zone');
+        const displayMes = document.getElementById('ciclo-mes-display');
+        if (!ruedaContainer) return;
+
+        ruedaContainer.innerHTML = "";
+        const baseDate = new Date(diaSeleccionadoCiclo);
+        const año = baseDate.getFullYear();
+        const mesZero = baseDate.getMonth();
+
+        if (displayMes) displayMes.textContent = `${nombresMeses[mesZero]} ${año}`;
+
+        const logs = JSON.parse(localStorage.getItem('journal_ciclo_logs')) || {};
+        const totalDias = new Date(año, mesZero + 1, 0).getDate();
+
+        // Configuración básica del ciclo (Promedios estándar)
+        const duracionPeriodo = 5; 
+        const duracionCiclo = 28;
+
+        // Buscar el último día de sangrado registrado históricamente para la predicción
+        let ultimaFechaRegla = null;
+        Object.keys(logs).sort().forEach(fechaKey => {
+            if (logs[fechaKey].sangrado && logs[fechaKey].sangrado !== "nada") {
+                ultimaFechaRegla = new Date(fechaKey);
+            }
+        });
+
+        for (let dia = 1; dia <= totalDias; dia++) {
+            const stringFecha = `${año}-${String(mesZero + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            const CeldaDia = document.createElement('div');
+            CeldaDia.className = "ciclo-dia-punto";
+
+            const logHoy = logs[stringFecha];
+            let claseEstado = "";
+
+            // 1. Aplicar estados reales guardados
+            if (logHoy) {
+                if (logHoy.sangrado === "ligero" || logHoy.sangrado === "moderado" || logHoy.sangrado === "fuerte") {
+                    claseEstado = "periodo-activo";
+                } else if (logHoy.dolor === "medio" || logHoy.dolor === "alto") {
+                    claseEstado = "sintoma-activo";
+                } else if (logHoy.animo) {
+                    claseEstado = "registro-vacio"; 
+                }
+            }
+
+            // 2. Si no hay estado real, pintar la predicción matemática inteligente
+            if (!claseEstado && ultimaFechaRegla) {
+                const diffTime = Math.abs(new Date(stringFecha) - ultimaFechaRegla);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const posicionCiclo = diffDays % duracionCiclo;
+
+                if (posicionCiclo < duracionPeriodo) {
+                    claseEstado = "prediccion-periodo";
+                } else if (posicionCiclo >= 11 && posicionCiclo <= 16) {
+                    claseEstado = "prediccion-fertil";
+                }
+            }
+
+            if (claseEstado) CeldaDia.classList.add(claseEstado);
+            
+            // Si es hoy, resaltar con un contorno especial
+            if (stringFecha === new Date().toISOString().split('T')[0]) {
+                CeldaDia.style.border = "1.5px solid var(--text-color)";
+            }
+
+            CeldaDia.innerHTML = `<span>${dia}</span>`;
+            CeldaDia.onclick = () => abrirModalCicloDia(stringFecha);
+            ruedaContainer.appendChild(CeldaDia);
+        }
     }
 
-    function renderizarSemanaHobonichi() {
-        const grid = document.getElementById('grid-agenda-semana');
-        grid.innerHTML = "";
+    function abrirModalCicloDia(fecha) {
+        if (!modalGlobal || !injectorCampos) return;
+        const logs = JSON.parse(localStorage.getItem('journal_ciclo_logs')) || {};
+        const log = logs[fecha] || { sangrado: "nada", dolor: "ninguno", energia: "media", animo: "calma", notas: "" };
 
-        const lunes = obtenerLunesDeSemana(fechaSemanaAgenda);
-        const nombresDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+        injectorCampos.innerHTML = `
+            <div class="modal-form-header">
+                <h2>📝 Registro: ${fecha}</h2>
+            </div>
+            <div class="modal-form-body">
+                <div class="clean-input-group">
+                    <label>Flujo / Sangrado:</label>
+                    <select id="c-sangrado">
+                        <option value="nada" ${log.sangrado === "nada" ? "selected" : ""}>Ninguno 🌑</option>
+                        <option value="ligero" ${log.sangrado === "ligero" ? "selected" : ""}>Ligero 🩸</option>
+                        <option value="moderado" ${log.sangrado === "moderado" ? "selected" : ""}>Moderado 🩸🩸</option>
+                        <option value="fuerte" ${log.sangrado === "fuerte" ? "selected" : ""}>Fuerte 🩸🩸🩸</option>
+                    </select>
+                </div>
+                <div class="clean-input-group">
+                    <label>Dolor / Cólicos:</label>
+                    <select id="c-dolor">
+                        <option value="ninguno" ${log.dolor === "ninguno" ? "selected" : ""}>Ninguno ✨</option>
+                        <option value="leve" ${log.dolor === "leve" ? "selected" : ""}>Leve ⚡</option>
+                        <option value="medio" ${log.dolor === "medio" ? "selected" : ""}>Moderado ⚡⚡</option>
+                        <option value="alto" ${log.dolor === "alto" ? "selected" : ""}>Intenso 💥</option>
+                    </select>
+                </div>
+                <div class="clean-input-group">
+                    <label>Nivel de Energía:</label>
+                    <select id="c-energia">
+                        <option value="baja" ${log.energia === "baja" ? "selected" : ""}>Baja 🥱</option>
+                        <option value="media" ${log.energia === "media" ? "selected" : ""}>Normal ⚡</option>
+                        <option value="alta" ${log.energia === "alta" ? "selected" : ""}>A Tope 🔥</option>
+                    </select>
+                </div>
+                <div class="clean-input-group">
+                    <label>Estado de Ánimo:</label>
+                    <select id="c-animo">
+                        <option value="calma" ${log.animo === "calma" ? "selected" : ""}>En Calma 🧘</option>
+                        <option value="feliz" ${log.animo === "feliz" ? "selected" : ""}>Feliz / Radiante☀️</option>
+                        <option value="sensible" ${log.animo === "sensible" ? "selected" : ""}>Sensible / Melancólica 🌧️</option>
+                        <option value="irritable" ${log.animo === "irritable" ? "selected" : ""}>Irritable / Estresada ⚡</option>
+                    </select>
+                </div>
+                <div class="clean-input-group">
+                    <label>Notas del día:</label>
+                    <textarea id="c-notas" rows="2" placeholder="Síntomas, antojos, pensamientos...">${log.notas || ""}</textarea>
+                </div>
+                <button type="button" class="modal-save-btn" id="btn-save-ciclo">Guardar Día</button>
+                <button type="button" class="modal-save-btn" style="background:transparent; color:var(--text-color); margin-top:4px;" id="btn-cancel-ciclo">Cerrar</button>
+            </div>
+        `;
+
+        modalGlobal.classList.remove('hidden');
+
+        document.getElementById('btn-cancel-ciclo').onclick = () => modalGlobal.classList.add('hidden');
         
-        // Formatear etiqueta de cabecera de la semana
-        const finSemana = new Date(lunes);
-        finSemana.setDate(lunes.getDate() + 6);
-        document.getElementById('agenda-week-label').textContent = `${lunes.getDate()}/${lunes.getMonth()+1} al ${finSemana.getDate()}/${finSemana.getMonth()+1} (${lunes.getFullYear()})`;
+        document.getElementById('btn-save-ciclo').onclick = () => {
+            logs[fecha] = {
+                sangrado: document.getElementById('c-sangrado').value,
+                dolor: document.getElementById('c-dolor').value,
+                energia: document.getElementById('c-energia').value,
+                animo: document.getElementById('c-animo').value,
+                notas: document.getElementById('c-notas').value.trim()
+            };
+            localStorage.setItem('journal_ciclo_logs', JSON.stringify(logs));
+            modalGlobal.classList.add('hidden');
+            dibujarRueda();
+        };
+    }
 
-        for (let i = 0; i < 7; i++) {
-            let diaBucle = new Date(lunes);
-            diaBucle.setDate(lunes.getDate() + i);
-            let llaveFechaStr = diaBucle.toISOString().split('T')[0];
-            
-            const eventos = JSON.parse(localStorage.getItem(`j_agenda_${llaveFechaStr}`)) || [];
+    /* --- MÓDULO 2: SEGUIMIENTO DE HÁBITOS (TRACKER) --- */
+    function renderizarHabitos() {
+        const contenedor = document.getElementById('habitos-render-zone');
+        if (!contenedor) return;
+        contenedor.innerHTML = "";
 
-            let htmlEventos = "";
-            eventos.forEach((ev, evIdx) => {
-                htmlEventos += `
-                    <div class="agenda-event-item ${ev.done ? 'completed' : ''}" data-date="${llaveFechaStr}" data-idx="${evIdx}">
-                        <span class="agenda-event-time">${ev.time}</span>
-                        <span>${ev.title}</span>
-                        ${modoEdicionActivo ? `
-                            <div class="agenda-event-inline-actions">
-                                <button type="button" class="agenda-inline-btn action-mod-date">📅 Fecha</button>
-                                <button type="button" class="agenda-inline-btn action-del-event" style="color:#e74c3c">× Eliminar</button>
-                            </div>
-                        ` : ''}
+        const lista = JSON.parse(localStorage.getItem('journal_habitos')) || [];
+        if (lista.length === 0) {
+            contenedor.innerHTML = `<p class="empty-state-text">No hay hábitos creados. Añade uno con el botón (+).</p>`;
+            return;
+        }
+
+        // Mostrar los últimos 7 días en la cabecera horizontal de cada hábito
+        const hoy = new Date();
+        let headersHTML = `<div class="habitos-row-header"><span>Hábito</span><div class="habitos-days-grid">`;
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(hoy.getDate() - i);
+            headersHTML += `<div class="day-lbl-col"><span>${d.toLocaleDateString('es', { weekday: 'narrow' })}</span><small>${d.getDate()}</small></div>`;
+        }
+        headersHTML += `</div></div>`;
+        contenedor.innerHTML += headersHTML;
+
+        lista.forEach(habito => {
+            const fila = document.createElement('div');
+            fila.className = "habito-item-row";
+
+            let checkboxesHTML = `<div class="habitos-days-grid">`;
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(hoy.getDate() - i);
+                const fString = d.toISOString().split('T')[0];
+                const checked = habito.historial && habito.historial[fString] ? "checked" : "";
+                
+                checkboxesHTML += `
+                    <div class="check-box-wrapper">
+                        <input type="checkbox" data-habito-id="${habito.id}" data-fecha="${fString}" ${checked} class="habito-check-trigger">
                     </div>
                 `;
-            });
+            }
+            checkboxesHTML += `</div>`;
 
-            const col = document.createElement('div');
-            col.className = "agenda-day-column";
-            col.innerHTML = `
-                <div class="agenda-day-header">
-                    <span class="day-number">${diaBucle.getDate()}</span>
-                    <span>${nombresDias[i]}</span>
+            fila.innerHTML = `
+                <div class="habito-meta-info">
+                    <span class="habito-title-txt">${habito.nombre}</span>
+                    <div class="habito-actions-inline">
+                        <small onclick="editarHabitoInline('${habito.id}')">Editar</small>
+                        <small style="color:#e74c3c; margin-left:6px;" onclick="eliminarHabitoInline('${habito.id}')">Borrar</small>
+                    </div>
                 </div>
-                <div class="agenda-events-stack">
-                    ${htmlEventos}
-                </div>
+                ${checkboxesHTML}
             `;
-            grid.appendChild(col);
-        }
+            contenedor.appendChild(fila);
+        });
 
-        // Eventos internos de los elementos de la agenda
-        grid.querySelectorAll('.agenda-event-item').forEach(el => {
-            const dateStr = el.getAttribute('data-date');
-            const idx = parseInt(el.getAttribute('data-idx'));
-            let evs = JSON.parse(localStorage.getItem(`j_agenda_${dateStr}`)) || [];
-
-            if (modoEdicionActivo) {
-                el.querySelector('.action-del-event').onclick = (e) => {
-                    e.stopPropagation();
-                    evs.splice(idx, 1);
-                    localStorage.setItem(`j_agenda_${dateStr}`, JSON.stringify(evs));
-                    renderizarSemanaHobonichi();
-                };
-                el.querySelector('.action-mod-date').onclick = (e) => {
-                    e.stopPropagation();
-                    const nuevaFecha = prompt("Escribe la nueva fecha (AAAA-MM-DD):", dateStr);
-                    if (nuevaFecha && nuevaFecha.trim() !== "") {
-                        const unEv = evs.splice(idx, 1)[0];
-                        localStorage.setItem(`j_agenda_${dateStr}`, JSON.stringify(evs));
-                        
-                        let targetEvs = JSON.parse(localStorage.getItem(`j_agenda_${nuevaFecha}`)) || [];
-                        targetEvs.push(unEv);
-                        localStorage.setItem(`j_agenda_${nuevaFecha}`, JSON.stringify(targetEvs));
-                        renderizarSemanaHobonichi();
+        // Registrar escuchadores de eventos para los cambios en los checkboxes
+        document.querySelectorAll('.habito-check-trigger').forEach(chk => {
+            chk.onchange = () => {
+                const hId = chk.getAttribute('data-habito-id');
+                const fStr = chk.getAttribute('data-fecha');
+                let listaHabitos = JSON.parse(localStorage.getItem('journal_habitos')) || [];
+                
+                listaHabitos = listaHabitos.map(h => {
+                    if (h.id === hId) {
+                        if (!h.historial) h.historial = {};
+                        if (chk.checked) h.historial[fStr] = true;
+                        else delete h.historial[fStr];
                     }
-                };
-            } else {
-                el.onclick = () => {
-                    evs[idx].done = !evs[idx].done;
-                    localStorage.setItem(`j_agenda_${dateStr}`, JSON.stringify(evs));
-                    renderizarSemanaHobonichi();
-                };
-            }
-        });
-    }
-
-    // Soporte de Swipe dactilar para Agenda
-    let touchstartX = 0;
-    let touchendX = 0;
-    const swipeArea = document.getElementById('swipe-area-agenda');
-    
-    swipeArea.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-    swipeArea.addEventListener('touchend', e => {
-        touchendX = e.changedTouches[0].screenX;
-        evaluarGestoSwipe();
-    });
-    
-    function evaluarGestoSwipe() {
-        if (touchstartX - touchendX > 60) { // Izquierda -> Siguiente Semana
-            fechaSemanaAgenda.setDate(fechaSemanaAgenda.getDate() + 7);
-            renderizarSemanaHobonichi();
-        }
-        if (touchendX - touchstartX > 60) { // Derecha -> Anterior Semana
-            fechaSemanaAgenda.setDate(fechaSemanaAgenda.getDate() - 7);
-            renderizarSemanaHobonichi();
-        }
-    }
-
-    document.getElementById('btn-clear-done-events').onclick = () => {
-        const lunes = obtenerLunesDeSemana(fechaSemanaAgenda);
-        for (let i = 0; i < 7; i++) {
-            let dia = new Date(lunes);
-            dia.setDate(lunes.getDate() + i);
-            let llave = dia.toISOString().split('T')[0];
-            let evs = JSON.parse(localStorage.getItem(`j_agenda_${llave}`)) || [];
-            evs = evs.filter(e => !e.done);
-            localStorage.setItem(`j_agenda_${llave}`, JSON.stringify(evs));
-        }
-        renderizarSemanaHobonichi();
-    };
-
-    /* ==========================================
-       SECCIÓN: CICLO MENSTRUAL LUNAR DE 28 DÍAS
-       ========================================== */
-    function renderizarRuedaCiclo28() {
-        const anillo = document.getElementById('anillo-ciclo-28');
-        anillo.innerHTML = "";
-
-        const logsCiclo = JSON.parse(localStorage.getItem('j_ciclo_logs')) || {};
-        
-        // Referencia estricta: Último ciclo inició el 30 de Abril de 2026
-        const fechaBaseCiclo = new Date("2026-04-30T00:00:00");
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        
-        document.getElementById('lunar-center-date').textContent = `${hoy.getDate()}/${hoy.getMonth()+1}`;
-        
-        // Cálculo matemático del día del ciclo actual dentro de la matriz fija de 28 días
-        const diffTiempo = Math.abs(hoy - fechaBaseCiclo);
-        const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
-        const diaCicloActualCalculado = (diffDias % 28) + 1;
-        
-        document.getElementById('lunar-center-day').textContent = `Día ${diaCicloActualCalculado}`;
-
-        const radio = 115; // Ajuste dentro del radio contenedor de 260px
-        const centroX = 130;
-        const centroY = 130;
-
-        for (let i = 1; i <= 28; i++) {
-            // Distribución trigonométrica en círculo perfecto
-            const angulo = (i * 2 * Math.PI / 28) - Math.PI / 2;
-            const x = centroX + radio * Math.cos(angulo);
-            const y = centroY + radio * Math.sin(angulo);
-
-            // Encontrar si este nodo específico tiene datos de sangrado históricos
-            let nodoSangrado = false;
-            
-            // Evaluamos logs para pintar puntitos de sangrado
-            Object.keys(logsCiclo).forEach(fechaKey => {
-                const diffBucle = Math.floor(Math.abs(new Date(fechaKey + "T00:00:00") - fechaBaseCiclo) / (1000 * 60 * 60 * 24));
-                const diaCalculadoBucle = (diffBucle % 28) + 1;
-                if (diaCalculadoBucle === i && logsCiclo[fechaKey].sangrado === "si") {
-                    nodoSangrado = true;
-                }
-            });
-
-            const dot = document.createElement('div');
-            dot.className = `lunar-dot-node ${nodoSangrado ? 'bleeding' : ''}`;
-            dot.style.left = `${x}px`;
-            dot.style.top = `${y}px`;
-            dot.textContent = i;
-
-            dot.onclick = (e) => {
-                e.stopPropagation();
-                anillo.querySelectorAll('.lunar-dot-node').forEach(n => n.classList.remove('selected'));
-                dot.classList.add('selected');
-                mostrarInformacionConsolidadaCiclo(i, fechaBaseCiclo, logsCiclo);
+                    return h;
+                });
+                localStorage.setItem('journal_habitos', JSON.stringify(listaHabitos));
             };
+        });
+    }
 
-            anillo.appendChild(dot);
+    window.editarHabitoInline = (id) => {
+        const lista = JSON.parse(localStorage.getItem('journal_habitos')) || [];
+        const h = lista.find(item => item.id === id);
+        if (h) abrirModalFormulario(h);
+    };
+
+    window.eliminarHabitoInline = (id) => {
+        if (confirm("¿Seguro que deseas eliminar este hábito por completo?")) {
+            let lista = JSON.parse(localStorage.getItem('journal_habitos')) || [];
+            lista = lista.filter(h => h.id !== id);
+            localStorage.setItem('journal_habitos', JSON.stringify(lista));
+            renderizarHabitos();
+        }
+    };
+
+    /* --- MÓDULO 3: AGENDA / PLANIFICADOR SEMANAL --- */
+    window.cambiarSemanaAgenda = (direccion) => {
+        fechaSemanaAgenda.setDate(fechaSemanaAgenda.getDate() + (direccion * 7));
+        renderizarAgendaSemanal();
+    };
+
+    function renderizarAgendaSemanal() {
+        const contenedor = document.getElementById('agenda-render-zone');
+        if (!contenedor) return;
+        contenedor.innerHTML = "";
+
+        // Calcular el lunes de la semana actual seleccionada
+        const copia = new Date(fechaSemanaAgenda);
+        const diaSemana = copia.getDay();
+        const diferencia = diaSemana === 0 ? -6 : 1 - diaSemana; // Ajuste para Domingo o Lunes básico
+        copia.setDate(copia.getDate() + diferencia);
+
+        const db = JSON.parse(localStorage.getItem('journal_agenda')) || {};
+
+        for (let i = 0; i < 7; i++) {
+            const fString = copia.toISOString().split('T')[0];
+            const opciones = { weekday: 'long', day: 'numeric', month: 'short' };
+            const tituloDia = copia.toLocaleDateString('es', opciones);
+
+            const bloqueDia = document.createElement('div');
+            bloqueDia.className = "agenda-dia-card";
+
+            let eventosHTML = "";
+            if (db[fString] && db[fString].length > 0) {
+                // Ordenar eventos cronológicamente por hora
+                db[fString].sort((a, b) => a.hora.localeCompare(b.hora));
+                db[fString].forEach(ev => {
+                    eventosHTML += `
+                        <div class="agenda-evento-row">
+                            <span class="evt-hora">${ev.hora}</span>
+                            <span class="evt-texto">${ev.texto}</span>
+                            <div class="evt-actions">
+                                <span onclick="editarEventoAgendaInline('${fString}','${ev.id}')">✏️</span>
+                                <span onclick="eliminarEventoAgendaInline('${fString}','${ev.id}')" style="margin-left:4px;">❌</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                eventosHTML = `<p class="evt-vacio-txt">No hay planes para hoy</p>`;
+            }
+
+            bloqueDia.innerHTML = `
+                <div class="agenda-dia-title-bar">
+                    <h4>${tituloDia.toUpperCase()}</h4>
+                    <small onclick="agregarPlanParaFecha('${fString}')">+ Añadir</small>
+                </div>
+                <div class="agenda-eventos-list">${eventosHTML}</div>
+            `;
+            contenedor.appendChild(bloqueDia);
+            copia.setDate(copia.getDate() + 1);
         }
     }
 
-    function mostrarInformacionConsolidadaCiclo(diaFijo, fechaBase, logs) {
-        const contenedorText = document.getElementById('ciclo-day-details');
-        let htmlAcumulado = `<h4>Registros históricos del Día ${diaFijo} del Ciclo:</h4>`;
-        let hallado = false;
+    window.agregarPlanParaFecha = (fecha) => {
+        diaSeleccionadoCiclo = fecha; // Sincroniza la fecha para el formulario modal
+        vistaActual = "agenda";
+        abrirModalFormulario();
+    };
 
-        Object.keys(logs).forEach(fechaKey => {
-            const diff = Math.floor(Math.abs(new Date(fechaKey + "T00:00:00") - fechaBase) / (1000 * 60 * 60 * 24));
-            const diaCalculado = (diff % 28) + 1;
+    window.editarEventoAgendaInline = (fecha, id) => {
+        const db = JSON.parse(localStorage.getItem('journal_agenda')) || {};
+        if (db[fecha]) {
+            const ev = db[fecha].find(e => e.id === id);
+            if (ev) abrirModalFormulario({ ...ev, fecha });
+        }
+    };
 
-            if (diaCalculado === diaFijo) {
-                hallado = true;
-                const r = logs[fechaKey];
-                htmlAcumulado += `
-                    <p style="margin:4px 0; font-size:13px; border-bottom:1px dashed var(--line-dashed)">
-                        <b>Fecha ${fechaKey}:</b> Sangrado: ${r.sangrado.toUpperCase()} | Sueño: ${r.sueno}h | Energía: ${r.energia} | Ánimo: ${r.animo}<br>
-                        <span class="notebook-placeholder-text">Notas: ${r.notas || 'Ninguna'}</span>
-                    </p>
-                `;
+    window.eliminarEventoAgendaInline = (fecha, id) => {
+        if (confirm("¿Deseas borrar este evento?")) {
+            const db = JSON.parse(localStorage.getItem('journal_agenda')) || {};
+            if (db[fecha]) {
+                db[fecha] = db[fecha].filter(e => e.id !== id);
+                if (db[fecha].length === 0) delete db[fecha];
+                localStorage.setItem('journal_agenda', JSON.stringify(db));
+                renderizarAgendaSemanal();
             }
+        }
+    };
+
+    /* --- MÓDULO 4: LISTA DE TAREAS (TO-DO LIST) --- */
+    function renderizarTodoList() {
+        const contenedor = document.getElementById('todo-render-zone');
+        if (!contenedor) return;
+        contenedor.innerHTML = "";
+
+        const lista = JSON.parse(localStorage.getItem('journal_todo')) || [];
+        if (lista.length === 0) {
+            contenedor.innerHTML = `<p class="empty-state-text">Todo limpio. No tienes tareas pendientes.</p>`;
+            return;
+        }
+
+        lista.forEach((todo, index) => {
+            const item = document.createElement('div');
+            item.className = `todo-item-card ${todo.completado ? "todo-completed" : ""}`;
+
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; width:75%;">
+                    <input type="checkbox" ${todo.completado ? "checked" : ""} class="todo-check-trigger" data-index="${index}">
+                    <span class="todo-text-span prio-${todo.prioridad}">${todo.texto}</span>
+                </div>
+                <div class="todo-item-actions">
+                    <small onclick="editarTodoInline(${index})">Editar</small>
+                    <small style="color:#e74c3c; margin-left:6px;" onclick="eliminarTodoInline(${index})">Borrar</small>
+                </div>
+            `;
+            contenedor.appendChild(item);
         });
 
-        if (!hallado) {
-            contenedorText.innerHTML = `<p class="notebook-placeholder-text">No hay nada registrado para el día ${diaFijo} del ciclo aún.</p>`;
-        } else {
-            contenedorText.innerHTML = htmlAcumulado;
-        }
+        document.querySelectorAll('.todo-check-trigger').forEach(chk => {
+            chk.onchange = () => {
+                const idx = chk.getAttribute('data-index');
+                let listaTodo = JSON.parse(localStorage.getItem('journal_todo')) || [];
+                listaTodo[idx].completado = chk.checked;
+                localStorage.setItem('journal_todo', JSON.stringify(listaTodo));
+                renderizarTodoList();
+            };
+        });
     }
 
-    /* ==========================================
-       MODAL DE INYECCIÓN DE FORMULARIOS MINIMALISTAS
-       ========================================== */
-    function abrirFormularioModalInyectado() {
-        modalGlobal.classList.remove('hidden');
-        injectorCampos.innerHTML = "";
+    window.editarTodoInline = (index) => {
+        const lista = JSON.parse(localStorage.getItem('journal_todo')) || [];
+        if (lista[index]) abrirModalFormulario({ ...lista[index], index });
+    };
 
-        const form = document.createElement('form');
-        form.id = "clean-inner-form";
-        form.onsubmit = (e) => { e.preventDefault(); procesarGuardadoFormularioInyectado(); };
+    window.eliminarTodoInline = (index) => {
+        let lista = JSON.parse(localStorage.getItem('journal_todo')) || [];
+        lista.splice(index, 1);
+        localStorage.setItem('journal_todo', JSON.stringify(lista));
+        renderizarTodoList();
+    };
 
-        if (vistaActual === "metas") {
-            form.innerHTML = `
-                <label>NUEVA META ANUAL</label>
-                <input type="text" id="f-meta-text" placeholder="Escribe tu meta aquí..." required autofocus autocomplete="off">
-                <button type="submit" class="modal-save-btn">Añadir Meta</button>
-            `;
-        } else if (vistaActual === "habitos") {
-            form.innerHTML = `
-                <label>NUEVO HÁBITO PARA ESTE MES</label>
-                <input type="text" id="f-habit-name" placeholder="Nombre del hábito..." required autofocus autocomplete="off">
-                <button type="submit" class="modal-save-btn">Añadir Hábito</button>
-            `;
-        } else if (vistaActual === "todo") {
-            form.innerHTML = `
-                <label>NUEVA TAREA GENERAL</label>
-                <input type="text" id="f-todo-text" placeholder="¿Qué hay por hacer?..." required autofocus autocomplete="off">
-                <button type="submit" class="modal-save-btn">Añadir Tarea</button>
-            `;
-        } else if (vistaActual === "agenda") {
-            form.innerHTML = `
-                <label>NUEVO EVENTO</label>
-                <input type="text" id="f-agenda-title" placeholder="Nombre del evento..." required autofocus autocomplete="off">
-                <label>FECHA DE REGISTRO</label>
-                <input type="date" id="f-agenda-date" required>
-                <label>HORA DE INICIO</label>
-                <input type="time" id="f-agenda-time" required>
-                <button type="submit" class="modal-save-btn">Agendar Evento</button>
-            `;
-            document.getElementById('f-agenda-date').value = new Date().toISOString().split('T')[0];
-        } else if (vistaActual === "ciclo") {
-            form.innerHTML = `
-                <label>REGISTRO DE SÍNTOMAS DEL DÍA</label>
-                <input type="date" id="f-ciclo-date" required>
-                <label>¿PRESENTA SANGRADO / FLUJO?</label>
-                <select id="f-ciclo-sangrado">
-                    <option value="no">No</option>
-                    <option value="si">Sí</option>
-                </select>
-                <label>HORAS DE SUEÑO</label>
-                <input type="number" id="f-ciclo-sueno" min="0" max="24" value="8" style="background:transparent; border:none; border-bottom:1px solid var(--text-color); color:var(--text-color); width:100%;">
-                <label>NIVEL DE ENERGÍA</label>
-                <select id="f-ciclo-energia">
-                    <option value="alta">Alta</option>
-                    <option value="media" selected>Media</option>
-                    <option value="baja">Baja</option>
-                </select>
-                <label>ESTADO DE ÁNIMO</label>
-                <select id="f-ciclo-animo">
-                    <option value="calma" selected>Calma</option>
-                    <option value="feliz">Feliz / Activa</option>
-                    <option value="sensible">Sensible</option>
-                    <option value="cansada">Cansada</option>
-                </select>
-                <label>OBSERVACIONES / DIARIO</label>
-                <textarea id="f-ciclo-notas" rows="2" placeholder="Escribe cómo te sientes..."></textarea>
-                <button type="submit" class="modal-save-btn">Guardar Estado</button>
-            `;
-            document.getElementById('f-ciclo-date').value = diaSeleccionadoCiclo;
+    /* --- MÓDULO 5: BLOC DE NOTAS / DIARIO COMPLETO --- */
+    function renderizarNotasGrid() {
+        const contenedor = document.getElementById('notas-render-zone');
+        if (!contenedor) return;
+        contenedor.innerHTML = "";
+
+        const lista = JSON.parse(localStorage.getItem('journal_notas')) || [];
+        if (lista.length === 0) {
+            contenedor.innerHTML = `<p class="empty-state-text">El bloc está vacío. Crea tu primera nota reflexiva.</p>`;
+            return;
         }
 
-        injectorCampos.appendChild(form);
+        lista.forEach((nota, index) => {
+            const card = document.createElement('div');
+            card.className = "nota-notebook-card";
+
+            card.innerHTML = `
+                <div class="nota-card-header">
+                    <h4>${nota.titulo}</h4>
+                    <small>${nota.fecha}</small>
+                </div>
+                <p class="nota-card-body-preview">${nota.cuerpo.replace(/\n/g, '<br>')}</p>
+                <div class="nota-card-actions-footer">
+                    <button type="button" onclick="editarNotaInline(${index})">Editar</button>
+                    <button type="button" style="color:#e74c3c;" onclick="eliminarNotaInline(${index})">Eliminar</button>
+                </div>
+            `;
+            contenedor.appendChild(card);
+        });
     }
 
-    function procesarGuardadoFormularioInyectado() {
-        if (vistaActual === "metas") {
-            const txt = document.getElementById('f-meta-text').value.trim();
-            if(txt) {
-                let metas = JSON.parse(localStorage.getItem(`j_metas_${anioActual}`)) || [];
-                metas.push({ text: txt, done: false });
-                localStorage.setItem(`j_metas_${anioActual}`, JSON.stringify(metas));
-            }
-        } else if (vistaActual === "habitos") {
-            const name = document.getElementById('f-habit-name').value.trim();
-            if (name) {
-                const llaveMes = `j_habits_${anioActual}_${mesActualId}`;
-                let habitos = JSON.parse(localStorage.getItem(llaveMes)) || [];
-                habitos.push({ name: name, history: [] });
-                localStorage.setItem(llaveMes, JSON.stringify(habitos));
-            }
-        } else if (vistaActual === "todo") {
-            const txt = document.getElementById('f-todo-text').value.trim();
-            if (txt) {
-                let tareas = JSON.parse(localStorage.getItem('j_todo_list')) || [];
-                tareas.push({ text: txt, done: false });
-                localStorage.setItem('j_todo_list', JSON.stringify(tareas));
-            }
-        } else if (vistaActual === "agenda") {
-            const title = document.getElementById('f-agenda-title').value.trim();
-            const date = document.getElementById('f-agenda-date').value;
-            const time = document.getElementById('f-agenda-time').value;
-            
-            if (title && date) {
-                let evs = JSON.parse(localStorage.getItem(`j_agenda_${date}`)) || [];
-                evs.push({ title, time, done: false });
-                // Ordenar por hora automáticamente
-                evs.sort((a,b) => a.time.localeCompare(b.time));
-                localStorage.setItem(`j_agenda_${date}`, JSON.stringify(evs));
-                fechaSemanaAgenda = new Date(date + "T00:00:00");
-            }
-        } else if (vistaActual === "ciclo") {
-            const date = document.getElementById('f-ciclo-date').value;
-            if (date) {
-                let logs = JSON.parse(localStorage.getItem('j_ciclo_logs')) || {};
-                logs[date] = {
-                    sangrado: document.getElementById('f-ciclo-sangrado').value,
-                    sueno: document.getElementById('f-ciclo-sueno').value,
-                    energia: document.getElementById('f-ciclo-energia').value,
-                    animo: document.getElementById('f-ciclo-animo').value,
-                    notas: document.getElementById('f-ciclo-notas').value.trim()
-                };
-                localStorage.setItem('j_ciclo_logs', JSON.stringify(logs));
-                diaSeleccionadoCiclo = date;
-            }
-        }
+    window.editarNotaInline = (index) => {
+        const lista = JSON.parse(localStorage.getItem('journal_notas')) || [];
+        if (lista[index]) abrirModalFormulario({ ...lista[index], index });
+    };
 
-        modoEdicionActivo = false;
-        globalFab.classList.remove('active-editing');
-        modalGlobal.classList.add('hidden');
-        refrescarVistaActivaAislada();
-        if (vistaActual === "ciclo") renderizarRuedaCiclo28();
-    }
-
-    // Cerrar modal si hacen click en el fondo sutil del mismo
-    modalGlobal.onclick = (e) => {
-        if (e.target === modalGlobal) {
-            modoEdicionActivo = false;
-            globalFab.classList.remove('active-editing');
-            modalGlobal.classList.add('hidden');
-            refrescarVistaActivaAislada();
+    window.eliminarNotaInline = (index) => {
+        if (confirm("¿Estás seguro de eliminar esta nota de tu cuaderno?")) {
+            let lista = JSON.parse(localStorage.getItem('journal_notas')) || [];
+            lista.splice(index, 1);
+            localStorage.setItem('journal_notas', JSON.stringify(lista));
+            renderizarNotasGrid();
         }
     };
 
-    /* ==========================================
-       HISTORIAL AUTOMÁTICO CRONOLÓGICO Y CONTROL
-       ========================================== */
-    function verificarTraspasoTemporalHistorico() {
-        const ultimaRevisionAnio = localStorage.getItem('j_sys_last_year');
-        const ultimaRevisionMes = localStorage.getItem('j_sys_last_month');
+    /* --- MÓDULO 6: CONFIGURACIÓN, APARIENCIA Y RESPALDOS (BACKUP ENGINE) --- */
+    function sincronizarControlesConfig() {
+        // Sincronizar estado del botón de Modo Oscuro
+        const esOscuro = document.body.classList.contains('dark-mode');
+        const btnDark = document.getElementById('btn-toggle-dark');
+        if (btnDark) btnDark.textContent = esOscuro ? "Activo" : "Inactivo";
 
-        if (ultimaRevisionAnio && parseInt(ultimaRevisionAnio) < anioActual) {
-            // Guardar automáticamente en el vector de historial
-            let historialMetas = JSON.parse(localStorage.getItem('j_history_metas')) || {};
-            let metasViejas = JSON.parse(localStorage.getItem(`j_metas_${ultimaRevisionAnio}`)) || [];
-            if(metasViejas.length > 0) {
-                historialMetas[ultimaRevisionAnio] = metasViejas;
-                localStorage.setItem('j_history_metas', JSON.stringify(historialMetas));
-            }
-        }
-        localStorage.setItem('j_sys_last_year', anioActual);
-
-        if (ultimaRevisionMes && (parseInt(ultimaRevisionMes) !== mesActualId)) {
-            let historialHabitos = JSON.parse(localStorage.getItem('j_history_habitos')) || {};
-            const anioEvaluado = ultimaRevisionMes > mesActualId ? anioActual - 1 : anioActual;
-            let claveVieja = `j_habits_${anioEvaluado}_${ultimaRevisionMes}`;
-            let habsViejos = JSON.parse(localStorage.getItem(claveVieja)) || [];
-            
-            if(habsViejos.length > 0) {
-                historialHabitos[`${anioEvaluado}-${ultimaRevisionMes}`] = habsViejos;
-                localStorage.setItem('j_history_habitos', JSON.stringify(historialHabitos));
-            }
-        }
-        localStorage.setItem('j_sys_last_month', mesActualId);
+        // Sincronizar estado de la Protección por PIN
+        const btnPinStatus = document.getElementById('cfg-toggle-pin-status');
+        if (btnPinStatus) btnPinStatus.textContent = pinProteccionActiva ? "Activo" : "Inactivo";
     }
 
-    // Eventos visualizadores de Historiales pasados
-    document.getElementById('btn-historial-metas').onclick = () => {
-        const hist = JSON.parse(localStorage.getItem('j_history_metas')) || {};
-        if (Object.keys(hist).length === 0) return alert("No hay registros de años anteriores.");
-        alert("Historial de Metas:\n" + JSON.stringify(hist, null, 2));
+    document.getElementById('btn-toggle-dark').onclick = () => {
+        const flag = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('journalDarkMode', flag ? "true" : "false");
+        sincronizarControlesConfig();
     };
 
-    document.getElementById('btn-historial-habitos').onclick = () => {
-        const hist = JSON.parse(localStorage.getItem('j_history_habitos')) || {};
-        if (Object.keys(hist).length === 0) return alert("No hay registros de meses anteriores.");
-        alert("Historial de Hábitos:\n" + JSON.stringify(hist, null, 2));
-    };
-
-    document.getElementById('btn-historial-ciclo').onclick = () => {
-        const logs = JSON.parse(localStorage.getItem('j_ciclo_logs')) || {};
-        if (Object.keys(logs).length === 0) return alert("No hay registros guardados en el ciclo.");
-        alert("Todos los ciclos registrados:\n" + JSON.stringify(logs, null, 2));
-    };
-
-    /* ==========================================
-       SECCIÓN: CONFIGURACIÓN GENERAL Y CONFIGS
-       ========================================== */
-    // Tema Oscuro / Claro alternador
-    if (localStorage.getItem('journalDarkTheme') === 'true') {
+    // Inicializar el modo oscuro inmediatamente si ya estaba configurado previamente
+    if (localStorage.getItem('journalDarkMode') === "true") {
         document.body.classList.add('dark-mode');
     }
-    document.getElementById('cfg-toggle-theme').onclick = () => {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('journalDarkTheme', document.body.classList.contains('dark-mode'));
-    };
 
-    // Color de Acento Dinámico sutil
-    const colorGuardado = localStorage.getItem('journalAccentColor');
-    if (colorGuardado) {
-        document.documentElement.style.setProperty('--accent-color', colorGuardado);
-        document.getElementById('cfg-color-picker').value = colorGuardado;
+    // Manejo interactivo del color de acento personalizado
+    document.getElementById('color-picker').oninput = (e) => {
+        const color = e.target.value;
+        document.documentElement.style.setProperty('--accent-color', color);
+        localStorage.setItem('journalAccentColor', color);
+    };
+    const accentGuardado = localStorage.getItem('journalAccentColor');
+    if (accentGuardado) {
+        document.documentElement.style.setProperty('--accent-color', accentGuardado);
+        const picker = document.getElementById('color-picker');
+        if (picker) picker.value = accentGuardado;
     }
-    document.getElementById('cfg-color-picker').oninput = (e) => {
-        document.documentElement.style.setProperty('--accent-color', e.target.value);
-        localStorage.setItem('journalAccentColor', e.target.value);
-    };
 
-    // Config Status PIN
-    document.getElementById('cfg-toggle-pin-status').textContent = pinProteccionActiva ? "Activo" : "Inactivo";
+    // Control dinámico de activación/desactivación del PIN de seguridad
     document.getElementById('cfg-toggle-pin-status').onclick = () => {
         pinProteccionActiva = !pinProteccionActiva;
-        localStorage.setItem('journalPinActivo', pinProteccionActiva);
-        document.getElementById('cfg-toggle-pin-status').textContent = pinProteccionActiva ? "Activo" : "Inactivo";
+        localStorage.setItem('journalPinActivo', pinProteccionActiva ? "true" : "false");
+        sincronizarControlesConfig();
     };
 
     document.getElementById('cfg-change-pin').onclick = () => {
@@ -808,8 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
                 alert("Copia de seguridad restaurada correctamente.");
                 window.location.reload();
-            } catch(err) {
-                alert("Archivo JSON no válido.");
+            } catch (err) {
+                alert("Error al procesar el archivo JSON de copia de seguridad.");
             }
         };
         reader.readAsText(file);
