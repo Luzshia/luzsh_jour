@@ -1,21 +1,9 @@
-/* --- CONFIGURACIONES ELEMENTALES Y VARIABLES --- */
+/* --- VARIABLES ESTÉTICAS (PAPEL VINTAGE Y TINTA) --- */
 :root {
-    --bg-color: #fdfdfd;
-    --dot-color: #e2e2e2;
-    --text-color: #2b2b2b;
-    --accent-color: #2ecc71;
-    --line-color: rgba(0, 0, 0, 0.06);
-    --line-dashed: rgba(0, 0, 0, 0.1);
-    --font-size-base: 15px;
-    --grid-step: 20px; /* Sincronizado perfectamente con el tamaño del punto */
-}
-
-body.dark-mode {
-    --bg-color: #161616;
-    --dot-color: #2a2a2a;
-    --text-color: #e0e0e0;
-    --line-color: rgba(255, 255, 255, 0.06);
-    --line-dashed: rgba(255, 255, 255, 0.1);
+    --paper-bg: #fdfaf3;       /* Color marfil pergamino muy suave */
+    --ink-color: #332f2d;      /* Color carbón/sepia oscuro para la tinta */
+    --btn-hover-bg: #f4edd9;   /* Realce sutil de página al seleccionar */
+    --font-handwritten: 'Dancing Script', cursive; /* Fuente corrida dinámica */
 }
 
 *, *::before, *::after {
@@ -25,604 +13,964 @@ body.dark-mode {
 body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: var(--font-size-base);
-    line-height: var(--grid-step); /* Forzar altura de línea alineada a los puntos */
-    overflow: hidden;
-}
-
-/* --- REJILLA / FONDO DE CUADERNO DE PUNTOS --- */
-.dotted-bg {
-    background-color: var(--bg-color);
-    background-image: radial-gradient(var(--dot-color) 1.2px, transparent 1.2px);
-    background-size: var(--grid-step) var(--grid-step);
-    background-position: 0 0;
-    transition: background-color 0.3s ease;
-}
-
-/* --- CAPA DE BLOQUEO DE PIN --- */
-.overlay-lock {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-color);
-    z-index: 10000;
+    background-color: #cbbfa8; /* Mesa exterior vintage */
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 22px; 
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
 }
 
-.lock-container {
+/* --- CONTENEDOR EFECTO HOJA DE CUADERNO --- */
+.journal-book {
+    background-color: var(--paper-bg);
     width: 100%;
-    max-width: 280px;
-    text-align: center;
-}
-
-.lock-title {
-    margin: 0 0 calc(var(--grid-step) * 2) 0;
-    font-size: 24px;
-}
-
-.pin-display {
-    display: flex;
-    justify-content: center;
-    gap: var(--grid-step);
-    margin-bottom: calc(var(--grid-step) * 2);
-}
-
-.pin-slot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1.5px solid var(--text-color);
-    transition: background 0.15s ease;
-}
-
-.pin-slot.filled {
-    background: var(--text-color);
-}
-
-.numpad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--grid-step);
-}
-
-.num-btn {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-color);
-    font-size: 20px;
-    height: calc(var(--grid-step) * 2);
-    cursor: pointer;
-    border-radius: 50%;
-    transition: background 0.2s;
-}
-
-.num-btn:active {
-    background: var(--line-color);
-}
-
-/* --- CONTENEDOR PRINCIPAL Y VISTAS --- */
-.app-container {
-    width: 100vw;
+    max-width: 460px;
     height: 100vh;
+    max-height: 840px;
+    padding: 40px 30px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
     position: relative;
     overflow: hidden;
 }
 
-.view {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    pointer-events: none;
-    padding: calc(var(--grid-step) * 2) calc(var(--grid-step) * 1.5);
+@media (max-width: 480px) {
+    .journal-book {
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        box-shadow: none;
+        padding: 30px 20px;
+    }
+}
+
+/* --- CONTROLADORES DE VISTAS --- */
+.journal-view {
     display: flex;
     flex-direction: column;
-    transition: opacity 0.25s ease-in-out;
-}
-
-.view.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* --- INTERFAZ DE INICIO: COLUMNA CENTRAL --- */
-.menu-column {
-    margin: auto;
+    height: 100%;
     width: 100%;
-    max-width: 320px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- DISEÑO DEL ENCABEZADO Y LÍNEA --- */
+.journal-header {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+.journal-title {
+    font-family: var(--font-handwritten);
+    font-size: 58px;
+    font-weight: 700; /* Le da cuerpo al trazo de pluma */
+    margin: 0 0 -5px 0;
+}
+
+/* Línea divisoria vintage minimalista */
+.line-separator {
+    width: 200px;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+
+/* --- MENÚ PRINCIPAL (BOTONES) --- */
+.menu-navigation {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--grid-step) * 2);
+    gap: 12px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
-.journal-brand-title {
-    font-family: serif;
-    font-size: 32px;
-    font-weight: 400;
+.menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 36px; /* Proporción idónea para Dancing Script */
+    font-weight: 600;
+    padding: 4px 15px;
+    cursor: pointer;
     text-align: center;
-    letter-spacing: 1px;
-    margin: 0 0 var(--grid-step) 0;
+    width: 100%;
+    transition: all 0.2s ease;
+    outline: none;
+    position: relative;
 }
 
-.journal-nav-links {
+/* Subrayado manual sutil */
+.menu-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    width: 0;
+    height: 1.5px;
+    background-color: var(--ink-color);
+    transition: all 0.25s ease;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.menu-btn:hover::after, .menu-btn:focus::after {
+    width: 45%;
+}
+
+.menu-btn:hover {
+    background-color: var(--btn-hover-bg);
+    border-radius: 50% 15% 50% 15% / 15% 50% 15% 50%;
+    transform: scale(1.02);
+}
+
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS: APARTADO METAS
+   ========================================================================== */
+
+.back-home-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 24px;
+    cursor: pointer;
+    text-align: left;
+    width: fit-content;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    padding: 0;
+    margin-bottom: -10px;
+}
+.back-home-btn:hover {
+    opacity: 1;
+}
+
+.year-navigator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: -5px 0 5px 0;
+}
+.year-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+.year-nav-btn:hover {
+    opacity: 1;
+}
+.year-indicator {
+    font-size: 18px;
+    opacity: 0.4;
+    font-style: italic;
+}
+
+/* Botón "+" Estilo Lápiz Flotante en la Esquina Inferior Derecha */
+.pencil-add-btn-floating {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    border: none;
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 54px; /* Un poco más grande para que sea un blanco fácil y cómodo */
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0.25; /* Sutil y casi transparente estilo trazo tenue */
+    transition: all 0.25s ease;
+    z-index: 10;
+    user-select: none;
+    outline: none;
+}
+
+.pencil-add-btn-floating:hover, .pencil-add-btn-floating.active-edit {
+    opacity: 0.9;
+    color: #556b2f; /* Tono verde oliva cuando está activo */
+    transform: scale(1.15) rotate(90deg); /* Un giro orgánico sutil al interactuar */
+}
+
+.goals-interactive-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 40px;
+}
+
+.goals-list {
+    margin: 0;
+    padding-left: 30px;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.menu-link-btn {
-    background: transparent;
-    border: none;
-    outline: none;
-    text-align: left;
-    padding: 8px 0;
-    font-size: 17px;
-    color: var(--text-color);
-    cursor: pointer;
-    border-bottom: 1px dashed transparent;
-    transition: border-color 0.2s, padding-left 0.2s;
-}
-
-.menu-link-btn:hover {
-    border-bottom-color: var(--text-color);
-    padding-left: 6px;
-}
-
-/* --- ESTRUCTURA INTERNA DE HOJA --- */
-.notebook-header {
-    height: calc(var(--grid-step) * 3);
-    display: flex;
-    align-items: center;
-    gap: var(--grid-step);
-    border-bottom: 1px solid var(--line-color);
-    margin-bottom: var(--grid-step);
-}
-
-.notebook-header h2 {
-    font-size: 19px;
+.goal-item {
+    font-family: var(--font-handwritten);
+    font-size: 32px;
     font-weight: 500;
-    margin: 0;
+    line-height: 1.2;
+    cursor: pointer;
+    display: list-item;
+    position: relative;
+    padding-right: 35px;
+    user-select: none;
+    transition: color 0.2s ease;
 }
 
-.back-menu-btn {
+.goal-item.completed {
+    text-decoration: line-through;
+    text-decoration-color: rgba(85, 107, 47, 0.7);
+    opacity: 0.5;
+}
+
+.goal-item input.inline-edit-input {
     background: transparent;
     border: none;
+    border-bottom: 1px dashed rgba(0,0,0,0.2);
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 32px;
+    width: 100%;
     outline: none;
-    color: var(--text-color);
-    font-size: 14px;
-    cursor: pointer;
-    opacity: 0.6;
     padding: 0;
 }
 
-.back-menu-btn:hover { opacity: 1; }
-
-.notebook-body {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: calc(var(--grid-step) * 4);
-}
-
-/* --- LISTAS ESTILO CUADERNO (METAS / TO-DO) --- */
-.notebook-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.notebook-item {
-    display: flex;
-    align-items: flex-start;
-    min-height: calc(var(--grid-step) * 2);
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--line-dashed);
-    cursor: pointer;
-    position: relative;
-}
-
-.notebook-item-text {
-    flex: 1;
-    padding-right: 40px;
-    word-break: break-word;
-}
-
-.notebook-item.completed .notebook-item-text {
-    text-decoration: line-through;
-    opacity: 0.4;
-}
-
-/* Viñetas cuadradas tipo checkbox Hobonichi */
-.todo-bullet-box {
-    width: 14px;
-    height: 14px;
-    border: 1px solid var(--text-color);
-    margin-top: 3px;
-    margin-right: 12px;
-    display: inline-block;
-    flex-shrink: 0;
-    transition: background 0.15s;
-}
-
-.notebook-item.completed .todo-bullet-box {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
-/* Botón Eliminar Ítem individual (Modo edición) */
-.btn-delete-item-cross {
+.goal-delete-btn {
     position: absolute;
-    right: 0;
+    right: 5px;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: #e74c3c;
-    font-size: 18px;
+    color: #cc6666;
+    font-family: var(--font-handwritten);
+    font-size: 26px;
     cursor: pointer;
-    padding: 0 var(--grid-step);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.edit-mode-active .goal-delete-btn {
     opacity: 0.7;
 }
-
-.btn-delete-item-cross:hover { opacity: 1; }
-
-/* --- MATRIZ DE HÁBITOS --- */
-.overflow-x-notebook {
-    overflow-x: auto;
+.edit-mode-active .goal-delete-btn:hover {
+    opacity: 1;
 }
 
-.habits-matrix-container {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--grid-step) * 1.5);
+.new-goal-editor {
+    margin-top: 15px;
+    padding-left: 5px;
 }
-
-.habit-row {
-    display: flex;
-    flex-direction: column;
-    border-bottom: 1px solid var(--line-color);
-    padding-bottom: 10px;
-}
-
-.habit-row-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 500;
-    margin-bottom: 6px;
-}
-
-.habit-days-grid {
-    display: flex;
-    gap: 4px;
-}
-
-.habit-day-cell {
-    width: 24px;
-    height: 24px;
-    border: 1px solid var(--dot-color);
-    font-size: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-}
-
-.habit-day-cell .day-name-sub { font-size: 7px; opacity: 0.5; }
-
-.habit-day-cell.checked {
-    background: var(--accent-color) !important;
-    color: #fff !important;
-    border-color: var(--accent-color);
-}
-
-/* --- AGENDA HOBONICHI --- */
-.swipe-zone-agenda {
-    touch-action: pan-y;
-}
-
-.hobonichi-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: var(--line-color);
-    min-height: 100%;
-}
-
-.agenda-day-column {
+.goal-handwritten-input {
     background: transparent;
-    display: flex;
-    flex-direction: column;
-    padding: 8px 4px;
-    min-height: 380px;
+    border: none;
+    border-bottom: 1px dashed rgba(85, 107, 47, 0.3);
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 30px;
+    width: 100%;
+    outline: none;
 }
 
-.agenda-day-header {
-    border-bottom: 1px solid var(--text-color);
-    padding-bottom: 4px;
-    margin-bottom: 10px;
-    font-size: 12px;
-}
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS: APARTADO HÁBITOS (MINI CALENDARIOS)
+   ========================================================================== */
 
-.agenda-day-header .day-number {
-    font-size: 18px;
-    font-weight: bold;
-    display: block;
-}
-
-.agenda-events-stack {
+.habits-interactive-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    overflow-y: auto;
+    padding-bottom: 60px; /* Margen extra para no chocar con el '+' flotante */
 }
 
-.agenda-event-item {
-    font-size: 12px;
-    line-height: 14px;
-    padding: 4px;
-    border-bottom: 1px dashed var(--line-dashed);
-    cursor: pointer;
-    position: relative;
-}
-
-.agenda-event-item.completed {
-    text-decoration: line-through;
-    opacity: 0.4;
-}
-
-.agenda-event-time {
-    font-size: 9px;
-    opacity: 0.6;
-    display: block;
-}
-
-.agenda-event-inline-actions {
-    display: flex;
-    gap: 4px;
-    margin-top: 4px;
-}
-
-.agenda-inline-btn {
-    background: transparent;
-    border: none;
-    font-size: 9px;
-    cursor: pointer;
-    opacity: 0.6;
-    color: var(--text-color);
-}
-.agenda-inline-btn:hover { opacity: 1; }
-
-/* --- DIAGRAMA LUNAR (28 DÍAS REALES) --- */
-.alignment-center-box {
+/* Rejilla de mini calendarios */
+.habits-grid-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: calc(var(--grid-step) * 1.5);
+    gap: 20px;
+    width: 100%;
 }
 
-.lunar-cycle-wrapper {
+/* Tarjeta individual de cada hábito */
+.habit-card {
+    border: 0.8px solid rgba(85, 107, 47, 0.25); /* Líneas delgadas verde oliva */
+    border-radius: 8px;
+    padding: 12px 15px;
     position: relative;
-    width: 260px;
-    height: 260px;
-    margin: var(--grid-step) 0;
+    background-color: rgba(255,255,255,0.2);
 }
 
-.lunar-ring {
-    position: absolute;
-    inset: 0;
-}
-
-.lunar-dot-node {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1px solid var(--text-color);
-    background: var(--bg-color);
+/* Cabecera interna del mini calendario */
+.habit-card-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    font-size: 9px;
+    margin-bottom: 4px;
+}
+
+/* Nombre del hábito o input en modo edición */
+.habit-card-title {
+    font-family: var(--font-handwritten);
+    font-size: 28px;
+    margin: 0;
+    line-height: 1.1;
+}
+.habit-card-title input.inline-edit-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(0,0,0,0.2);
+    font-family: var(--font-handwritten);
+    font-size: 28px;
+    color: var(--ink-color);
+    width: 80%;
+    outline: none;
+    padding: 0;
+}
+
+/* Pequeña X para borrar hábitos */
+.habit-delete-btn {
+    background: transparent;
+    border: none;
+    color: #cc6666;
+    font-family: var(--font-handwritten);
+    font-size: 24px;
     cursor: pointer;
-    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.edit-mode-active .habit-delete-btn {
+    opacity: 0.7;
+}
+.edit-mode-active .habit-delete-btn:hover {
+    opacity: 1;
 }
 
-.lunar-dot-node.bleeding {
-    background: #e74c3c !important;
-    border-color: #e74c3c;
-    color: #fff;
+/* Línea fina divisoria interna */
+.habit-card-divider {
+    border: 0;
+    height: 0.8px;
+    background-color: rgba(85, 107, 47, 0.2);
+    margin: 4px 0 10px 0;
 }
 
-.lunar-dot-node.selected {
-    box-shadow: 0 0 0 2px var(--accent-color);
-}
-
-.lunar-center-data {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+/* Estructura del micro-calendario mensual */
+.mini-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
     text-align: center;
 }
 
-.center-date { font-size: 13px; opacity: 0.6; }
-.center-day-count { font-size: 20px; font-weight: bold; }
-
-.day-details-notebook-text {
-    width: 100%;
-    max-width: 320px;
-    min-height: 80px;
-    border-top: 1px dashed var(--line-dashed);
-    padding-top: var(--grid-step);
-}
-
-.notebook-placeholder-text {
-    opacity: 0.4;
-    font-style: italic;
-}
-
-/* --- BOTONES DE CONTROL Y REGLAS HISTORIAL --- */
-.btn-history-left {
-    position: absolute;
-    bottom: var(--grid-step);
-    left: calc(var(--grid-step) * 1.5);
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    font-size: 13px;
-    cursor: pointer;
+/* Iniciales de los días de la semana (l, m, x...) */
+.calendar-day-label {
+    font-size: 16px;
     opacity: 0.5;
-    z-index: 10;
-}
-.btn-history-left:hover { opacity: 0.9; }
-
-.btn-action-center-bottom {
-    position: absolute;
-    bottom: var(--grid-step);
-    left: 50%;
-    transform: translateX(-50%);
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    font-size: 18px;
-    cursor: pointer;
-    opacity: 0.3;
-    z-index: 10;
-    transition: opacity 0.2s;
-}
-.btn-action-center-bottom:hover { opacity: 0.9; }
-
-/* --- BOTÓN ACCIÓN FLOTANTE GLOBAL (+) --- */
-.fab-minimal-btn {
-    position: absolute;
-    bottom: var(--grid-step);
-    right: calc(var(--grid-step) * 1.5);
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-color);
-    font-size: 32px;
-    line-height: 32px;
-    cursor: pointer;
-    opacity: 0.25;
-    z-index: 999;
-    transition: opacity 0.2s, transform 0.2s;
+    font-weight: bold;
+    text-transform: lowercase;
 }
 
-.fab-minimal-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.1);
-}
-
-.fab-minimal-btn.active-editing {
-    opacity: 0.9;
-    color: var(--accent-color);
-    transform: rotate(45deg);
-}
-
-/* --- MODAL LIMPIO SINFÍN Y CONFIGURACIÓN --- */
-.modal-clean {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.02);
-    backdrop-filter: blur(0.5px);
-    z-index: 5000;
+/* Círculos de los días a tachar */
+.calendar-circle-day {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 0.8px solid rgba(51, 47, 45, 0.25); /* Círculo transparente fino */
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0.6;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    margin: 0 auto;
 }
 
-.modal-clean-content {
-    background: var(--bg-color);
-    border: 1px solid var(--line-color);
-    padding: calc(var(--grid-step) * 1.5);
-    width: 90%;
-    max-width: 310px;
+/* Hueco vacío para encuadrar el primer día del mes */
+.calendar-empty-slot {
+    width: 28px;
+    height: 28px;
+}
+
+/* Estado tachado / relleno de tinta */
+.calendar-circle-day.checked {
+    background-color: #556b2f; /* Relleno verde oliva de tinta */
+    border-color: #556b2f;
+    color: transparent; /* Quita el número al completarse */
+    opacity: 0.85;
+}
+
+/* Bloquear pulsaciones en modo edición para evitar tachar por error */
+.edit-mode-active .calendar-circle-day {
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS: APARTADO TO-DO LIST
+   ========================================================================== */
+
+.todo-interactive-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 60px;
+}
+
+.todo-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 5px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.modal-clean-content input[type="text"],
-.modal-clean-content input[type="date"],
-.modal-clean-content input[type="time"],
-.modal-clean-content select,
-.modal-clean-content textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--text-color);
-    color: var(--text-color);
-    padding: 6px 0;
-    outline: none;
-    font-size: 15px;
-}
-
-.modal-clean-content label {
-    font-size: 11px;
-    opacity: 0.5;
-    margin-bottom: -6px;
-}
-
-.modal-save-btn {
-    background: var(--text-color);
-    color: var(--bg-color);
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-    margin-top: 8px;
-}
-
-.max-width-config { max-width: 400px; margin: 0 auto; width: 100%; }
-.config-row-item {
+.todo-item {
+    font-family: var(--font-handwritten);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.1;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    height: calc(var(--grid-step) * 2);
-    border-bottom: 1px dashed var(--line-dashed);
+    position: relative;
+    user-select: none;
+    cursor: pointer;
+    padding-right: 35px;
 }
 
-.config-toggle-action {
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    cursor: pointer;
-    text-decoration: underline;
+/* Casilla de verificación estilo caja hecha a mano */
+.todo-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(51, 47, 45, 0.4);
+    border-radius: 4px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    color: var(--ink-color);
+    transition: all 0.2s ease;
 }
 
-.minimal-color-picker {
-    border: none;
+/* Tarea completada: Tacha el texto y pone una X en la caja */
+.todo-item.completed {
+    text-decoration: line-through;
+    text-decoration-color: rgba(85, 107, 47, 0.6);
+    opacity: 0.5;
+}
+
+.todo-item.completed .todo-checkbox::after {
+    content: 'x';
+    font-family: var(--font-handwritten);
+    font-size: 26px;
+    margin-top: -6px;
+}
+
+/* Estilos de inputs e iconos de borrado idénticos a metas */
+.todo-item input.inline-edit-input {
     background: transparent;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
+    border: none;
+    border-bottom: 1px dashed rgba(0,0,0,0.2);
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 32px;
+    width: 100%;
+    outline: none;
     padding: 0;
 }
 
-.config-backup-zone {
-    margin-top: calc(var(--grid-step) * 2);
+/* Bloquea la interacción de la casilla en modo edición */
+.edit-mode-active .todo-checkbox {
+    opacity: 0.3;
+    pointer-events: none;
 }
-.config-backup-zone h3 { font-size: 14px; opacity: 0.6; margin-bottom: var(--grid-step); }
-.backup-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--grid-step); }
-.backup-action-btn {
+
+/* Botón de papelera flotante minimalista */
+.trash-clear-btn-floating {
+    position: absolute;
+    bottom: 25px;
+    right: 95px; /* Colocado justo a la izquierda del botón + */
+    width: 60px;
+    height: 60px;
     background: transparent;
-    border: 1px solid var(--text-color);
-    color: var(--text-color);
-    padding: 6px;
-    text-align: center;
+    border: none;
+    color: #cc6666; /* Tono rojizo sutil desgastado */
     cursor: pointer;
-    font-size: 13px;
+    opacity: 0.3;
+    transition: all 0.25s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    padding: 12px;
 }
-.file-label-btn { display: block; }
 
-.hidden { display: none !important; }
+.trash-clear-btn-floating:hover {
+    opacity: 0.9;
+    transform: scale(1.1);
+}
 
-/* RESPONSIVO */
-@media(max-width: 600px) {
-    .hobonichi-grid { grid-template-columns: repeat(7, 1fr); overflow-x: auto; }
-    .agenda-day-column { min-width: 75px; }
+.trash-clear-btn-floating svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS: AGENDA SEMANAL (ESTILO HOBONICHI)
+   ========================================================================== */
+
+.agenda-interactive-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 60px;
+    position: relative;
+}
+
+.agenda-week-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+/* Filas Horizontales de días Hobonichi */
+.agenda-day-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 0.8px dashed rgba(85, 107, 47, 0.25); /* Línea punteada suave */
+    min-height: 85px;
+    transition: background 0.2s ease;
+}
+
+.agenda-day-row:last-child {
+    border-bottom: none;
+}
+
+/* Indicador lateral izquierdo del Día (Número y texto) */
+.agenda-day-meta {
+    width: 65px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: var(--font-handwritten);
+    line-height: 1;
+    user-select: none;
+}
+
+.agenda-day-number {
+    font-size: 36px;
+    font-weight: bold;
+    color: #556b2f;
+}
+
+.agenda-day-name {
+    font-size: 18px;
+    opacity: 0.6;
+    text-transform: lowercase;
+}
+
+/* Fin de semana en tono sutil diferenciado */
+.agenda-day-row.weekend .agenda-day-number {
+    color: #1e4e07;
+}
+
+/* Contenedor derecho para albergar eventos */
+.agenda-day-events-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 10px;
+}
+
+/* Tarjeta minimalista de cada evento */
+.agenda-event-item {
+    font-family: var(--font-handwritten);
+    font-size: 26px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding-right: 30px;
+    animation: shortFade 0.2s ease;
+}
+
+.agenda-event-time {
+    font-size: 20px;
+    opacity: 0.5;
+    margin-right: 12px;
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.03);
+    padding: 0 4px;
+    border-radius: 3px;
+}
+
+.agenda-event-item.completed-task {
+    text-decoration: line-through;
+    text-decoration-color: rgba(85, 107, 47, 0.5);
+    opacity: 0.4;
+}
+
+/* Botón 'x' para eliminar individualmente en edición */
+.agenda-event-item .event-delete-btn {
+    position: absolute;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: #cc6666;
+    font-family: var(--font-handwritten);
+    font-size: 22px;
+    cursor: pointer;
+    display: none;
+}
+
+.edit-mode-active .agenda-event-item .event-delete-btn {
+    display: block;
+}
+
+/* Animación cuando entramos a modo edición para indicar clickeo */
+.edit-mode-active .agenda-day-row {
+    cursor: pointer;
+}
+.edit-mode-active .agenda-day-row:hover {
+    background-color: rgba(85, 107, 47, 0.04);
+}
+
+/* --- FORMULARIO TARJETA DIALOG MODAL (HOBONICHI LOOK) --- */
+.agenda-modal-card {
+    position: absolute;
+    top: 20%;
+    left: 5%;
+    width: 90%;
+    background-color: var(--paper-bg);
+    border: 1px solid #556b2f;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 100;
+    animation: cardPop 0.25s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+@keyframes cardPop {
+    from { transform: scale(0.9) translateY(10px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-card-title {
+    margin: 0 0 15px 0;
+    font-family: var(--font-handwritten);
+    font-size: 30px;
+    color: #556b2f;
+    border-bottom: 0.8px solid rgba(85, 107, 47, 0.2);
+    padding-bottom: 5px;
+}
+
+.modal-card-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.modal-card-field label {
+    font-size: 16px;
+    opacity: 0.6;
+    margin-bottom: 2px;
+}
+
+.card-hand-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(0,0,0,0.3);
+    font-family: var(--font-handwritten);
+    font-size: 26px;
+    color: var(--ink-color);
+    outline: none;
+    padding: 4px 0;
+}
+
+.modal-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.modal-action-btn {
+    background: transparent;
+    border: none;
+    font-family: var(--font-handwritten);
+    font-size: 26px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.modal-action-btn.cancel {
+    color: #cc6666;
+}
+.modal-action-btn.save {
+    color: #556b2f;
+    font-weight: bold;
+}
+.modal-action-btn:hover {
+    background-color: var(--btn-hover-bg);
+}
+
+@keyframes shortFade {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   ESTILOS ACTUALIZADOS: CICLO MENSTRUAL ULTRA-MINIMALISTA
+   ========================================================================== */
+
+.cycle-interactive-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centrado absoluto vertical */
+    padding-bottom: 40px;
+    height: 100%;
+    width: 100%;
+}
+
+.cycle-diagram-wrapper {
+    width: 100%;
+    max-width: 350px; 
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nodos tipográficos interactivos */
+.cycle-wheel-day-node {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* El texto cambia ligeramente de tamaño al pasar el mouse/dedo para dar feedback */
+.cycle-wheel-day-node:hover .node-text-day {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+/* Ajustes finos de los textos del SVG */
+.node-text-day {
+    font-family: var(--font-handwritten);
+    font-size: 14px;
+    fill: var(--ink-color);
+    text-anchor: middle;
+    dominant-baseline: central;
+    transition: font-size 0.15s ease;
+}
+
+/* Estilo alternativo para los números en días de sangrado (color vino elegante) */
+.node-text-day.text-has-bleed {
+    fill: #cc6666;
+    font-weight: bold;
+}
+
+/* Micro punto de sangrado flotante debajo del número */
+.node-bleed-dot {
+    fill: #cc6666;
+}
+
+/* Aro oliva ultra sutil que encierra al número actual */
+.node-today-ring {
+    fill: none;
+    stroke: #556b2f;
+    stroke-width: 0.8;
+    stroke-dasharray: 2 1;
+}
+
+.cycle-history-dropdown {
+    background: transparent;
+    border: none;
+    border-bottom: 0.8px dashed #556b2f;
+    font-family: var(--font-handwritten);
+    font-size: 24px;
+    color: var(--ink-color);
+    text-align: center;
+    outline: none;
+    cursor: pointer;
+    max-width: 180px;
+}
+
+/* ==========================================================================
+   APARTADO NUEVO: CONFIGURACIÓN Y PANTALLA DE PIN
+   ========================================================================== */
+
+.config-scrollable-area {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-top: 10px;
+}
+
+.config-group {
+    margin-bottom: 20px;
+    border-bottom: 0.5px dashed rgba(51, 47, 45, 0.15);
+    padding-bottom: 15px;
+}
+
+.config-group-title {
+    font-size: 26px;
+    color: var(--accent-color, #556b2f);
+    margin: 0 0 10px 0;
+}
+
+.config-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 22px;
+}
+
+.config-desc {
+    font-size: 16px;
+    opacity: 0.6;
+    margin: -5px 0 15px 0;
+    line-height: 1.3;
+    font-style: italic;
+}
+
+.config-select {
+    background: transparent;
+    border: none;
+    border-bottom: 0.8px dashed var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 20px;
+    color: var(--ink-color);
+    outline: none;
+    cursor: pointer;
+    text-align: right;
+}
+
+.config-select option {
+    background-color: var(--paper-bg);
+    color: var(--ink-color);
+}
+
+.config-inline-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-color, #556b2f);
+    font-family: var(--font-handwritten);
+    font-size: 20px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.config-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.config-button {
+    background: transparent;
+    border: 0.8px solid var(--ink-color);
+    color: var(--ink-color);
+    font-family: var(--font-handwritten);
+    font-size: 22px;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.config-button:hover {
+    background: var(--btn-hover-bg);
+}
+
+.config-button.secondary {
+    border-style: dashed;
+    opacity: 0.8;
+}
+
+/* Pantalla de protección total por PIN */
+.pin-screen-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: var(--paper-bg);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-container {
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+    padding: 20px;
+}
+
+.pin-title {
+    font-size: 38px;
+    margin: 0;
+    color: var(--accent-color, #556b2f);
+}
+
+.pin-subtitle {
+    font-size: 20px;
+    opacity: 0.6;
+    margin: 5px 0 20px 0;
+}
+
+.pin-digital-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--ink-color);
+    font-size: 32px;
+    text-align: center;
+    letter-spacing: 8px;
+    width: 160px;
+    outline: none;
+    color: var(--ink-color);
+}
+
+/* --- ADICIÓN EXTRA PARA SOPORTE DE MODO OSCURO EN EL BODY --- */
+body.dark-journal-mode {
+    --paper-bg: #22201e;       /* Tono carbón para el papel pergamino */
+    --ink-color: #f5f2eb;      /* Letras claras de tiza */
+    --btn-hover-bg: #33302e;   /* Selección sutil oscura */
+    background-color: #121110;  /* Mesa de fondo oscura */
 }

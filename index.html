@@ -3,163 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Journal Personal</title>
+    <title>Mi Journal Personal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#fdfdfd">
 </head>
-<body class="dotted-bg">
+<body>
 
-    <div id="lock-screen" class="overlay-lock">
-        <div class="lock-container">
-            <h2 class="lock-title">🔒</h2>
-            <div class="pin-display">
-                <div class="pin-slot" id="slot-1"></div>
-                <div class="pin-slot" id="slot-2"></div>
-                <div class="pin-slot" id="slot-3"></div>
-                <div class="pin-slot" id="slot-4"></div>
-            </div>
-            <div class="numpad">
-                <button type="button" class="num-btn" data-val="1">1</button>
-                <button type="button" class="num-btn" data-val="2">2</button>
-                <button type="button" class="num-btn" data-val="3">3</button>
-                <button type="button" class="num-btn" data-val="4">4</button>
-                <button type="button" class="num-btn" data-val="5">5</button>
-                <button type="button" class="num-btn" data-val="6">6</button>
-                <button type="button" class="num-btn" data-val="7">7</button>
-                <button type="button" class="num-btn" data-val="8">8</button>
-                <button type="button" class="num-btn" data-val="9">9</button>
-                <button type="button" class="num-btn" id="btn-clear">C</button>
-                <button type="button" class="num-btn" data-val="0">0</button>
-                <button type="button" class="num-btn" id="btn-enter">✓</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="app-container" id="main-app-zone">
+    <div class="journal-book">
         
-        <section id="view-menu" class="view active">
-            <div class="menu-column">
-                <h1 class="journal-brand-title">Journal</h1>
-                <nav class="journal-nav-links">
-                    <button type="button" class="menu-link-btn" id="nav-metas">Metas Anuales</button>
-                    <button type="button" class="menu-link-btn" id="nav-habitos">Hábitos</button>
-                    <button type="button" class="menu-link-btn" id="nav-todo">To-Do List</button>
-                    <button type="button" class="menu-link-btn" id="nav-agenda">Agenda</button>
-                    <button type="button" class="menu-link-btn" id="nav-ciclo">Ciclo Menstrual</button>
-                    <button type="button" class="menu-link-btn" id="nav-config">Configuración</button>
-                </nav>
-            </div>
-        </section>
-
-        <section id="view-metas" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <h2 id="title-metas">Mis metas</h2>
-            </header>
-            <div class="notebook-body">
-                <ul class="notebook-list" id="lista-metas"></ul>
-            </div>
-            <button type="button" class="btn-history-left" id="btn-historial-metas">📋 Historial</button>
-        </section>
-
-        <section id="view-habitos" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <h2 id="title-habitos">Mis hábitos</h2>
-            </header>
-            <div class="notebook-body overflow-x-notebook">
-                <div class="habits-matrix-container" id="matrix-habitos"></div>
-            </div>
-            <button type="button" class="btn-history-left" id="btn-historial-habitos">📋 Historial</button>
-        </section>
-
-        <section id="view-todo" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <h2>To-Do List</h2>
-            </header>
-            <div class="notebook-body">
-                <ul class="notebook-list" id="lista-todo"></ul>
-            </div>
-            <button type="button" class="btn-action-center-bottom" id="btn-clear-completed-todo" title="Eliminar tareas completadas">🗑️</button>
-        </section>
-
-        <section id="view-agenda" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <div class="agenda-header-title-zone">
-                    <h2 id="agenda-week-label">Semana</h2>
+        <section id="view-menu" class="journal-view">
+            <header class="journal-header">
+                <h1 class="journal-title">Mi Journal</h1>
+                
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
                 </div>
             </header>
-            <div class="notebook-body swipe-zone-agenda" id="swipe-area-agenda">
-                <div class="hobonichi-grid" id="grid-agenda-semana"></div>
-            </div>
-            <button type="button" class="btn-action-center-bottom" id="btn-clear-done-events" title="Eliminar eventos completados">🗑️</button>
+
+            <nav class="menu-navigation">
+                <button type="button" class="menu-btn" id="btn-nav-metas">Metas</button>
+                <button type="button" class="menu-btn" id="btn-nav-habitos">Hábitos</button>
+                <button type="button" class="menu-btn" id="btn-nav-todo">To-Do List</button>
+                <button type="button" class="menu-btn" id="btn-nav-agenda">Agenda Semanal</button>
+                <button type="button" class="menu-btn" id="btn-nav-ciclo">Ciclo Menstrual</button>
+                <button type="button" class="menu-btn" id="btn-nav-config">Configuración</button>
+            </nav>
         </section>
 
-        <section id="view-ciclo" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <h2>Ciclo Menstrual</h2>
+        <section id="view-metas" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title">Metas de <span id="goals-year-display">2026</span></h1>
+                <div class="year-navigator">
+                    <button type="button" class="year-nav-btn" id="btn-goals-prev-year">←</button>
+                    <span class="year-indicator">Cambiar año</span>
+                    <button type="button" class="year-nav-btn" id="btn-goals-next-year">→</button>
+                </div>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
             </header>
-            <div class="notebook-body alignment-center-box">
-                <div class="lunar-cycle-wrapper">
-                    <div class="lunar-ring" id="anillo-ciclo-28"></div>
-                    <div class="lunar-center-data">
-                        <div id="lunar-center-date" class="center-date">--/--</div>
-                        <div id="lunar-center-day" class="center-day-count">Día --</div>
+            <div class="goals-interactive-area" id="goals-blank-space">
+                <ol class="goals-list" id="goals-list-container"></ol>
+                <div class="new-goal-editor hidden" id="new-goal-box">
+                    <input type="text" id="input-new-goal" class="goal-handwritten-input" placeholder="Escribe una nueva meta aquí..." maxlength="100">
+                </div>
+            </div>
+            <button type="button" class="pencil-add-btn-floating" id="btn-goals-toggle-edit" title="Modo Edición">+</button>
+        </section>
+
+        <section id="view-habitos" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title" id="habits-month-display">Hábitos</h1>
+                <div class="year-navigator">
+                    <button type="button" class="year-nav-btn" id="btn-habits-prev-month">←</button>
+                    <span class="year-indicator">Cambiar mes</span>
+                    <button type="button" class="year-nav-btn" id="btn-habits-next-month">→</button>
+                </div>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+            <div class="habits-interactive-area" id="habits-blank-space">
+                <div class="habits-grid-container" id="habits-grid-container"></div>
+                <div class="new-goal-editor hidden" id="new-habit-box">
+                    <input type="text" id="input-new-habit" class="goal-handwritten-input" placeholder="Escribe un nuevo hábito aquí..." maxlength="50">
+                </div>
+            </div>
+            <button type="button" class="pencil-add-btn-floating" id="btn-habits-toggle-edit" title="Modo Edición">+</button>
+        </section>
+
+        <section id="view-todo" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title">Tareas Pendientes</h1>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+            <div class="todo-interactive-area" id="todo-blank-space">
+                <ul class="todo-list" id="todo-list-container"></ul>
+                <div class="new-goal-editor hidden" id="new-todo-box">
+                    <input type="text" id="input-new-todo" class="goal-handwritten-input" placeholder="Añadir una tarea nueva..." maxlength="100">
+                </div>
+            </div>
+            <button type="button" class="trash-clear-btn-floating hidden" id="btn-todo-clear-completed" title="Eliminar tareas tachadas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+            <button type="button" class="pencil-add-btn-floating" id="btn-todo-toggle-edit" title="Modo Edición">+</button>
+        </section>
+
+        <section id="view-agenda" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title" id="agenda-week-display">Agenda</h1>
+                <div class="year-navigator">
+                    <button type="button" class="year-nav-btn" id="btn-agenda-prev-week">←</button>
+                    <span class="year-indicator">Cambiar semana</span>
+                    <button type="button" class="year-nav-btn" id="btn-agenda-next-week">→</button>
+                </div>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+            <div class="agenda-interactive-area" id="agenda-blank-space">
+                <div class="agenda-week-container" id="agenda-week-container"></div>
+            </div>
+            <div class="agenda-modal-card hidden" id="agenda-event-modal" onclick="event.stopPropagation();">
+                <h4 class="modal-card-title" id="agenda-modal-title-text">Nuevo Evento</h4>
+                <input type="hidden" id="form-agenda-index">
+                <input type="hidden" id="form-agenda-date">
+                <div class="modal-card-field">
+                    <label>¿Qué vas a hacer?</label>
+                    <input type="text" id="form-agenda-text" class="card-hand-input" placeholder="Nombre del evento..." maxlength="60">
+                </div>
+                <div class="modal-card-field">
+                    <label>Hora</label>
+                    <input type="time" id="form-agenda-time" class="card-hand-input">
+                </div>
+                <div class="modal-card-actions">
+                    <button type="button" class="modal-action-btn cancel" id="btn-agenda-modal-close">Cerrar</button>
+                    <button type="button" class="modal-action-btn save" id="btn-agenda-modal-save">Guardar</button>
+                </div>
+            </div>
+            <button type="button" class="trash-clear-btn-floating hidden" id="btn-agenda-clear-completed" title="Limpiar eventos completados">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+            <button type="button" class="pencil-add-btn-floating" id="btn-agenda-toggle-edit" title="Modo Edición">+</button>
+        </section>
+
+        <section id="view-ciclo" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title">Mi Ciclo</h1>
+                <div class="year-navigator">
+                    <button type="button" class="year-nav-btn" id="btn-cycle-prev">←</button>
+                    <select id="select-cycle-history" class="cycle-history-dropdown"></select>
+                    <button type="button" class="year-nav-btn" id="btn-cycle-next">→</button>
+                </div>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+
+            <div class="cycle-interactive-area" id="cycle-blank-space">
+                <div class="cycle-diagram-wrapper" id="cycle-wheel-svg-container"></div>
+            </div>
+
+            <div class="agenda-modal-card hidden" id="cycle-view-modal" onclick="event.stopPropagation();">
+                <h4 class="modal-card-title" id="cycle-view-title">Detalles del Día</h4>
+                <div class="cycle-view-content" id="cycle-view-body" style="font-size: 26px; line-height: 1.5; padding: 10px 0; min-height: 120px;">
+                    </div>
+                <div class="modal-card-actions">
+                    <button type="button" class="modal-action-btn cancel" style="width: 100%;" id="btn-cycle-view-close">Cerrar</button>
+                </div>
+            </div>
+
+            <div class="agenda-modal-card hidden" id="cycle-log-modal" onclick="event.stopPropagation();">
+                <h4 class="modal-card-title">Registro del Día</h4>
+                <div class="modal-card-field">
+                    <label>Fecha de Registro</label>
+                    <input type="date" id="form-cycle-date" class="card-hand-input">
+                </div>
+                
+                <div class="modal-card-field">
+                    <label>Sangrado / Periodo</label>
+                    <select id="form-cycle-bleed" class="card-hand-input">
+                        <option value="none">Ninguno</option>
+                        <option value="light">Leve (Día de Sangrado)</option>
+                        <option value="medium">Moderado (Día de Sangrado)</option>
+                        <option value="heavy">Fuerte (Día de Sangrado)</option>
+                    </select>
+                </div>
+
+                <div class="modal-card-field">
+                    <label>Horas de sueño</label>
+                    <input type="number" id="form-cycle-sleep" class="card-hand-input" placeholder="Ej. 7.5" step="0.5" min="0" max="24">
+                </div>
+
+                <div class="modal-card-field">
+                    <label>Energía</label>
+                    <select id="form-cycle-energy" class="card-hand-input">
+                        <option value="Normal">Normal</option>
+                        <option value="Alta">Alta ⚡</option>
+                        <option value="Baja">Baja 💤</option>
+                    </select>
+                </div>
+
+                <div class="modal-card-field">
+                    <label>Estado de Ánimo</label>
+                    <input type="text" id="form-cycle-mood" class="card-hand-input" placeholder="¿Cómo te sientes?" maxlength="30">
+                </div>
+
+                <div class="modal-card-field">
+                    <label>Observaciones</label>
+                    <input type="text" id="form-cycle-notes" class="card-hand-input" placeholder="Síntomas, notas..." maxlength="100">
+                </div>
+
+                <div class="modal-card-actions">
+                    <button type="button" class="modal-action-btn cancel" id="btn-cycle-modal-close">Cerrar</button>
+                    <button type="button" class="modal-action-btn save" id="btn-cycle-modal-save">Guardar</button>
+                </div>
+            </div>
+
+            <button type="button" class="pencil-add-btn-floating" id="btn-cycle-toggle-edit" title="Agregar/Editar Registro">+</button>
+        </section>
+
+        <section id="view-config" class="journal-view hidden">
+            <header class="journal-header">
+                <h1 class="journal-title">Ajustes</h1>
+                <div class="line-separator">
+                    <svg viewBox="0 0 200 20" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="10" x2="90" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                        <polygon points="100,6 105,10 100,14 95,10" fill="#556b2f"/>
+                        <circle cx="91" cy="10" r="1" fill="#556b2f"/>
+                        <circle cx="109" cy="10" r="1" fill="#556b2f"/>
+                        <line x1="110" y1="10" x2="190" y2="10" stroke="#556b2f" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+
+            <div class="config-scrollable-area">
+                <div class="config-group">
+                    <h3 class="config-group-title">Apariencia</h3>
+                    <div class="config-row">
+                        <span>Tema de Página</span>
+                        <select id="cfg-theme" class="config-select">
+                            <option value="light">Marfil (Claro)</option>
+                            <option value="dark">Carbono (Oscuro)</option>
+                        </select>
+                    </div>
+                    <div class="config-row">
+                        <span>Color de Tinta (Acento)</span>
+                        <select id="cfg-accent" class="config-select">
+                            <option value="#556b2f">Verde Oliva</option>
+                            <option value="#8b4513">Marrón Sepia</option>
+                            <option value="#4682b4">Azul Acero</option>
+                            <option value="#9e4242">Rojo Burdeos</option>
+                        </select>
                     </div>
                 </div>
-                <div id="ciclo-day-details" class="day-details-notebook-text">
-                    <p class="notebook-placeholder-text">Selecciona un día del diagrama para ver los registros.</p>
-                </div>
-            </div>
-            <button type="button" class="btn-history-left" id="btn-historial-ciclo">📋 Historial de Ciclos</button>
-        </section>
 
-        <section id="view-config" class="view">
-            <header class="notebook-header">
-                <button type="button" class="back-menu-btn">← Volver</button>
-                <h2>Configuración</h2>
-            </header>
-            <div class="notebook-body max-width-config">
-                <div class="config-row-item">
-                    <span>Modo de color:</span>
-                    <button type="button" class="config-toggle-action" id="cfg-toggle-theme">Claro / Oscuro</button>
+                <div class="config-group">
+                    <h3 class="config-group-title">Seguridad</h3>
+                    <div class="config-row">
+                        <span>Bloqueo por PIN</span>
+                        <select id="cfg-pin-toggle" class="config-select">
+                            <option value="false">Desactivado</option>
+                            <option value="true">Activado</option>
+                        </select>
+                    </div>
+                    <div class="config-row hidden" id="row-change-pin">
+                        <span>Código Secreto</span>
+                        <button type="button" class="config-inline-btn" id="btn-cfg-change-pin">Cambiar PIN</button>
+                    </div>
                 </div>
-                <div class="config-row-item">
-                    <span>Color de acento:</span>
-                    <input type="color" id="cfg-color-picker" value="#2ecc71" class="minimal-color-picker">
-                </div>
-                <div class="config-row-item">
-                    <span>Protección por PIN:</span>
-                    <button type="button" class="config-toggle-action" id="cfg-toggle-pin-status">Activo</button>
-                </div>
-                <div class="config-row-item">
-                    <span>Modificar PIN secreto:</span>
-                    <button type="button" class="config-toggle-action" id="cfg-change-pin">Cambiar</button>
-                </div>
-                <div class="config-backup-zone">
-                    <h3>Copia de Seguridad</h3>
-                    <div class="backup-btns-grid">
-                        <button type="button" class="backup-action-btn" id="cfg-export">Guardar Copia</button>
-                        <label for="cfg-import-file" class="backup-action-btn file-label-btn">
-                            Cargar Copia
-                            <input type="file" id="cfg-import-file" accept=".json" style="display:none">
-                        </label>
+
+                <div class="config-group">
+                    <h3 class="config-group-title">Memoria del Diario</h3>
+                    <p class="config-desc">Exporta o restaura tus datos directamente en el almacenamiento local de este dispositivo.</p>
+                    <div class="config-actions-stack">
+                        <button type="button" class="config-button" id="btn-cfg-export">Guardar Copia de Seguridad</button>
+                        <button type="button" class="config-button secondary" id="btn-cfg-import-trigger">Cargar Copia de Seguridad</button>
+                        <input type="file" id="cfg-file-input" accept=".json" class="hidden">
                     </div>
                 </div>
             </div>
         </section>
 
-        <div id="notebook-global-modal" class="modal-clean hidden">
-            <div class="modal-clean-content" id="modal-fields-injector">
-                </div>
+    </div> <div id="pin-lock-screen" class="pin-screen-overlay hidden">
+        <div class="pin-container">
+            <h2 class="pin-title">Diario Protegido</h2>
+            <p class="pin-subtitle" id="pin-screen-msg">Introduce tu código de acceso</p>
+            <input type="password" id="input-screen-pin" class="pin-digital-input" pattern="[0-9]*" inputmode="numeric" maxlength="6" placeholder="••••">
+            <div style="margin-top: 25px;">
+                <button type="button" class="config-button" id="btn-screen-pin-submit">Desbloquear</button>
+            </div>
         </div>
-
-        <button type="button" class="fab-minimal-btn" id="global-fab-add" title="Editar / Agregar">+</button>
     </div>
 
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
