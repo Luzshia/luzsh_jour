@@ -38,35 +38,26 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// 3. Evento Fetch: Interceptor inteligente de red local
+// 3. Evento Fetch: Estrategia inteligente para actualizar cambios en caliente
 self.addEventListener('fetch', (e) => {
-    // Filtrar para interceptar únicamente solicitudes de lectura estándar (GET)
     if (e.request.method !== 'GET') return;
 
     e.respondWith(
         caches.match(e.request).then((cachedResponse) => {
-            // Si el recurso vive en el almacenamiento del dispositivo, se sirve de inmediato
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            // Si no está registrado en el ciclo local, se pide al servidor web
-            return fetch(e.request).then((networkResponse) => {
-                // Validación de respuesta correcta antes de intentar clonar
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
+            // Devuelve la copia local de inmediato para que cargue instantáneo
+            const networkFetch = fetch(e.request).then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                    // Si hay internet y el archivo cambió en GitHub, lo guarda actualizado
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(e.request, responseToCache);
+                    });
                 }
-
-                // Guardado dinámico en caché para nuevos recursos anexados en caliente
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(e.request, responseToCache);
-                });
-
                 return networkResponse;
-            });
+            }).catch(() => null); // Si está offline, ignora el fallo de red
+
+            return cachedResponse || networkFetch;
         }).catch(() => {
-            // Plan de contingencia si no hay red ni recurso: Retorna a la página base
             if (e.request.mode === 'navigate') {
                 return caches.match('index.html');
             }
